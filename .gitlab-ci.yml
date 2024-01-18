@@ -196,7 +196,7 @@ build-WebGL:
 
 build-android:
   <<: *build
-  image: $IMAGE:$UNITY_VERSION-android-$IMAGE_VERSION
+  image: $IMAGE:$UNITY_VERSION-android-3.0.1
   variables:
     BUILD_TARGET: Android
     BUILD_APP_BUNDLE: "false"
