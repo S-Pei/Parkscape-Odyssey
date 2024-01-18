@@ -20,16 +20,16 @@ variables:
 # image_name=unityci/editor:ubuntu-$UNITY_VERSION-base-1.0.1
 
 
-# get-unity-version:
-#   image: alpine
-#   stage: prepare
-#   variables:
-#     GIT_DEPTH: 1
-#   script:
-#     - echo UNITY_VERSION=$(cat $UNITY_DIR/ProjectSettings/ProjectVersion.txt | grep "m_EditorVersion:.*" | awk '{ print $2}') | tee prepare.env
-#   artifacts:
-#     reports:
-#       dotenv: prepare.env
+get-unity-version:
+  image: alpine
+  stage: prepare
+  variables:
+    GIT_DEPTH: 1
+  # script:
+  #   - echo UNITY_VERSION=$(cat $UNITY_DIR/ProjectSettings/ProjectVersion.txt | grep "m_EditorVersion:.*" | awk '{ print $2}') | tee prepare.env
+  artifacts:
+    reports:
+      dotenv: prepare.env
 
 .unity_before_script: &unity_before_script
   before_script:
