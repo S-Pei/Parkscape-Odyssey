@@ -25,7 +25,6 @@ get-unity-version:
   variables:
     GIT_DEPTH: 1
   script:
-    - apt install xvfb
     - echo "UNITY_VERSION=$(cat $UNITY_DIR/ProjectSettings/ProjectVersion.txt | grep "m_EditorVersion:.*" | awk '{ print $2}') | tee prepare.env"
   artifacts:
     reports:
