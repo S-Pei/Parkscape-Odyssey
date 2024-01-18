@@ -16,18 +16,20 @@ variables:
   VERSION_NUMBER_VAR: $CI_COMMIT_REF_SLUG-$CI_PIPELINE_ID-$CI_JOB_ID
   VERSION_BUILD_VAR: $CI_PIPELINE_IID
 
-image: $IMAGE:$UNITY_VERSION-base-$IMAGE_VERSION
+# UNITY_VERSION=2021.3.4f1
+# image_name=unityci/editor:ubuntu-$UNITY_VERSION-base-1.0.1
 
-get-unity-version:
-  image: alpine
-  stage: prepare
-  variables:
-    GIT_DEPTH: 1
-  script:
-    - echo UNITY_VERSION=$(cat $UNITY_DIR/ProjectSettings/ProjectVersion.txt | grep "m_EditorVersion:.*" | awk '{ print $2}') | tee prepare.env
-  artifacts:
-    reports:
-      dotenv: prepare.env
+
+# get-unity-version:
+#   image: alpine
+#   stage: prepare
+#   variables:
+#     GIT_DEPTH: 1
+#   script:
+#     - echo UNITY_VERSION=$(cat $UNITY_DIR/ProjectSettings/ProjectVersion.txt | grep "m_EditorVersion:.*" | awk '{ print $2}') | tee prepare.env
+#   artifacts:
+#     reports:
+#       dotenv: prepare.env
 
 .unity_before_script: &unity_before_script
   before_script:
