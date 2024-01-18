@@ -8,6 +8,7 @@ stages:
 variables:
   BUILD_NAME: ACardGame
   UNITY_ACTIVATION_FILE: ./unity3d.alf
+  UNITY_VERSION: 2022.3.11f1
   IMAGE: unityci/editor # https://hub.docker.com/r/unityci/editor
   IMAGE_VERSION: 1 # This will automatically use latest v1.x.x, see https://github.com/game-ci/docker/releases
   UNITY_DIR: $CI_PROJECT_DIR # this needs to be an absolute path. Defaults to the root of your tree.
@@ -15,7 +16,7 @@ variables:
   VERSION_NUMBER_VAR: $CI_COMMIT_REF_SLUG-$CI_PIPELINE_ID-$CI_JOB_ID
   VERSION_BUILD_VAR: $CI_PIPELINE_IID
 
-# UNITY_VERSION=2021.3.4f1
+# 
 # image_name=unityci/editor:ubuntu-$UNITY_VERSION-base-1.0.1
 
 
@@ -79,8 +80,8 @@ get-activation-file:
     expire_in: 2 weeks
   # https://gitlab.com/gableroux/unity3d-gitlab-ci-example/-/issues/83
   # you may need to remove or replace these to fit your need if you are using your own runners
-  tags:
-    - gitlab-org
+  # tags:
+  #   - gitlab-org
   coverage: /<Linecoverage>(.*?)</Linecoverage>/
 
 # Tests without junit reporting results in GitLab
@@ -123,8 +124,8 @@ get-activation-file:
     expire_in: 2 weeks
   # https://gitlab.com/gableroux/unity3d-gitlab-ci-example/-/issues/83
   # you may need to remove or replace these to fit your need if you are using your own runners
-  tags:
-    - gitlab-org
+  # tags:
+  #   - gitlab-org
   coverage: /<Linecoverage>(.*?)</Linecoverage>/
 
 test-playmode-with-junit-reports:
