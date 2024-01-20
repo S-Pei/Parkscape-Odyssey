@@ -73,8 +73,8 @@ get-activation-file:
 .test: &test
   stage: build_and_test
   <<: *unity_defaults
+  image: $IMAGE:$UNITY_VERSION-android-3.0.1
   script:
-    - apt-get update && apt-get install -y xvfb
     - chmod +x ./ci/test.sh && ./ci/test.sh
   artifacts:
     when: always
