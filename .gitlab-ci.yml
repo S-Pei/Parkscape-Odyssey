@@ -73,7 +73,7 @@ get-activation-file:
 .test: &test
   stage: build_and_test
   <<: *unity_defaults
-  image: $IMAGE:$UNITY_VERSION-android-3.0.1
+  # image: $IMAGE:$UNITY_VERSION-android-3.0.1
   script:
     - chmod +x ./ci/test.sh && ./ci/test.sh
   artifacts:
