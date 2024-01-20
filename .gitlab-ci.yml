@@ -148,6 +148,9 @@ test-editmode-with-junit-reports:
   artifacts:
     paths:
       - $UNITY_DIR/Builds/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+  
   # https://gitlab.com/gableroux/unity3d-gitlab-ci-example/-/issues/83
   # you may need to remove or replace these to fit your need if you are using your own runners
   # tags:
@@ -200,9 +203,6 @@ build-android:
   variables:
     BUILD_TARGET: Android
     BUILD_APP_BUNDLE: "false"
-  only:
-    refs:
-      - master
 
 # build-android-il2cpp:
 #   <<: *build
