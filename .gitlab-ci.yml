@@ -144,6 +144,7 @@ test-editmode-with-junit-reports:
   stage: build_and_test
   <<: *unity_defaults
   script:
+    - apt-get update && apt-get install -y xvfb
     - chmod +x ./ci/build.sh && ./ci/build.sh
   artifacts:
     paths:
