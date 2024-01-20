@@ -74,6 +74,7 @@ get-activation-file:
   stage: build_and_test
   <<: *unity_defaults
   script:
+    - apt-get update && apt-get install -y xvfb
     - chmod +x ./ci/test.sh && ./ci/test.sh
   artifacts:
     when: always
