@@ -85,17 +85,17 @@ get-activation-file:
   coverage: /<Linecoverage>(.*?)</Linecoverage>/
 
 # Tests without junit reporting results in GitLab
-# test-playmode:
-#   <<: *test
-#   variables:
-#     TEST_PLATFORM: playmode
-#     TESTING_TYPE: NUNIT
+test-playmode:
+  <<: *test
+  variables:
+    TEST_PLATFORM: playmode
+    TESTING_TYPE: NUNIT
 
-# test-editmode:
-#   <<: *test
-#   variables:
-#     TEST_PLATFORM: editmode
-#     TESTING_TYPE: NUNIT
+test-editmode:
+  <<: *test
+  variables:
+    TEST_PLATFORM: editmode
+    TESTING_TYPE: NUNIT
 
 # uncomment the following blocks if you'd like to have junit reporting unity test results in gitlab
 # We currently have the following issue which prevents it from working right now, but you can give
@@ -144,7 +144,6 @@ test-editmode-with-junit-reports:
   stage: build_and_test
   <<: *unity_defaults
   script:
-    - apt-get update && apt-get install -y xvfb
     - chmod +x ./ci/build.sh && ./ci/build.sh
   artifacts:
     paths:
