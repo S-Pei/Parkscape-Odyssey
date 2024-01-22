@@ -6,7 +6,7 @@ using TMPro;
 public class RoomJoining : MonoBehaviour
 {
 
-    public TMP_InputField roomCodeInput;
+    public TMP_Text roomCodeInput;
 
     public void Start() {
         //  Potentially need some initialisation here for P2P.
