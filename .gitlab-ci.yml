@@ -74,7 +74,6 @@ get-activation-file:
   stage: build_and_test
   <<: *unity_defaults
   script:
-    - apk add bash
     - chmod +x ./ci/test.sh && ./ci/test.sh
   artifacts:
     when: always
@@ -88,12 +87,18 @@ get-activation-file:
 # Tests without junit reporting results in GitLab
 test-playmode:
   <<: *test
+  image:
+    name: unityci/editor:2022.3.11f1-base-3
+    pull_policy: if-not-present
   variables:
     TEST_PLATFORM: playmode
     TESTING_TYPE: NUNIT
 
 test-editmode:
   <<: *test
+  image:
+    name: unityci/editor:2022.3.11f1-base-3
+    pull_policy: if-not-present
   variables:
     TEST_PLATFORM: editmode
     TESTING_TYPE: NUNIT
@@ -145,7 +150,6 @@ test-editmode:
   stage: build_and_test
   <<: *unity_defaults
   script:
-    - apk add bash
     - chmod +x ./ci/build.sh && ./ci/build.sh
   artifacts:
     paths:
@@ -201,9 +205,7 @@ test-editmode:
 
 build-android:
   <<: *build
-  image:
-    name: $IMAGE:$UNITY_VERSION-android-3.0.1
-    pull_policy: if-not-present
+  image: $IMAGE:$UNITY_VERSION-android-3.0.1
   variables:
     BUILD_TARGET: Android
     BUILD_APP_BUNDLE: "false"
@@ -216,16 +218,16 @@ build-android:
 #     BUILD_APP_BUNDLE: "false"
 #     SCRIPTING_BACKEND: IL2CPP
 
-# deploy-android:
-#  stage: deploy
-#  image: ruby
-#  script:
-#    - cd $UNITY_DIR/Builds/Android
-#    - echo $GPC_TOKEN > gpc_token.json
-#    - gem install bundler
-#    - bundle install
-#    - fastlane supply --aab "${BUILD_NAME}.aab" --track internal --package_name com.youcompany.yourgame --json_key ./gpc_token.json
-#  needs: ["build-android"]
+deploy-android:
+ stage: deploy
+ image: ruby
+ script:
+   - cd $UNITY_DIR/Builds/Android
+   - echo $GPC_TOKEN > gpc_token.json
+   - gem install bundler
+   - bundle install
+   - fastlane supply --aab "${BUILD_NAME}.aab" --track internal --package_name com.youcompany.yourgame --json_key ./gpc_token.json
+ needs: ["build-android"]
 
 # build-ios-xcode:
 #   <<: *build
