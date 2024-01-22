@@ -6,6 +6,8 @@ using TMPro;
 public class RoomJoining : MonoBehaviour
 {
 
+    public GameObject lobbyPopUp;
+    public GameObject roomSelectionPopUp;
     public TMP_InputField roomCodeInput;
 
     public void Start() {
@@ -18,10 +20,17 @@ public class RoomJoining : MonoBehaviour
 
         if (foundRoom(roomCode)) {
             //  Join the room.
-            SceneManager.LoadScene("Gameplay");
         } else {
             CreateRoom(roomCode);
         }
+
+        // Set Up Lobby
+        LobbyManager lobbyManager = (LobbyManager) lobbyPopUp.GetComponent(typeof(LobbyManager));
+        lobbyManager.SetUpLobby(roomCode);
+        
+        // Disable Room Selection Pop Up
+        PopUpManager roomSelectionPopUpManager = (PopUpManager) roomSelectionPopUp.GetComponent(typeof(PopUpManager));
+        roomSelectionPopUpManager.closePopUp();
     }
 
     private void CreateRoom(string roomCode) {
