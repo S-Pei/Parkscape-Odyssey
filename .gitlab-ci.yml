@@ -209,6 +209,8 @@ build-android:
   variables:
     BUILD_TARGET: Android
     BUILD_APP_BUNDLE: "false"
+  tags:
+    - build
 
 # build-android-il2cpp:
 #   <<: *build
