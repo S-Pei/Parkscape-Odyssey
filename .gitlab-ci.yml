@@ -87,14 +87,18 @@ get-activation-file:
 # Tests without junit reporting results in GitLab
 test-playmode:
   <<: *test
-  image: $IMAGE:$UNITY_VERSION-android-3.0.1
+  image:
+    name: $IMAGE:$UNITY_VERSION-android-3.0.1
+    pull_policy: if-not-present
   variables:
     TEST_PLATFORM: playmode
     TESTING_TYPE: NUNIT
 
 test-editmode:
   <<: *test
-  image: $IMAGE:$UNITY_VERSION-android-3.0.1
+  image:
+    name: $IMAGE:$UNITY_VERSION-android-3.0.1
+    pull_policy: if-not-present
   variables:
     TEST_PLATFORM: editmode
     TESTING_TYPE: NUNIT
@@ -201,7 +205,9 @@ test-editmode:
 
 build-android:
   <<: *build
-  image: $IMAGE:$UNITY_VERSION-android-3.0.1
+  image:
+    name: $IMAGE:$UNITY_VERSION-android-3.0.1
+    pull_policy: if-not-present
   variables:
     BUILD_TARGET: Android
     BUILD_APP_BUNDLE: "false"
