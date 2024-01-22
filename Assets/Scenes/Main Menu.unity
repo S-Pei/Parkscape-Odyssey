@@ -2425,7 +2425,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Dragons and Dungeons
+  m_text: "Path \nto \nPower"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b0b2af47a773d47a5af280b7440a7580, type: 2}
   m_sharedMaterial: {fileID: 8073375162749424223, guid: b0b2af47a773d47a5af280b7440a7580,
