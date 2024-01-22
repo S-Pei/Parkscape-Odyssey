@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028353, g: 0.22571383, b: 0.30692253, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028328, g: 0.22571322, b: 0.30692163, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -544,6 +544,7 @@ GameObject:
   - component: {fileID: 338101136}
   - component: {fileID: 338101135}
   - component: {fileID: 338101134}
+  - component: {fileID: 338101137}
   m_Layer: 5
   m_Name: Enter Room Button
   m_TagString: Untagged
@@ -614,7 +615,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 338101135}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 338101137}
+        m_TargetAssemblyTypeName: RoomJoining, Assembly-CSharp
+        m_MethodName: JoinRoom
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &338101135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -653,6 +666,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 338101132}
   m_CullTransparentMesh: 1
+--- !u!114 &338101137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338101132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d3567f81f41ca64f8aea7b0e90d3c40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  roomCodeInput: {fileID: 2007942701}
 --- !u!1 &364445885
 GameObject:
   m_ObjectHideFlags: 0
@@ -2425,7 +2451,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Dragons and Dungeons
+  m_text: "Path \nto \nPower"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b0b2af47a773d47a5af280b7440a7580, type: 2}
   m_sharedMaterial: {fileID: 8073375162749424223, guid: b0b2af47a773d47a5af280b7440a7580,
@@ -2603,7 +2629,19 @@ MonoBehaviour:
   m_CharacterLimit: 6
   m_OnEndEdit:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 338101137}
+        m_TargetAssemblyTypeName: RoomJoining, Assembly-CSharp
+        m_MethodName: setRoomCode
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_OnSubmit:
     m_PersistentCalls:
       m_Calls: []
