@@ -155,53 +155,11 @@ test-editmode:
     paths:
       - $UNITY_DIR/Builds/
   rules:
+    # Build only for master or branches beginning with 'build/'
     - if: '$CI_COMMIT_BRANCH == "master"'
-  
-  # https://gitlab.com/gableroux/unity3d-gitlab-ci-example/-/issues/83
-  # you may need to remove or replace these to fit your need if you are using your own runners
-  # tags:
-  #   - gitlab-org
-
-# build-StandaloneLinux64:
-#   <<: *build
-#   variables:
-#     BUILD_TARGET: StandaloneLinux64
-
-# build-StandaloneLinux64-il2cpp:
-#   <<: *build
-#   image: $IMAGE:$UNITY_VERSION-linux-il2cpp-$IMAGE_VERSION
-#   variables:
-#     BUILD_TARGET: StandaloneLinux64
-#     SCRIPTING_BACKEND: IL2CPP
-
-# build-StandaloneOSX:
-#   <<: *build
-#   image: $IMAGE:$UNITY_VERSION-mac-mono-$IMAGE_VERSION
-#   variables:
-#     BUILD_TARGET: StandaloneOSX
-
-#Note: build target names changed in recent versions, use this for versions < 2017.2:
-# build-StandaloneOSXUniversal:
-#   <<: *build
-#   variables:
-#     BUILD_TARGET: StandaloneOSXUniversal
-
-# build-StandaloneWindows64:
-#   <<: *build
-#   image: $IMAGE:$UNITY_VERSION-windows-mono-$IMAGE_VERSION
-#   variables:
-#     BUILD_TARGET: StandaloneWindows64
-
-# For webgl support, you need to set Compression Format to Disabled for v0.9. See https://github.com/game-ci/docker/issues/75
-# build-WebGL:
-#   <<: *build
-#   image: $IMAGE:$UNITY_VERSION-webgl-$IMAGE_VERSION
-#   # Temporary workaround for https://github.com/game-ci/docker/releases/tag/v0.9 and webgl support in current project to prevent errors with missing ffmpeg
-#   before_script:
-#     - chmod +x ./ci/before_script.sh && ./ci/before_script.sh
-#     - apt-get update && apt-get install ffmpeg -y
-#   variables:
-#     BUILD_TARGET: WebGL
+    - if: '$CI_COMMIT_BRANCH =~ /^build\/.*/'
+  tags:
+    - build
 
 build-android:
   <<: *build
@@ -220,22 +178,24 @@ build-android:
 #     BUILD_APP_BUNDLE: "false"
 #     SCRIPTING_BACKEND: IL2CPP
 
-deploy-android:
- stage: deploy
- image: ruby
- script:
-   - cd $UNITY_DIR/Builds/Android
-   - echo $GPC_TOKEN > gpc_token.json
-   - gem install bundler
-   - bundle install
-   - fastlane supply --aab "${BUILD_NAME}.aab" --track internal --package_name com.youcompany.yourgame --json_key ./gpc_token.json
- needs: ["build-android"]
+# deploy-android:
+#  stage: deploy
+#  image: ruby
+#  script:
+#    - cd $UNITY_DIR/Builds/Android
+#    - echo $GPC_TOKEN > gpc_token.json
+#    - gem install bundler
+#    - bundle install
+#    - fastlane supply --aab "${BUILD_NAME}.aab" --track internal --package_name com.youcompany.yourgame --json_key ./gpc_token.json
+#  needs: ["build-android"]
 
-# build-ios-xcode:
-#   <<: *build
-#   image: $IMAGE:$UNITY_VERSION-ios-$IMAGE_VERSION
-#   variables:
-#     BUILD_TARGET: iOS
+build-ios-xcode:
+  <<: *build
+  image: $IMAGE:$UNITY_VERSION-ios-$IMAGE_VERSION
+  variables:
+    BUILD_TARGET: iOS
+  tags:
+    - build
 
 #build-and-deploy-ios:
 #  stage: deploy
