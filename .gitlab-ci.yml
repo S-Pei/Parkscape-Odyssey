@@ -10,7 +10,7 @@ variables:
   UNITY_ACTIVATION_FILE: ./unity3d.alf
   UNITY_VERSION: 2022.3.11f1
   IMAGE: unityci/editor # https://hub.docker.com/r/unityci/editor
-  IMAGE_VERSION: 1 # This will automatically use latest v1.x.x, see https://github.com/game-ci/docker/releases
+  IMAGE_VERSION: 3.0.1 # This will automatically use latest v1.x.x, see https://github.com/game-ci/docker/releases
   UNITY_DIR: $CI_PROJECT_DIR # this needs to be an absolute path. Defaults to the root of your tree.
   # You can expose this in Unity via Application.version
   VERSION_NUMBER_VAR: $CI_COMMIT_REF_SLUG-$CI_PIPELINE_ID-$CI_JOB_ID
@@ -73,7 +73,6 @@ get-activation-file:
 .test: &test
   stage: build_and_test
   <<: *unity_defaults
-  image: $IMAGE:$UNITY_VERSION-android-3.0.1
   script:
     - chmod +x ./ci/test.sh && ./ci/test.sh
   artifacts:
@@ -88,12 +87,18 @@ get-activation-file:
 # Tests without junit reporting results in GitLab
 test-playmode:
   <<: *test
+  image:
+    name: $IMAGE:$UNITY_VERSION-base-$IMAGE_VERSION
+    pull_policy: if-not-present
   variables:
     TEST_PLATFORM: playmode
     TESTING_TYPE: NUNIT
 
 test-editmode:
   <<: *test
+  image:
+    name: $IMAGE:$UNITY_VERSION-base-$IMAGE_VERSION
+    pull_policy: if-not-present
   variables:
     TEST_PLATFORM: editmode
     TESTING_TYPE: NUNIT
@@ -150,60 +155,20 @@ test-editmode:
     paths:
       - $UNITY_DIR/Builds/
   rules:
+    # Build only for master or branches beginning with 'build/'
     - if: '$CI_COMMIT_BRANCH == "master"'
-  
-  # https://gitlab.com/gableroux/unity3d-gitlab-ci-example/-/issues/83
-  # you may need to remove or replace these to fit your need if you are using your own runners
-  # tags:
-  #   - gitlab-org
-
-# build-StandaloneLinux64:
-#   <<: *build
-#   variables:
-#     BUILD_TARGET: StandaloneLinux64
-
-# build-StandaloneLinux64-il2cpp:
-#   <<: *build
-#   image: $IMAGE:$UNITY_VERSION-linux-il2cpp-$IMAGE_VERSION
-#   variables:
-#     BUILD_TARGET: StandaloneLinux64
-#     SCRIPTING_BACKEND: IL2CPP
-
-# build-StandaloneOSX:
-#   <<: *build
-#   image: $IMAGE:$UNITY_VERSION-mac-mono-$IMAGE_VERSION
-#   variables:
-#     BUILD_TARGET: StandaloneOSX
-
-#Note: build target names changed in recent versions, use this for versions < 2017.2:
-# build-StandaloneOSXUniversal:
-#   <<: *build
-#   variables:
-#     BUILD_TARGET: StandaloneOSXUniversal
-
-# build-StandaloneWindows64:
-#   <<: *build
-#   image: $IMAGE:$UNITY_VERSION-windows-mono-$IMAGE_VERSION
-#   variables:
-#     BUILD_TARGET: StandaloneWindows64
-
-# For webgl support, you need to set Compression Format to Disabled for v0.9. See https://github.com/game-ci/docker/issues/75
-# build-WebGL:
-#   <<: *build
-#   image: $IMAGE:$UNITY_VERSION-webgl-$IMAGE_VERSION
-#   # Temporary workaround for https://github.com/game-ci/docker/releases/tag/v0.9 and webgl support in current project to prevent errors with missing ffmpeg
-#   before_script:
-#     - chmod +x ./ci/before_script.sh && ./ci/before_script.sh
-#     - apt-get update && apt-get install ffmpeg -y
-#   variables:
-#     BUILD_TARGET: WebGL
+    - if: '$CI_COMMIT_BRANCH =~ /^build\/.*/'
+  tags:
+    - build
 
 build-android:
   <<: *build
-  image: $IMAGE:$UNITY_VERSION-android-3.0.1
+  image: $IMAGE:$UNITY_VERSION-android-$IMAGE_VERSION
   variables:
     BUILD_TARGET: Android
     BUILD_APP_BUNDLE: "false"
+  tags:
+    - build
 
 # build-android-il2cpp:
 #   <<: *build
@@ -213,7 +178,7 @@ build-android:
 #     BUILD_APP_BUNDLE: "false"
 #     SCRIPTING_BACKEND: IL2CPP
 
-#deploy-android:
+# deploy-android:
 #  stage: deploy
 #  image: ruby
 #  script:
@@ -224,11 +189,13 @@ build-android:
 #    - fastlane supply --aab "${BUILD_NAME}.aab" --track internal --package_name com.youcompany.yourgame --json_key ./gpc_token.json
 #  needs: ["build-android"]
 
-# build-ios-xcode:
-#   <<: *build
-#   image: $IMAGE:$UNITY_VERSION-ios-$IMAGE_VERSION
-#   variables:
-#     BUILD_TARGET: iOS
+build-ios-xcode:
+  <<: *build
+  image: $IMAGE:$UNITY_VERSION-ios-$IMAGE_VERSION
+  variables:
+    BUILD_TARGET: iOS
+  tags:
+    - build
 
 #build-and-deploy-ios:
 #  stage: deploy
