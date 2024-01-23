@@ -10,7 +10,7 @@ variables:
   UNITY_ACTIVATION_FILE: ./unity3d.alf
   UNITY_VERSION: 2022.3.11f1
   IMAGE: unityci/editor # https://hub.docker.com/r/unityci/editor
-  IMAGE_VERSION: 1 # This will automatically use latest v1.x.x, see https://github.com/game-ci/docker/releases
+  IMAGE_VERSION: 3.0.1 # This will automatically use latest v1.x.x, see https://github.com/game-ci/docker/releases
   UNITY_DIR: $CI_PROJECT_DIR # this needs to be an absolute path. Defaults to the root of your tree.
   # You can expose this in Unity via Application.version
   VERSION_NUMBER_VAR: $CI_COMMIT_REF_SLUG-$CI_PIPELINE_ID-$CI_JOB_ID
@@ -88,7 +88,7 @@ get-activation-file:
 test-playmode:
   <<: *test
   image:
-    name: unityci/editor:2022.3.11f1-base-3
+    name: $IMAGE:$UNITY_VERSION-base-$IMAGE_VERSION
     pull_policy: if-not-present
   variables:
     TEST_PLATFORM: playmode
@@ -97,7 +97,7 @@ test-playmode:
 test-editmode:
   <<: *test
   image:
-    name: unityci/editor:2022.3.11f1-base-3
+    name: $IMAGE:$UNITY_VERSION-base-$IMAGE_VERSION
     pull_policy: if-not-present
   variables:
     TEST_PLATFORM: editmode
@@ -163,7 +163,7 @@ test-editmode:
 
 build-android:
   <<: *build
-  image: $IMAGE:$UNITY_VERSION-android-3.0.1
+  image: $IMAGE:$UNITY_VERSION-android-$IMAGE_VERSION
   variables:
     BUILD_TARGET: Android
     BUILD_APP_BUNDLE: "false"
