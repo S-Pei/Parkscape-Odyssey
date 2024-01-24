@@ -22,7 +22,9 @@ public class LobbyUIManager : MonoBehaviour
     private int spinDuration = 1;
 
     void Start() {
+        // Ensure pop up is closed at start.
         lobbyPopUpManager = (PopUpManager) GetComponent(typeof(PopUpManager));
+        lobbyPopUpManager.closePopUp();
     } 
 
     // Called when code is submitted in the room selection pop up

@@ -8,8 +8,13 @@ public class RoomJoining : MonoBehaviour
     public GameObject roomSelectionPopUp;
     public TMP_InputField roomCodeInput;
 
+    private PopUpManager roomSelectionPopUpManager;
+
     public void Start() {
         //  Potentially need some initialisation here for P2P.
+        // Ensure pop up is closed at start.
+        roomSelectionPopUpManager  = (PopUpManager) roomSelectionPopUp.GetComponent(typeof(PopUpManager));
+        roomSelectionPopUpManager.closePopUp();
     }
 
     public void JoinRoom() {
@@ -28,7 +33,6 @@ public class RoomJoining : MonoBehaviour
         lobbyManager.SetUpLobby(roomCode, isLeader);
         
         // Disable Room Selection Pop Up
-        PopUpManager roomSelectionPopUpManager = (PopUpManager) roomSelectionPopUp.GetComponent(typeof(PopUpManager));
         roomSelectionPopUpManager.closePopUp();
     }
 
