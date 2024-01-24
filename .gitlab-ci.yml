@@ -39,10 +39,11 @@ get-unity-version:
       artifacts: true
 
 .cache: &cache
-  cache:
-    key: "$CI_PROJECT_NAMESPACE-$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG-$TEST_PLATFORM"
-    paths:
-      - $UNITY_DIR/Library/
+  cache: []
+  # cache:
+  #   key: "$CI_PROJECT_NAMESPACE-$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG-$TEST_PLATFORM"
+  #   paths:
+  #     - $UNITY_DIR/Library/
 
 .license: &license
   rules:
@@ -167,8 +168,6 @@ build-android:
   variables:
     BUILD_TARGET: Android
     BUILD_APP_BUNDLE: "false"
-  tags:
-    - build
 
 # build-android-il2cpp:
 #   <<: *build
@@ -194,8 +193,6 @@ build-ios-xcode:
   image: $IMAGE:$UNITY_VERSION-ios-$IMAGE_VERSION
   variables:
     BUILD_TARGET: iOS
-  tags:
-    - build
 
 #build-and-deploy-ios:
 #  stage: deploy
