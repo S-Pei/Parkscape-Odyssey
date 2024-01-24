@@ -36,13 +36,20 @@ public class CardsManager : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (cardsToCreate > 0) {
-            createCard("baseAtk");
-            cardsToCreate -= 1;
+    // // Update is called once per frame
+    // void Update()
+    // {
+    //     if (cardsToCreate > 0) {
+    //         createCard("baseAtk");
+    //         cardsToCreate -= 1;
+    //     }
+    // }
+
+    public (Sprite, string)? findCardDetails(string cardName) {
+        if (cards.ContainsKey(cardName)) {
+            return cards[cardName];
         }
+        return null;
     }
 
 
