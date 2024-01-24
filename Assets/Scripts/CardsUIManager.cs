@@ -26,10 +26,7 @@ public class CardsUIManager : MonoBehaviour
     [SerializeField]
     private int cardsToCreate = 0;
 
-
-    // Start is called before the first frame update
-    void Start()
-    {
+    void Awake() {
         if (cardNames.Count != cardImgs.Count 
             || cardNames.Count != cardStats.Count 
             || cardImgs.Count != cardStats.Count) {
@@ -40,7 +37,7 @@ public class CardsUIManager : MonoBehaviour
         for (i = 0; i < Math.Min(cardNames.Count, cardImgs.Count); i++) {
             cards.Add(cardNames[i], (cardImgs[i], cardStats[i]));
             Debug.Log($"Cards Manager: Card initialised - {cardNames[i]}");
-        }
+        }        
     }
 
     // // Update is called once per frame

@@ -1,8 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Runtime.CompilerServices;
+using System.Linq;
+
+[assembly:InternalsVisibleTo("EditMode")]
+
 
 public class InventoryUIManager : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject cardsManagerPrefab;
+
     [SerializeField]
     private GameObject cardDisplayPrefab;
 
@@ -16,16 +24,16 @@ public class InventoryUIManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        cardsUIManager = GameObject.FindGameObjectWithTag("CardsManager").GetComponent<CardsUIManager>();
+        GameObject cardsManager;
+        if (GameObject.FindGameObjectsWithTag("CardsManager").Length <= 0) {
+            cardsManager = Instantiate(cardsManagerPrefab);
+        } else {
+            cardsManager = GameObject.FindGameObjectWithTag("CardsManager");
+        }
+        cardsUIManager = cardsManager.GetComponent<CardsUIManager>();
         inventoryController = GetComponent<InventoryController>();
         // cardsInventoryContent = transform.FindChild("Card Inventory/canvas/Panel/Scroll View/Viewport/Content");
         displayAllCards();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     private void displayAllCards() {
@@ -41,6 +49,7 @@ public class InventoryUIManager : MonoBehaviour
             GameObject newCard = Instantiate(cardDisplayPrefab);
             CardRenderer cardRenderer = newCard.GetComponentInChildren<CardRenderer>();
             cardRenderer.renderCard(cardDetails.Value.img, cardDetails.Value.stats);
+            cardRenderer.scaleCardSize(3);
             newCard.transform.parent = cardsInventoryContent.transform;
             newCard.transform.localScale = new Vector3(1, 1, 1);
         } else {
