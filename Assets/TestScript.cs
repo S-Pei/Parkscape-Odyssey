@@ -17,4 +17,4 @@ public class TestScript : MonoBehaviour
         testInt.text = javaInt.ToString();
         testString.text = javaStr;
     }
-}
+} 
