@@ -6,18 +6,25 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
 
-public class CardsManager : MonoBehaviour
+public class CardsUIManager : MonoBehaviour
 {
 
     private Dictionary<string, (Sprite img, string stats)> cards = new Dictionary<string, (Sprite, string)>();
 
-    public GameObject cardPrefab;
+    [SerializeField]
+    private GameObject cardPrefab;
 
-    public List<string> cardNames = new List<string>();
-    public List<Sprite> cardImgs = new List<Sprite>();
-    public List<string> cardStats = new List<string>();
+    [SerializeField]
+    private List<string> cardNames = new List<string>();
 
-    public int cardsToCreate = 0;
+    [SerializeField]
+    private List<Sprite> cardImgs = new List<Sprite>();
+    
+    [SerializeField]
+    private List<string> cardStats = new List<string>();
+
+    [SerializeField]
+    private int cardsToCreate = 0;
 
 
     // Start is called before the first frame update
