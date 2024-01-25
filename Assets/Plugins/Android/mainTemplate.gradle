@@ -1,8 +1,17 @@
 apply plugin: 'com.android.library'
 **APPLY_PLUGINS**
 
+// allprojects {
+//     repositories {
+//         flatDir {
+//             dirs 'libs'
+//         }
+//     }
+// }
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation("com.google.android.gms:play-services-nearby:18.5.0")
 **DEPS**}
 
 android {
