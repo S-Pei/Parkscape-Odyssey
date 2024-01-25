@@ -32,7 +32,6 @@ public class CardRenderer : MonoBehaviour
     }
 
     public void hardAdjustCardDetailsSize() {
-        // Vector2 cardSize =  GetComponent<RectTransform>().sizeDelta;
         float scale = enforcedWidth / FRAME_WIDTH;
 
         GameObject cardImgObj = transform.GetChild(1).gameObject;
