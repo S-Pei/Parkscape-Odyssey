@@ -21,6 +21,7 @@ public class InventoryUIManager : MonoBehaviour
     [SerializeField]
     private GameObject popUpPanel;
 
+    private GameObject cardsManager;
 
     CardsUIManager cardsUIManager;
     InventoryController inventoryController;
@@ -32,9 +33,9 @@ public class InventoryUIManager : MonoBehaviour
     {
         closeCardTradePopUp();
 
-        GameObject cardsManager;
         if (GameObject.FindGameObjectsWithTag("CardsManager").Length <= 0) {
             cardsManager = Instantiate(cardsManagerPrefab);
+            cardsManager.tag = "CardsManager";
         } else {
             cardsManager = GameObject.FindGameObjectWithTag("CardsManager");
         }
@@ -103,5 +104,10 @@ public class InventoryUIManager : MonoBehaviour
 
         popUpPanel.SetActive(false);
 
+    }
+
+    public void DestroySelf() {
+        Destroy(cardsManager);
+        Destroy(gameObject);
     }
 }
