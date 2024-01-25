@@ -30,7 +30,7 @@ public class InventoryUIManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        popUpPanel.SetActive(false);
+        closeCardTradePopUp();
 
         GameObject cardsManager;
         if (GameObject.FindGameObjectsWithTag("CardsManager").Length <= 0) {
@@ -74,7 +74,32 @@ public class InventoryUIManager : MonoBehaviour
 
     private void addListenerForCards() {
         foreach (GameObject card in cardsDisplaying) {
-            card.AddComponent<Button>();
+            Button btn = card.AddComponent<Button>();
+            btn.onClick.AddListener(() => { openCardTradePopUp(card); });
         }
+    }
+
+    private void openCardTradePopUp(GameObject card) {
+        (Sprite img, string stats) = card.GetComponent<CardRenderer>().getCardImgAndStats();
+
+        GameObject focusedCard = Instantiate(cardDisplayPrefab);
+        CardRenderer cardRenderer = focusedCard.GetComponentInChildren<CardRenderer>();
+        cardRenderer.renderCard(img, stats);
+        
+        GameObject popUpCardDisplayPanel = popUpPanel.transform.GetChild(0).gameObject;
+        focusedCard.transform.parent = popUpCardDisplayPanel.transform;
+        cardRenderer.scaleCardSize(7.5f);
+
+        popUpPanel.SetActive(true);
+    }
+
+    private void closeCardTradePopUp() {
+        GameObject[] focusedcard = GameObject.FindGameObjectsWithTag("CardsInventoryFocusedCard");
+        if (focusedcard.Length != 0) {
+            Destroy(focusedcard[0]);
+        }
+
+        popUpPanel.SetActive(false);
+
     }
 }

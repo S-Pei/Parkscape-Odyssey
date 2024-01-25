@@ -47,4 +47,8 @@ public class CardRenderer : MonoBehaviour
         Vector2 currImgSize = cardImgObj.GetComponent<RectTransform>().sizeDelta;
         cardImgObj.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(currImgSize.x * scale, currImgSize.y * scale);
     }
+
+    public (Sprite, string) getCardImgAndStats() {
+        return (cardImage, cardStats);
+    }
 }
