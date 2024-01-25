@@ -15,6 +15,7 @@ public class LobbyUIManager : MonoBehaviour
     public GameObject playerList;
     public GameObject startGameButton;
     private PopUpManager lobbyPopUpManager;
+    private PopUpManager startGameButtonPopUpManager;
 
     private List<string> playerNames = new List<string>();
     private int updateCounter = 0;
@@ -25,6 +26,7 @@ public class LobbyUIManager : MonoBehaviour
         // Ensure pop up is closed at start.
         lobbyPopUpManager = (PopUpManager) GetComponent(typeof(PopUpManager));
         lobbyPopUpManager.closePopUp();
+        startGameButtonPopUpManager = (PopUpManager) startGameButton.GetComponent(typeof(PopUpManager));
     } 
 
     // Called when code is submitted in the room selection pop up
@@ -36,10 +38,11 @@ public class LobbyUIManager : MonoBehaviour
 
         DisplayPlayerList();
 
-        // Disable start game button if not leader
+        // Disable start game button if not leader. Ensure it appears if they are.
         if (!isLeader) {
-            PopUpManager startGameButtonPopUpManager = (PopUpManager) startGameButton.GetComponent(typeof(PopUpManager));
             startGameButtonPopUpManager.closePopUp();
+        } else {
+            startGameButtonPopUpManager.openPopUp();
         }
 
         // Open lobby pop up when everything is set up

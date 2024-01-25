@@ -529,8 +529,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1068634071}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+      - m_Target: {fileID: 1068634070}
+        m_TargetAssemblyTypeName: GameManager, NewAssembly
         m_MethodName: OpenInventory
         m_Mode: 1
         m_Arguments:
@@ -695,11 +695,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1068634069}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd1ef0f67502973478e92b2da25c2360, type: 3}
+  m_Script: {fileID: 11500000, guid: 53e91732ef4e6e0498d0605f6ac18806, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inventoryPrefab: {fileID: 3649988814343669297, guid: c08262b24dbc545fda9e898c065e1b3b,
-    type: 3}
 --- !u!114 &1068634071
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -709,9 +707,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1068634069}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa909480ea78c2f4d814ed34f264cdbb, type: 3}
+  m_Script: {fileID: 11500000, guid: a479bf0a01545cb46a5f26699d032fd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inventoryPrefab: {fileID: 3649988814343669297, guid: c08262b24dbc545fda9e898c065e1b3b,
+    type: 3}
 --- !u!4 &1068634072
 Transform:
   m_ObjectHideFlags: 0
