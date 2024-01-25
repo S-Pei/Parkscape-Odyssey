@@ -44,3 +44,6 @@ Assets/StreamingAssets/crashlytics-build.properties
 .plastic/
 
 .vscode/
+
+Assets/Fonts/medieval-pixel.asset
+Assets/Fonts/medieval-pixel.asset.meta
