@@ -1,31 +1,72 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
+using UnityEngine.SceneManagement;
 
-public class LobbyManager : MonoBehaviour
-{
-    private string roomCode;
-    public GameObject lobbyPopUp;
-    public TMP_Text roomCodeText;
+public class LobbyManager : MonoBehaviour {
+    private LobbyUIManager lobbyUIManager;
+    private Dictionary<string, string> players = new Dictionary<string, string>();
+    private int maxPlayerCount = 6;
 
-    // Called when code is submitted in the room selection pop up
-    public void SetUpLobby(string roomCode) {
-        this.roomCode = roomCode;
-        roomCodeText.text = roomCode;
-        PopUpManager lobbyPopUpManager = (PopUpManager) lobbyPopUp.GetComponent(typeof(PopUpManager));
-        lobbyPopUpManager.openPopUp();
+    private bool isLeader = false;
+    
+    // Initialisation
+    void Start() {
+        lobbyUIManager = (LobbyUIManager) GetComponent(typeof(LobbyUIManager));
     }
 
-    // Start is called before the first frame update
-    void Start() {
+    // Listen for any changes in the lobby or start of game.
+    void Update() {
         
     }
 
-    // Update is called once per frame
-    void Update() {
-        // Spin and listen for any new connections or dropped connections
+    public void SetUpLobby(string roomCode, bool isLeader) {
+        // string myName = PlayerPrefs.GetString("name");
+        string myName = "Player";
+        this.isLeader = isLeader;
+        if (isLeader) {
+            // Add yourself to the list of players.
+            AddPlayer(SystemInfo.deviceUniqueIdentifier, myName + " (Leader)");
+        } else {
+            // Tell the leader to add you to the list of players 
+            // and get the list of players.
+        }
+        lobbyUIManager.SetPlayers(new List<string>(players.Values));
+        lobbyUIManager.SetUpLobby(roomCode, isLeader);
     }
 
+    public void AddPlayer(string id, string name) {
+        if (players.ContainsKey(id))
+            return;
+        players.Add(id, name);
+        lobbyUIManager.AddPlayer(name);
+    }
 
+    public void RemovePlayer(string id) {
+        players.Remove(id);
+        lobbyUIManager.RemovePlayer(players[id]);
+    }
+
+    public void ExitLobby() {
+        // Tell the leader to remove you from the list of players.
+        // If you are the leader, tell everyone to exit the lobby.
+        // Reset the lobby.
+        players = new Dictionary<string, string>();
+        lobbyUIManager.ExitLobby();
+    }
+
+    public void LeaderStartGame() {
+        if (!isLeader)
+            return;
+        // Tell everyone to start the game.
+
+        // Reset the lobby and disable scene.
+        ExitLobby();
+        StartGame();
+    }
+
+    public void StartGame() {
+        // Load the game scene.
+        SceneManager.LoadScene("Gameplay");
+    }
 }
