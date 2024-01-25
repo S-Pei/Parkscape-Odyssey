@@ -49,9 +49,9 @@ public class InventoryUIManager : MonoBehaviour
             GameObject newCard = Instantiate(cardDisplayPrefab);
             CardRenderer cardRenderer = newCard.GetComponentInChildren<CardRenderer>();
             cardRenderer.renderCard(cardDetails.Value.img, cardDetails.Value.stats);
-            cardRenderer.scaleCardSize(3);
+            // cardRenderer.scaleCardSize(1);
             newCard.transform.parent = cardsInventoryContent.transform;
-            newCard.transform.localScale = new Vector3(1, 1, 1);
+            cardRenderer.hardAdjustCardDetailsSize();
         } else {
             Debug.LogWarning($"InventoryUIManager: Card not found in CardsManager - {cardName}");
         }

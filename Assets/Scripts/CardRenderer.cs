@@ -4,26 +4,39 @@ using UnityEngine.UI;
 
 public class CardRenderer : MonoBehaviour
 {
+    private float FRAME_WIDTH = 64;
+    private float FRAME_HEIGHT = 128;
+
+    private float enforcedWidth = 192;
+    private float enforcedHeight = 384;
+
     public void renderCard(Sprite cardImg, string cardStat) {
         // Render card image
-        GameObject cardImgObj = transform.GetChild(0).gameObject;
+        GameObject cardImgObj = transform.GetChild(1).gameObject;
         Image cardImgRenderer = cardImgObj.GetComponentInChildren<Image>();
         cardImgRenderer.sprite = cardImg;
 
 
         // Render card stats
-        GameObject cardStatsObj = transform.GetChild(1).gameObject;
+        GameObject cardStatsObj = transform.GetChild(2).gameObject;
         TextMeshProUGUI textComp = cardStatsObj.GetComponentInChildren<TextMeshProUGUI>();
         textComp.text = cardStat;
     }
 
-    public void scaleCardSize(int scale) {
-       Vector2 currSize = GetComponent<RectTransform>().sizeDelta;
-       GetComponent<RectTransform>().sizeDelta = new Vector2(currSize.x * scale, currSize.y * scale);
+    public void scaleCardSize(float scale) {
+       GetComponent<RectTransform>().localScale = new Vector3(scale, scale, scale);
 
-       GameObject cardImgObj = transform.GetChild(0).gameObject;
-       Vector2 currImgSize = cardImgObj.GetComponent<RectTransform>().sizeDelta;
-       cardImgObj.GetComponent<RectTransform>().sizeDelta = new Vector2(currImgSize.x * scale, currImgSize.y * scale);
+    //    GameObject cardImgObj = transform.GetChild(0).gameObject;
+    //    Vector2 currImgSize = cardImgObj.GetComponent<RectTransform>().sizeDelta;
+    //    cardImgObj.GetComponent<RectTransform>().sizeDelta = new Vector2(currImgSize.x * scale, currImgSize.y * scale);
+    }
 
+    public void hardAdjustCardDetailsSize() {
+        // Vector2 cardSize =  GetComponent<RectTransform>().sizeDelta;
+        float scale = enforcedWidth / FRAME_WIDTH;
+
+        GameObject cardImgObj = transform.GetChild(1).gameObject;
+        Vector2 currImgSize = cardImgObj.GetComponent<RectTransform>().sizeDelta;
+        cardImgObj.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(currImgSize.x * scale, currImgSize.y * scale);
     }
 }
