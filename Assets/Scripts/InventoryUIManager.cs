@@ -65,6 +65,7 @@ public class InventoryUIManager : MonoBehaviour
             cardRenderer.renderCard(cardDetails.Value.img, cardDetails.Value.stats);
             newCard.transform.parent = cardsInventoryContent.transform;
             cardRenderer.hardAdjustCardDetailsSize();
+            cardRenderer.scaleCardSize(1);
             return newCard;
         } else {
             Debug.LogWarning($"InventoryUIManager: Card not found in CardsManager - {cardName}");

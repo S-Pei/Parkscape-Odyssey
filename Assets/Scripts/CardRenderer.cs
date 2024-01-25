@@ -10,6 +10,8 @@ public class CardRenderer : MonoBehaviour
     private float enforcedWidth = 224;
     private float enforcedHeight = 448;
 
+    private int fontSize = 30;
+
     public bool inventoryCardFocus = false;
 
     private Sprite cardImage;
@@ -46,6 +48,9 @@ public class CardRenderer : MonoBehaviour
         GameObject cardImgObj = transform.GetChild(1).gameObject;
         Vector2 currImgSize = cardImgObj.GetComponent<RectTransform>().sizeDelta;
         cardImgObj.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(currImgSize.x * scale, currImgSize.y * scale);
+
+        GameObject cardsStatsObj = transform.GetChild(2).gameObject;
+        cardsStatsObj.GetComponent<TextMeshProUGUI>().fontSize = fontSize;
     }
 
     public (Sprite, string) getCardImgAndStats() {
