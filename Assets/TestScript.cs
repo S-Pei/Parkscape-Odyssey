@@ -21,7 +21,9 @@ public class TestScript : MonoBehaviour
     void Start() {
         Debug.Log("runs here");
         p2pObj = new AndroidJavaObject("com.example.p2pnetwork.ManualConnect");
-        // int javaInt = p2pObj.Call<int>("getInt");
+
+        int javaInt = p2pObj.Call<int>("getInt");
+
         // string javaStr = p2pObj.Call<string>("getString");
         // testInt.text = javaInt.ToString();
         // testString.text = javaStr;
