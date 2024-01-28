@@ -36,12 +36,12 @@ public class BattleManager : MonoBehaviour
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
         // Inform the game manager the encounter has ended
-        gameManager.EndEncounter();
+        gameManager.EndEncounter(5);
     }
 
     // Update is called once per frame
     void Update() {
-        
+
     }
 
     IEnumerator UnloadTheScene() {

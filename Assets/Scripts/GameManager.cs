@@ -5,39 +5,19 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager instance = null;
     private GameInterfaceManager gameInterfaceManager;
 
     private List<string> playerCards = new List<string> {
         "baseAtk", "baseAtk", "baseDef", "baseDef", "baseAtk", "baseDef"
     };
+  
+    private bool isInEncounter = false;
+    private int score = 0;
 
     // Allow public retrieval of the player's cards, but prevent it from being modified
     public List<string> PlayerCards {
         get { return playerCards; }
         private set { }
-    }
-
-    
-    private bool isInEncounter = false;
-
-    // Awake is always called before any Start functions
-    void Awake() {
-        // Check if instance already exists
-            if (instance == null) {
-                // If not, set instance to this
-                instance = this;
-            }
-
-            // If instance already exists and it's not this:
-            else if (instance != this) {
-                // Then destroy this to enforce the singleton pattern
-                Debug.Log("Existing GameManager found - destroying new instance.");
-                Destroy(gameObject);    
-            }
-
-            // Sets this to not be destroyed when reloading scene
-            DontDestroyOnLoad(gameObject);
     }
 
     // Start is called before the first frame update
@@ -54,6 +34,7 @@ public class GameManager : MonoBehaviour
     }
 
     public void OpenInventory() {
+        // TODO: decide if we should allow encounters with inventory open
         gameInterfaceManager.OpenInventory(playerCards);
     }
 
@@ -61,11 +42,12 @@ public class GameManager : MonoBehaviour
         gameInterfaceManager.CloseInventory();
     }
 
-    public void EndEncounter() {
+    public void EndEncounter(int pointsToAdd=0) {
         if (!isInEncounter) {
             Debug.LogError("Attempted to end encounter when there was none.");
         }
-        Debug.Log("Ending the encounter.");
+        Debug.Log($"Ending the encounter ({score} -> {score + pointsToAdd}).");
+        score += pointsToAdd;
         isInEncounter = false;
     }
 
