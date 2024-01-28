@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028326, g: 0.22571333, b: 0.30692202, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -207,7 +207,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 446102196}
-        m_TargetAssemblyTypeName: TestScript, Assembly-CSharp
+        m_TargetAssemblyTypeName: TestScriptIOS, Assembly-CSharp
         m_MethodName: getDiscoveredEndpointList
         m_Mode: 1
         m_Arguments:
@@ -515,7 +515,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 446102193}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d54c02a21f02745ee806883b9e04a7fe, type: 3}
+  m_Script: {fileID: 11500000, guid: e1a23c3c7164747ae869da8d2d68f9cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   name: {fileID: 1993060113}
@@ -961,7 +961,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 446102196}
-        m_TargetAssemblyTypeName: TestScript, Assembly-CSharp
+        m_TargetAssemblyTypeName: TestScriptIOS, Assembly-CSharp
         m_MethodName: sendString
         m_Mode: 1
         m_Arguments:
@@ -1884,7 +1884,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 446102196}
-        m_TargetAssemblyTypeName: TestScript, Assembly-CSharp
+        m_TargetAssemblyTypeName: TestScriptIOS, Assembly-CSharp
         m_MethodName: startDiscovering
         m_Mode: 1
         m_Arguments:
@@ -2017,7 +2017,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 446102196}
-        m_TargetAssemblyTypeName: TestScript, Assembly-CSharp
+        m_TargetAssemblyTypeName: TestScriptIOS, Assembly-CSharp
         m_MethodName: startAdvertising
         m_Mode: 1
         m_Arguments:
