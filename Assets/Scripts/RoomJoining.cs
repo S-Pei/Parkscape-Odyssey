@@ -19,6 +19,10 @@ public class RoomJoining : MonoBehaviour
 
     public void JoinRoom() {
         bool isLeader = false;
+        if (roomCodeInput == null) {
+            Debug.Log("No room code entered");
+            return;
+        }
         string roomCode = roomCodeInput.text;
         Debug.Log("Joining room: " + roomCode);
         if (foundRoom(roomCode)) {
