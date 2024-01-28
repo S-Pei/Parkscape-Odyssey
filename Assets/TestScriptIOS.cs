@@ -20,7 +20,17 @@ public class TestScriptIOS : MonoBehaviour
     private TextMeshProUGUI name;
 
     [SerializeField]
-    private TextMeshProUGUI endpointListStr;
+    private TextMeshProUGUI discoveredEndpointListStr;
+
+    [SerializeField]
+    private TextMeshProUGUI connectedEndpointListStr;
+
+    [SerializeField]
+    private TextMeshProUGUI discoveredJSONStr;
+
+    [SerializeField]
+    private TextMeshProUGUI connectedJSONStr;
+
 
     [SerializeField]
     private TextMeshProUGUI dataStr;
@@ -53,19 +63,28 @@ public class TestScriptIOS : MonoBehaviour
     private ConnectedEndpoint[] connectedEndpoints;
     private ConnectionRequest[] connectionRequests;
 
+    private float timer = 0.0f;
+    private float delay = 4.0f;
+
     void Start() {
         Debug.Log("runs here");
         modelInitialize();
-        name.text = Marshal.PtrToStringAnsi(modelGetEndpointName());
-        // startAdvertising();
-        // startDiscovering();
+        name.text = handleStringPointer(modelGetEndpointName());
+        startAdvertising();
+        startDiscovering();
     }
 
     void Update() {
-        // discoveredEndpoints = deserializeJsonToDiscoveredEndpoints(handleStringPointer(modelGetDiscoveredEndpoints()));
-        // connectedEndpoints = deserializeJsonToConnectedEndpoints(handleStringPointer(modelGetConnectedEndpoints()));
-        // connectionRequests = deserializeJsonToConnectionRequests(handleStringPointer(modelGetConnectionRequests()));
-        dataStr.text = getData();
+        timer += Time.deltaTime;
+        discoveredEndpoints = deserializeJsonToDiscoveredEndpoints(handleStringPointer(modelGetDiscoveredEndpoints()));
+        connectedEndpoints = deserializeJsonToConnectedEndpoints(handleStringPointer(modelGetConnectedEndpoints()));
+        connectionRequests = deserializeJsonToConnectionRequests(handleStringPointer(modelGetConnectionRequests()));
+        dataStr.text = "data\n" + getData();
+        discoveredEndpointListStr.text = "Discovered Devices\n" + string.Join("\n ", discoveredEndpoints.Select(endpoint => "endpointID: " + endpoint.EndpointID + ", endpointName: " + endpoint.EndpointName));
+        connectedEndpointListStr.text = "Connected Devices\n" + string.Join(", ", connectedEndpoints.Select(endpoint => "endpointID: " + endpoint.EndpointID + ", endpointName: " + endpoint.EndpointName + ", payloads: " + string.Join(", ", endpoint.Payloads.Select(payload => payload.Data))));
+        if (timer > delay) {
+            timer = 0.0f;
+        }
     }
 
     // to be called from UI
@@ -81,11 +100,8 @@ public class TestScriptIOS : MonoBehaviour
     // to be called from UI
     public void getDiscoveredEndpointList() {
         discoveredEndpoints = deserializeJsonToDiscoveredEndpoints(handleStringPointer(modelGetDiscoveredEndpoints()));
-        connectedEndpoints = deserializeJsonToConnectedEndpoints(handleStringPointer(modelGetConnectedEndpoints()));
         IEnumerable<string> endpointNames = discoveredEndpoints.Select(endpoint => endpoint.EndpointName);
-        endpointListStr.text = string.Join(", ", endpointNames);
-        // Debug.Log("Discovered endpoints: " + string.Join(", ", endpointNames));
-        // Debug.Log("Connected endpoints: " + string.Join(", ", connectedEndpoints.Select(endpoint => endpoint.EndpointName)));
+        discoveredEndpointListStr.text = string.Join(", ", endpointNames);
     }
 
     // sends "hello world" hardcoded string (called from UI)
@@ -99,7 +115,9 @@ public class TestScriptIOS : MonoBehaviour
     public string getData() {
         var jsonStr = handleStringPointer(modelGetConnectedEndpoints());
         connectedEndpoints = deserializeJsonToConnectedEndpoints(jsonStr);
-        IEnumerable<string> data = connectedEndpoints.SelectMany(endpoint => endpoint.Payloads.Select(payload => payload.Data));
+        IEnumerable<string> data = connectedEndpoints.SelectMany(endpoint => endpoint.Payloads
+                                                        .Where(payload => payload.IsIncoming == true)
+                                                        .Select(payload => payload.Data));
         return string.Join(", ", data);
     }
 
@@ -109,11 +127,17 @@ public class TestScriptIOS : MonoBehaviour
     }
 
     private ConnectedEndpoint[] deserializeJsonToConnectedEndpoints(string jsonStr) {
+        if (timer > delay) {
+            connectedJSONStr.text = jsonStr;
+        }
         ConnectedEndpoint[] connectedEndpoints = JsonConvert.DeserializeObject<ConnectedEndpoint[]>(jsonStr);
         return connectedEndpoints;
     }
 
     private DiscoveredEndpoint[] deserializeJsonToDiscoveredEndpoints(string jsonStr) {
+        if (timer > delay) {
+            discoveredJSONStr.text = jsonStr;
+        }
         DiscoveredEndpoint[] discoveredEndpoints = JsonConvert.DeserializeObject<DiscoveredEndpoint[]>(jsonStr);
         return discoveredEndpoints;
     }
