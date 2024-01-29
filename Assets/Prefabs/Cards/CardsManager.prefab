@@ -50,12 +50,15 @@ MonoBehaviour:
   - baseAtk
   - baseDef
   - warCry
+  - enrage
   cardImgs:
   - {fileID: 21300000, guid: ceb93c28982664b1a8a6e66eba92b912, type: 3}
   - {fileID: 21300000, guid: e2d797106944147f9b631094f81adf70, type: 3}
   - {fileID: 21300000, guid: c1cfa65bab35d4ca69528e5a877df028, type: 3}
+  - {fileID: 21300000, guid: b6cd765f21e45441891e531c745e269c, type: 3}
   cardStats:
   - 5 ATK
   - 5 DEF
   - ALLIES +1 STRENGTH
+  - +5 STRENGTH -10 HP
   cardsToCreate: 1
