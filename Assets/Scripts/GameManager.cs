@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private string role;
 
-    private List<string> playerCards = new List<string> { "baseAtk", "baseAtk", "baseDef", "sprint", "baseDef", "baseAtk", "warcry", "baseDef", "enrage", "sprint"};
+    private List<string> playerCards = new List<string> { "baseAtk", "baseAtk", "baseDef", "sprint", "baseDef", "baseAtk", "warCry", "baseDef", "enrage", "sprint"};
 
     // Start is called before the first frame update
     void Start() {
