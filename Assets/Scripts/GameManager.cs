@@ -11,6 +11,9 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start() {
         gameInterfaceManager = (GameInterfaceManager) GetComponent(typeof(GameInterfaceManager));
+
+        // Set image according to role
+        gameInterfaceManager.setRole(role);
     }
 
     // Update is called once per frame
