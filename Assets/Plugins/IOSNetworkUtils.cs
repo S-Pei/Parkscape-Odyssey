@@ -42,6 +42,9 @@ public class IOSNetworkUtils:  NetworkUtils {
     [DllImport("__Internal")]
     private static extern void modelSendString(string message, string destinationID);
 
+    [DllImport("__Internal")]
+    private static extern IntPtr modelGetNewMessages();
+
     /* Discover other endpoints and connect with endpoints with same name (room code) */
     public override void startDiscovering() {
         modelStartDiscovery();
@@ -92,7 +95,7 @@ public class IOSNetworkUtils:  NetworkUtils {
     
     /* Returns a JSON string of messages received so far. */
     public override string getMessageReceived() {
-        return "";
+        return handleStrPtr(modelGetNewMessages());
     }
 
     /* (For IOS use) Initialises P2P. */
