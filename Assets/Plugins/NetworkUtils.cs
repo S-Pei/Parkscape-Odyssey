@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 public abstract class NetworkUtils
 {
     /* Cache of set of message IDs received so far. */
-    HashSet<string> messageIDs;
+    protected HashSet<string> messageIDs{get; set;}
     /* Discover other endpoints and connect with endpoints with same name (room code) */
     public abstract void discover();
     /* Advertise so that other endpoints can connect. */ 
