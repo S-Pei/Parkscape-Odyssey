@@ -20,12 +20,12 @@ public class GameInterfaceManager : MonoBehaviour
     [SerializeField]
     private List<Sprite> playerIcons;
     private Dictionary<string, int> roles = new Dictionary<string, int> { 
-        { "Warrior",  0 },
+        { "Rogue",  0 },
         { "Mage",  1 },
         { "Faerie",  2 },
         { "Cleric",  3 },
         { "Scout",  4 },
-        { "Guardian",  5 }, };
+        { "Warrior",  5 }, };
 
     // Start is called before the first frame update
     void Start()
