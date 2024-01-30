@@ -1,13 +1,18 @@
-using System.Text.Json;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+
 public abstract class NetworkUtils
 {
     /* Cache of set of message IDs received so far. */
-    HashSet<string> messageIDs;
+    protected HashSet<string> messageIDs{get; set;}
     /* Discover other endpoints and connect with endpoints with same name (room code) */
-    public abstract void discover();   
+    public abstract void startDiscovering();
     /* Advertise so that other endpoints can connect. */ 
-    public abstract void advertise();   
+    public abstract void startAdvertising(); 
+    /* Stops discovering. */ 
+    public abstract void stopDiscovering();
+    /* Stop advertising. */ 
+    public abstract void stopAdvertising();    
     /* Returns list of connected devices by device ID. */
     public abstract List<string> getConnectedDevices();
     /* Returns a list of discovered devices by device ID. */
@@ -18,21 +23,30 @@ public abstract class NetworkUtils
     public abstract void send(string message, string deviceID);
     /* Sets own endpoint name to be the room code. */
     public abstract void setRoomCode(string roomCode);
-    /* Returns a JSON string of messages received so far. */
-    private abstract string getMessagesReceived();
+    /* Returns a JSON string of the most recent message received. */
+    public abstract string getMessageReceived();
     /* (For IOS use) Initialises P2P. */
     public abstract void initP2P();
 
     /* Called in Update to process any incoming messages. */
-    // public void processMessages() {
-    //     string jsonString = this.getMessagesReceived();
+    public void processMessage() {
+        string jsonMessage = this.getMessageReceived();
+        if (!jsonMessage.Equals("")) {
+            // parse message
+        }
 
-    // }
+
+    }
 
     /* Compare list of received messages with cached set of message IDs. */
     /* Format of jsonString: Dict: <Message ID, Message JSON> */
     // private void checkMessages(string jsonString) {
-    //     JObject json = JObject.Parse(jsonString);
+    //     Dictionary<string, Message> msgs = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonString);
+    //     foreach (string id in msgs.Keys) {
+    //         if (!messageIDs.Contains(id)) {
+
+    //         }
+    //     }
     // }
 
 }
