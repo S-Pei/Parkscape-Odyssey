@@ -23,16 +23,20 @@ public abstract class NetworkUtils
     public abstract void send(string message, string deviceID);
     /* Sets own endpoint name to be the room code. */
     public abstract void setRoomCode(string roomCode);
-    /* Returns a JSON string of messages received so far. */
-    public abstract string getMessagesReceived();
+    /* Returns a JSON string of the most recent message received. */
+    public abstract string getMessageReceived();
     /* (For IOS use) Initialises P2P. */
     public abstract void initP2P();
 
     /* Called in Update to process any incoming messages. */
-    // public void processMessages() {
-    //     string jsonString = this.getMessagesReceived();
+    public void processMessage() {
+        string jsonMessage = this.getMessageReceived();
+        if (!jsonMessage.Equals("")) {
+            // parse message
+        }
 
-    // }
+
+    }
 
     /* Compare list of received messages with cached set of message IDs. */
     /* Format of jsonString: Dict: <Message ID, Message JSON> */
