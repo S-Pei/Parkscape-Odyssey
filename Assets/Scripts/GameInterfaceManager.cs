@@ -10,6 +10,9 @@ public class GameInterfaceManager : MonoBehaviour
 
     [SerializeField]
     private GameObject inventoryPrefab;
+    
+    [SerializeField]
+    private GameObject playerViewPrefab;
 
     [SerializeField]
     private GameObject playerIcon;
@@ -51,5 +54,21 @@ public class GameInterfaceManager : MonoBehaviour
     public void setRole(string role) {
         this.role = role;
         ((Image) playerIcon.GetComponent(typeof(Image))).sprite = playerIcons[roles[role]];
+    }
+
+    // Opens the player view with the player's role informationa and stats
+    public void OpenPlayerView(/* Player player */) {
+        GameObject playerView = Instantiate(playerViewPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        playerView.SetActive(false);
+        PlayerViewManager playerViewManager = (PlayerViewManager) playerView.GetComponent<PlayerViewManager>();
+
+        // Role information
+        playerViewManager.SetRole(role);
+        playerViewManager.SetRoleIcon(playerIcons[roles[role]]);
+
+        // Stats
+        // playerViewManager.setStats(/* player */);
+
+        playerView.SetActive(true);
     }
 }
