@@ -16,13 +16,19 @@ public class IOSNetworkUtils:  NetworkUtils {
     private static extern void modelStartAdvertising();
 
     [DllImport("__Internal")]
+    private static extern void modelStopDiscovery();
+
+    [DllImport("__Internal")]
+    private static extern void modelStopAdvertising();
+
+    [DllImport("__Internal")]
     private static extern IntPtr modelGetEndpointName();
 
     [DllImport("__Internal")]
     private static extern IntPtr modelSetEndpointName(string name);
 
     [DllImport("__Internal")]
-    private static extern void modelGetDiscoveredEndpoints();
+    private static extern IntPtr modelGetDiscoveredEndpoints();
 
     [DllImport("__Internal")]
     private static extern IntPtr modelGetConnectedEndpoints();
@@ -37,14 +43,24 @@ public class IOSNetworkUtils:  NetworkUtils {
     private static extern void modelSendString(string message, string destinationID);
 
     /* Discover other endpoints and connect with endpoints with same name (room code) */
-    public override void discover() {
+    public override void startDiscovering() {
         modelStartDiscovery();
     } 
 
     /* Advertise so that other endpoints can connect. */ 
-    public override void advertise() {
+    public override void startAdvertising() {
         modelStartAdvertising();
     }
+
+    /* Stops discovering. */ 
+    public override void stopDiscovering() {
+        modelStopDiscovery();
+    }
+
+    /* Stop advertising. */ 
+    public override void stopAdvertising() {
+        modelStopAdvertising();
+    }   
 
     /* Returns list of connected devices by device ID. */
     public override List<string> getConnectedDevices() {
@@ -75,7 +91,7 @@ public class IOSNetworkUtils:  NetworkUtils {
     }
     
     /* Returns a JSON string of messages received so far. */
-    private override string getMessagesReceived() {
+    public override string getMessageReceived() {
         return "";
     }
 
