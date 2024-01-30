@@ -1,10 +1,12 @@
-using System.Text.Json;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+
 public abstract class NetworkUtils
 {
     /* Cache of set of message IDs received so far. */
     HashSet<string> messageIDs;
     /* Discover other endpoints and connect with endpoints with same name (room code) */
-    public abstract void discover();   
+    public abstract void discover();
     /* Advertise so that other endpoints can connect. */ 
     public abstract void advertise();   
     /* Returns list of connected devices by device ID. */
@@ -18,7 +20,7 @@ public abstract class NetworkUtils
     /* Sets own endpoint name to be the room code. */
     public abstract void setRoomCode(string roomCode);
     /* Returns a JSON string of messages received so far. */
-    private abstract string getMessagesReceived();
+    public abstract string getMessagesReceived();
     /* (For IOS use) Initialises P2P. */
     public abstract void initP2P();
 
@@ -31,7 +33,12 @@ public abstract class NetworkUtils
     /* Compare list of received messages with cached set of message IDs. */
     /* Format of jsonString: Dict: <Message ID, Message JSON> */
     // private void checkMessages(string jsonString) {
-    //     JObject json = JObject.Parse(jsonString);
+    //     Dictionary<string, Message> msgs = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonString);
+    //     foreach (string id in msgs.Keys) {
+    //         if (!messageIDs.Contains(id)) {
+
+    //         }
+    //     }
     // }
 
 }
