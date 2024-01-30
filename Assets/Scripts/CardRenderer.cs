@@ -51,6 +51,7 @@ public class CardRenderer : MonoBehaviour
 
         GameObject cardsStatsObj = transform.GetChild(2).gameObject;
         cardsStatsObj.GetComponent<TextMeshProUGUI>().fontSize = fontSize;
+        cardsStatsObj.GetComponent<RectTransform>().sizeDelta = new Vector2(131.5f, 58.15f);
     }
 
     public (Sprite, string) getCardImgAndStats() {
