@@ -698,7 +698,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53e91732ef4e6e0498d0605f6ac18806, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  role: Warrior
+  role: Scout
 --- !u!114 &1068634071
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -712,6 +712,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inventoryPrefab: {fileID: 3649988814343669297, guid: c08262b24dbc545fda9e898c065e1b3b,
+    type: 3}
+  playerViewPrefab: {fileID: 167937073287580874, guid: f0c34cec1873ba741b43650dff9cf8ce,
     type: 3}
   playerIcon: {fileID: 1441628310}
   playerIcons:
@@ -907,7 +909,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1441628313}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1068634070}
+        m_TargetAssemblyTypeName: GameManager, NewAssembly
+        m_MethodName: OpenPlayerView
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1441628313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -953,7 +967,7 @@ SpriteRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1441628310}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -963,7 +977,7 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
+  m_RenderingLayerMask: 3221225473
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
@@ -984,11 +998,10 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1666912763
+  m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b,
-    type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 0.9215687, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -996,7 +1009,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1802788016

@@ -31,4 +31,8 @@ public class GameManager : MonoBehaviour
     public void CloseInventory() {
         gameInterfaceManager.CloseInventory();
     }
+
+    public void OpenPlayerView() {
+        gameInterfaceManager.OpenPlayerView();
+    }
 }
