@@ -6,9 +6,13 @@ public abstract class NetworkUtils
     /* Cache of set of message IDs received so far. */
     protected HashSet<string> messageIDs{get; set;}
     /* Discover other endpoints and connect with endpoints with same name (room code) */
-    public abstract void discover();
+    public abstract void startDiscovering();
     /* Advertise so that other endpoints can connect. */ 
-    public abstract void advertise();   
+    public abstract void startAdvertising(); 
+    /* Stops discovering. */ 
+    public abstract void stopDiscovering();
+    /* Stop advertising. */ 
+    public abstract void stopAdvertising();    
     /* Returns list of connected devices by device ID. */
     public abstract List<string> getConnectedDevices();
     /* Returns a list of discovered devices by device ID. */
