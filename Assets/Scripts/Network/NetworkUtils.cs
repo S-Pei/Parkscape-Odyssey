@@ -29,24 +29,12 @@ public abstract class NetworkUtils
     public abstract void initP2P();
 
     /* Called in Update to process any incoming messages. */
-    public void processMessage() {
+    public string processNewMessage() {
         string jsonMessage = this.getMessageReceived();
         if (!jsonMessage.Equals("")) {
-            // parse message
+            Message message = JsonConvert.DeserializeObject<Message>(jsonMessage);
+            return message.processMessage();
         }
-
-
+        return "No new message";
     }
-
-    /* Compare list of received messages with cached set of message IDs. */
-    /* Format of jsonString: Dict: <Message ID, Message JSON> */
-    // private void checkMessages(string jsonString) {
-    //     Dictionary<string, Message> msgs = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonString);
-    //     foreach (string id in msgs.Keys) {
-    //         if (!messageIDs.Contains(id)) {
-
-    //         }
-    //     }
-    // }
-
 }

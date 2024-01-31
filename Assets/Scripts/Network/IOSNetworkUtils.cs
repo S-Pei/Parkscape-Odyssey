@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
+#if UNITY_IOS
 public class IOSNetworkUtils:  NetworkUtils {
 
     [DllImport("__Internal")]
@@ -114,3 +115,4 @@ public class IOSNetworkUtils:  NetworkUtils {
     }
 
 }
+#endif
