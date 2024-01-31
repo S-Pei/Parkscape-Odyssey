@@ -34,6 +34,21 @@ public class CardRenderer : MonoBehaviour
         cardStats = cardStat;
     }
 
+    public void renderCard(Card card) {
+        // Render card image
+        GameObject cardImgObj = transform.GetChild(1).gameObject;
+        Image cardImgRenderer = cardImgObj.GetComponentInChildren<Image>();
+        cardImgRenderer.sprite = card.img;
+        cardImage = card.img;
+
+
+        // Render card stats
+        GameObject cardStatsObj = transform.GetChild(2).gameObject;
+        TextMeshProUGUI textComp = cardStatsObj.GetComponentInChildren<TextMeshProUGUI>();
+        textComp.text = card.stats;
+        cardStats = card.stats;
+    }
+
     public void scaleCardSize(float scale) {
        GetComponent<RectTransform>().localScale = new Vector3(scale, scale, scale);
 
