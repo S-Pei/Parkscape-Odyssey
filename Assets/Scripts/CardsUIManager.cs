@@ -10,7 +10,6 @@ public class CardsUIManager : MonoBehaviour
 {
 
     private List<Card> cards = new List<Card>();
-    // private Dictionary<string, (Sprite img, string stats)> cards = new Dictionary<string, (Sprite, string)>();
 
     [SerializeField]
     private GameObject cardPrefab;
@@ -23,6 +22,9 @@ public class CardsUIManager : MonoBehaviour
     
     [SerializeField]
     private List<string> cardStats = new List<string>();
+
+    [SerializeField]
+    private List<CardRarity> cardRarities = new List<CardRarity>();
 
     [SerializeField]
     private int cardsToCreate = 0;
