@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class LootController : MonoBehaviour
@@ -21,7 +22,7 @@ public class LootController : MonoBehaviour
     [SerializeField]
     private int cardsNumber = 2;
     
-    private Card focusedCard; 
+    private Card focusedCard;
 
     // Start is called before the first frame update
     void Start()
@@ -58,6 +59,21 @@ public class LootController : MonoBehaviour
         }
 
         return cardsLoot.ToArray();
+    }
+
+    private float[] generateCardsRarityProbability(EnemyLevel enemyLevel) {
+        switch(enemyLevel) {
+            case EnemyLevel.EASY:
+                return new [] {0.7f, 0.3f, 0};
+            case EnemyLevel.MEDIUM:
+                return new [] {0.6f, 0.35f, 0.05f};
+            case EnemyLevel.HARD:
+                return new [] {0.30f, 0.58f, 0.12f};
+            case EnemyLevel.BOSS:
+                return new [] {0f, 0.70f, 0.30f};
+            default:
+                return null;
+        }
     }
 
 

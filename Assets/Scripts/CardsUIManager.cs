@@ -39,7 +39,7 @@ public class CardsUIManager : MonoBehaviour
             // cards.Add(cardNames[i], (cardImgs[i], cardStats[i]));
             cards.Add(new Card(cardNames[i], cardImgs[i], cardStats[i], 1, "none"));
             Debug.Log($"Cards Manager: Card initialised - {cardNames[i]}");
-        }        
+        }
     }
 
     // // Update is called once per frame
@@ -83,4 +83,8 @@ public class CardsUIManager : MonoBehaviour
     public Card[] getAllAvailableCards() {
         return cards.ToArray();
     }
+
+    // public Dictionary<CardRarity, Card[]> getAllAvailableCardsByRarity() {
+        
+    // }
 }
