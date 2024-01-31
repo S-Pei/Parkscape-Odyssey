@@ -298,7 +298,7 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 
 #if defined(__OBJC__)
 
-SWIFT_EXTERN void modelDisconnectFrom(NSString * _Nonnull endpointID);
+SWIFT_EXTERN void modelBroadcastString(int8_t const * _Nonnull message);
 
 
 SWIFT_EXTERN int8_t const * _Nonnull modelGetEndpointName(void) SWIFT_WARN_UNUSED_RESULT;
@@ -307,19 +307,22 @@ SWIFT_EXTERN int8_t const * _Nonnull modelGetEndpointName(void) SWIFT_WARN_UNUSE
 SWIFT_EXTERN int8_t const * _Nonnull modelGetConnectedEndpoints(void) SWIFT_WARN_UNUSED_RESULT;
 
 
-SWIFT_EXTERN int8_t const * _Nonnull modelGetConnectionRequests(void) SWIFT_WARN_UNUSED_RESULT;
-
-
 SWIFT_EXTERN int8_t const * _Nonnull modelGetDiscoveredEndpoints(void) SWIFT_WARN_UNUSED_RESULT;
+
+
+SWIFT_EXTERN int8_t const * _Nonnull modelGetMessages(void) SWIFT_WARN_UNUSED_RESULT;
+
+
+SWIFT_EXTERN int8_t const * _Nonnull modelGetNewMessages(void) SWIFT_WARN_UNUSED_RESULT;
 
 
 SWIFT_EXTERN void modelInitialize(void);
 
 
-SWIFT_EXTERN void modelRequestConnectionTo(NSString * _Nonnull endpointID);
+SWIFT_EXTERN void modelSendString(int8_t const * _Nonnull message, int8_t const * _Nonnull endpointID);
 
 
-SWIFT_EXTERN void modelSendHelloWorld(void);
+SWIFT_EXTERN void modelSetEndpointName(int8_t const * _Nonnull name);
 
 
 SWIFT_EXTERN void modelStartAdvertising(void);

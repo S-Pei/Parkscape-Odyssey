@@ -6,7 +6,7 @@
 	<dict>
 		<key>Headers/IOSNearbyConnect-Swift.h</key>
 		<data>
-		upD0gpDGJe4AJGBsKf62FsysEKE=
+		FtKh35tWm6kZg6I1R8G7QQsyDhk=
 		</data>
 		<key>Headers/IOSNearbyConnect.h</key>
 		<data>
@@ -18,7 +18,7 @@
 		</data>
 		<key>Modules/IOSNearbyConnect.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo</key>
 		<data>
-		iBSh1tqMWdfRo5OBldARDcWV83A=
+		/1Jk3x96Do80DxFCt/8u4c9hnAk=
 		</data>
 		<key>Modules/IOSNearbyConnect.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
@@ -30,7 +30,7 @@
 		</data>
 		<key>Modules/IOSNearbyConnect.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		nWSYEuRvxdyNnpTgwg0Wu2G/ehc=
+		thdbFgMz5fLzNqnHVx3V9zOjR8k=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -43,7 +43,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			sseB/yI8yGC737ZBgYwvSmwIuGHO2pepPwOxZIWmQAE=
+			GSBo3Xw49K8K3hmeUzefEdTWwiEwjHusO5CyxsyBKLo=
 			</data>
 		</dict>
 		<key>Headers/IOSNearbyConnect.h</key>
@@ -57,7 +57,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			9L33G9nrOT5OovLcB0/GhaWcD3coZUELETNg5wvAgjk=
+			rTaW3sS/EyU4fCuESjVBfkdK4wG+lgfFPfmiJsVMcWk=
 			</data>
 		</dict>
 		<key>Modules/IOSNearbyConnect.swiftmodule/arm64-apple-ios.abi.json</key>
@@ -78,7 +78,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			vNieVfVAWw6vqIVZu5zaVoVq7xeGMJuU8qldE/lOU6Q=
+			btf3biuquDRXQa/VOX/fzuZYpYNsy8apAh7eI9zGQxU=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

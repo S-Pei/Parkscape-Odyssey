@@ -48,26 +48,30 @@ public class TestScriptIOS : MonoBehaviour
     private static extern IntPtr modelGetEndpointName();
 
     [DllImport("__Internal")]
+    private static extern void modelSetEndpointName(string endpointName);
+
+    [DllImport("__Internal")]
     private static extern IntPtr modelGetDiscoveredEndpoints();
 
     [DllImport("__Internal")]
     private static extern IntPtr modelGetConnectedEndpoints();
 
     [DllImport("__Internal")]
-    private static extern IntPtr modelGetConnectionRequests();
+    private static extern void modelBroadcastString(string message);
 
     [DllImport("__Internal")]
-    private static extern void modelSendHelloWorld();
+    private static extern IntPtr modelGetMessages();
 
-    private DiscoveredEndpoint[] discoveredEndpoints;
-    private ConnectedEndpoint[] connectedEndpoints;
-    private ConnectionRequest[] connectionRequests;
+    [DllImport("__Internal")]
+    private static extern IntPtr modelGetNewMessages();
+
+    private string[] discoveredEndpoints;
+    private string[] connectedEndpoints;
 
     private float timer = 0.0f;
     private float delay = 4.0f;
 
     void Start() {
-        Debug.Log("runs here");
         modelInitialize();
         name.text = handleStringPointer(modelGetEndpointName());
         startAdvertising();
@@ -76,15 +80,23 @@ public class TestScriptIOS : MonoBehaviour
 
     void Update() {
         timer += Time.deltaTime;
-        discoveredEndpoints = deserializeJsonToDiscoveredEndpoints(handleStringPointer(modelGetDiscoveredEndpoints()));
-        connectedEndpoints = deserializeJsonToConnectedEndpoints(handleStringPointer(modelGetConnectedEndpoints()));
-        connectionRequests = deserializeJsonToConnectionRequests(handleStringPointer(modelGetConnectionRequests()));
-        dataStr.text = "data\n" + getData();
-        discoveredEndpointListStr.text = "Discovered Devices\n" + string.Join("\n ", discoveredEndpoints.Select(endpoint => "endpointID: " + endpoint.EndpointID + ", endpointName: " + endpoint.EndpointName));
-        connectedEndpointListStr.text = "Connected Devices\n" + string.Join(", ", connectedEndpoints.Select(endpoint => "endpointID: " + endpoint.EndpointID + ", endpointName: " + endpoint.EndpointName + ", payloads: " + string.Join(", ", endpoint.Payloads.Select(payload => payload.Data))));
+        discoveredEndpoints = deserializeJsonToStringArray(handleStringPointer(modelGetDiscoveredEndpoints()));
+        connectedEndpoints = deserializeJsonToStringArray(handleStringPointer(modelGetConnectedEndpoints()));
+        // connectionRequests = deserializeJsonToConnectionRequests(handleStringPointer(modelGetConnectionRequests()));
+        name.text = handleStringPointer(modelGetEndpointName());
+        if (timer > delay) {
+            dataStr.text = "data\n" + handleStringPointer(modelGetNewMessages());
+        }
+        discoveredEndpointListStr.text = "Discovered Devices\n" + string.Join("\n ", discoveredEndpoints);
+        connectedEndpointListStr.text = "Connected Devices\n" + string.Join(", ", connectedEndpoints);
         if (timer > delay) {
             timer = 0.0f;
         }
+    }
+
+    public void setRoomName() {
+        string roomName = "room1";
+        modelSetEndpointName(roomName);
     }
 
     // to be called from UI
@@ -92,34 +104,34 @@ public class TestScriptIOS : MonoBehaviour
         modelStartDiscovery();
     }
 
-    // to be called from UI
     public void startAdvertising() {
         modelStartAdvertising();
     }
 
-    // to be called from UI
-    public void getDiscoveredEndpointList() {
-        discoveredEndpoints = deserializeJsonToDiscoveredEndpoints(handleStringPointer(modelGetDiscoveredEndpoints()));
-        IEnumerable<string> endpointNames = discoveredEndpoints.Select(endpoint => endpoint.EndpointName);
-        discoveredEndpointListStr.text = string.Join(", ", endpointNames);
-    }
+    // // to be called from UI
+    // public void getDiscoveredEndpointList() {
+    //     discoveredEndpoints = deserializeJsonToDiscoveredEndpoints(handleStringPointer(modelGetDiscoveredEndpoints()));
+    //     IEnumerable<string> endpointNames = discoveredEndpoints.Select(endpoint => endpoint.EndpointName);
+    //     discoveredEndpointListStr.text = string.Join(", ", endpointNames);
+    // }
 
     // sends "hello world" hardcoded string (called from UI)
     public void sendString() {
+        string message = "hell world";
         // connectedEndpoints = deserializeJsonToConnectedEndpoints(handleStringPointer(modelGetConnectedEndpoints()));
         // endpointIDs = connectedEndpoints.Select(endpoint => endpoint.EndpointID);
-        modelSendHelloWorld();
+        modelBroadcastString(message);
     }
 
     // gets data sent from other devices
-    public string getData() {
-        var jsonStr = handleStringPointer(modelGetConnectedEndpoints());
-        connectedEndpoints = deserializeJsonToConnectedEndpoints(jsonStr);
-        IEnumerable<string> data = connectedEndpoints.SelectMany(endpoint => endpoint.Payloads
-                                                        .Where(payload => payload.IsIncoming == true)
-                                                        .Select(payload => payload.Data));
-        return string.Join(", ", data);
-    }
+    // public string getData() {
+    //     var jsonStr = handleStringPointer(modelGetConnectedEndpoints());
+    //     connectedEndpoints = deserializeJsonToConnectedEndpoints(jsonStr);
+    //     IEnumerable<string> data = connectedEndpoints.SelectMany(endpoint => endpoint.Payloads
+    //                                                     .Where(payload => payload.IsIncoming == true)
+    //                                                     .Select(payload => payload.Data));
+    //     return string.Join(", ", data);
+    // }
 
     private string handleStringPointer(IntPtr pointer) {
         string str = Marshal.PtrToStringAnsi(pointer);
@@ -145,5 +157,10 @@ public class TestScriptIOS : MonoBehaviour
     private ConnectionRequest[] deserializeJsonToConnectionRequests(string jsonStr) {
         ConnectionRequest[] connectionRequests = JsonConvert.DeserializeObject<ConnectionRequest[]>(jsonStr);
         return connectionRequests;
+    }
+
+    private string[] deserializeJsonToStringArray(string jsonStr) {
+        string[] strArray = JsonConvert.DeserializeObject<string[]>(jsonStr);
+        return strArray;
     }
 } 
