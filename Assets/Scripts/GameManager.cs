@@ -10,7 +10,12 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private string role;
 
-    private List<string> playerCards = new List<string> { "baseAtk", "baseAtk", "baseDef", "sprint", "baseDef", "sodaAid", "bigHeal", "baseAtk", "warCry", "baseDef", "enrage", "sprint", "bloodOffering", "femaleWarrior", "drawCards"};
+    private List<CardName> playerCards = new List<CardName> { 
+        CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_DEF, CardName.SPRINT, 
+        CardName.BASE_DEF, CardName.SODA_AID, CardName.BIG_HEAL, CardName.BASE_ATK, 
+        CardName.WAR_CRY, CardName.BASE_DEF, CardName.ENRAGE, CardName.SPRINT, 
+        CardName.BLOOD_OFFERING, CardName.FEMALE_WARRIOR, CardName.DRAW_CARDS
+    };
 
     // Start is called before the first frame update
     void Start() {

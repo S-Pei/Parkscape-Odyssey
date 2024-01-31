@@ -17,7 +17,7 @@ public class CardsUIManager : MonoBehaviour
     private GameObject cardPrefab;
 
     [SerializeField]
-    private List<string> cardNames = new List<string>();
+    private List<CardName> cardNames = new List<CardName>();
 
     [SerializeField]
     private List<Sprite> cardImgs = new List<Sprite>();
@@ -67,7 +67,7 @@ public class CardsUIManager : MonoBehaviour
     //     }
     // }
 
-    public Card findCardDetails(string cardName) {
+    public Card findCardDetails(CardName cardName) {
         try {
             return cards.Find(c => c.name == cardName);
         } catch (Exception) {

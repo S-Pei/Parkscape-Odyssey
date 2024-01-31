@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.CompilerServices;
-using System.Linq;
 using UnityEngine.UI;
 
 [assembly:InternalsVisibleTo("EditMode")]
@@ -46,9 +45,9 @@ public class InventoryUIManager : MonoBehaviour
     }
 
     private void displayAllCards() {
-        List<string> cardsNames = inventoryController.inventoryCards;
+        List<CardName> cardsNames = inventoryController.inventoryCards;
         int i = 0;
-        foreach (string cardName in cardsNames) {
+        foreach (CardName cardName in cardsNames) {
             GameObject newCard = displayCardAndApplyIndex(cardName, i);
             if (newCard != null) {
                 cardsDisplaying.Add(newCard);
@@ -57,7 +56,7 @@ public class InventoryUIManager : MonoBehaviour
         }
     }
 
-    private GameObject displayCardAndApplyIndex(string cardName, int i) {
+    private GameObject displayCardAndApplyIndex(CardName cardName, int i) {
         Card cardDetails = cardsUIManager.findCardDetails(cardName);
         if (cardDetails == null) {
             Debug.LogWarning($"InventoryUIManager: Card not found in CardsManager - {cardName}");

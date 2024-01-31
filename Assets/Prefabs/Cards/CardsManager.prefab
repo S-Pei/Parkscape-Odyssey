@@ -46,17 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardPrefab: {fileID: 3113442196626641446, guid: 7e96f652686a549da956d097dbaac1ec,
     type: 3}
-  cardNames:
-  - baseAtk
-  - baseDef
-  - warCry
-  - enrage
-  - sprint
-  - sodaAid
-  - bigHeal
-  - bloodOffering
-  - femaleWarrior
-  - drawCards
+  cardNames: 00000000010000000200000003000000040000000500000006000000070000000800000009000000
   cardImgs:
   - {fileID: 21300000, guid: ceb93c28982664b1a8a6e66eba92b912, type: 3}
   - {fileID: 21300000, guid: e2d797106944147f9b631094f81adf70, type: 3}
