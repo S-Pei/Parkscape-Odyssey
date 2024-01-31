@@ -11,6 +11,8 @@ public class CardsUIManager : MonoBehaviour
 
     private List<Card> cards = new List<Card>();
 
+    private Dictionary<CardRarity, List<Card>> cardsByRarity = new();
+
     [SerializeField]
     private GameObject cardPrefab;
 
@@ -36,7 +38,9 @@ public class CardsUIManager : MonoBehaviour
             int i;
             for (i = 0; i < Math.Min(cardNames.Count, cardImgs.Count); i++) {
                 // cards.Add(cardNames[i], (cardImgs[i], cardStats[i]));
-                cards.Add(new Card(cardNames[i], cardImgs[i], cardStats[i], 1, "none"));
+                Card newCard = new Card(cardNames[i], cardImgs[i], cardStats[i], 1, "none", cardRarities[i]);
+                cards.Add(newCard);
+                asignCardByRarity(newCard);
                 Debug.Log($"Cards Manager: Card initialised - {cardNames[i]}");
             }
             return;
@@ -44,6 +48,14 @@ public class CardsUIManager : MonoBehaviour
             
         Debug.LogWarning("Cards Manager: Card Names, Card Images and Card Stats provided do not have the same amount. Please check these fields.");
 
+    }
+
+    private void asignCardByRarity(Card card) {
+        CardRarity rarity = card.rarity;
+        if (!cardsByRarity.ContainsKey(rarity)) {
+            cardsByRarity.Add(rarity, new List<Card>());
+        }
+        cardsByRarity[rarity].Add(card);
     }
 
     // // Update is called once per frame
@@ -88,7 +100,7 @@ public class CardsUIManager : MonoBehaviour
         return cards.ToArray();
     }
 
-    // public Dictionary<CardRarity, Card[]> getAllAvailableCardsByRarity() {
-        
-    // }
+    public Dictionary<CardRarity, List<Card>> getAllAvailableCardsByRarity() {
+        return cardsByRarity;
+    }
 }

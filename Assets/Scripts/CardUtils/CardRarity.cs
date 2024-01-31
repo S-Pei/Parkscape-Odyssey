@@ -1,4 +1,4 @@
-enum CardRarity {
+public enum CardRarity {
   COMMON,
   RARE,
   LEGENDARY

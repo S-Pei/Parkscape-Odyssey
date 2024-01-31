@@ -42,20 +42,37 @@ public class LootController : MonoBehaviour
         destroyer = GetComponent<Destroyer>();
 
         // Generate cards loot and display on screen
-        Card[] cardsLoot = generateCardsLoot();
+        Card[] cardsLoot = generateCardsLoot(EnemyLevel.BOSS);
         lootUIManager.displayCardsLoot(cardsLoot);
     }
 
 
     //TODO: Implement proper loot drop system, now it just randoms the card drops
-    private Card[] generateCardsLoot() {
-        Card[] allCards = cardsUIManager.getAllAvailableCards();
+    private Card[] generateCardsLoot(EnemyLevel enemyLevel) {
+        Dictionary<CardRarity, List<Card>> allCardsByRarity = cardsUIManager.getAllAvailableCardsByRarity();
+
+        // Generate the cummulative probability of card drops for each rarity
+        float[] pDrops = generateCardsRarityProbability(enemyLevel);
+
+        CardRarity[] allRarities = (CardRarity[]) Enum.GetValues(typeof(CardRarity));
+        allRarities.Reverse();
+
         List<Card> cardsLoot = new();
 
         System.Random random = new();
-        for (int i = 0; i < cardsNumber; i++) {
-            Card cardLoot = allCards[random.Next(allCards.Length)];
-            cardsLoot.Add(cardLoot);
+
+        for (int j = 0; j < cardsNumber; j++) {
+            float cardDropRarity = (float) random.NextDouble();
+
+            for (int i = pDrops.Length - 1; i >= 0; i--) {
+                if (cardDropRarity < pDrops[i]) {
+                    Debug.Log($"LootController: Card chosen: {allRarities[i]}");
+                    List<Card> cardsInRarity = allCardsByRarity[allRarities[i]];
+                    Card cardLoot = cardsInRarity[random.Next(cardsInRarity.Count)];
+                    cardsLoot.Add(cardLoot); 
+                    break;
+                }
+            }
         }
 
         return cardsLoot.ToArray();
@@ -64,13 +81,13 @@ public class LootController : MonoBehaviour
     private float[] generateCardsRarityProbability(EnemyLevel enemyLevel) {
         switch(enemyLevel) {
             case EnemyLevel.EASY:
-                return new [] {0.7f, 0.3f, 0};
+                return new [] {1f, 0.3f, 0f};
             case EnemyLevel.MEDIUM:
-                return new [] {0.6f, 0.35f, 0.05f};
+                return new [] {1f, 0.4f, 0.05f};
             case EnemyLevel.HARD:
-                return new [] {0.30f, 0.58f, 0.12f};
+                return new [] {1f, 0.7f, 0.12f};
             case EnemyLevel.BOSS:
-                return new [] {0f, 0.70f, 0.30f};
+                return new [] {1f, 1f, 0.30f};
             default:
                 return null;
         }

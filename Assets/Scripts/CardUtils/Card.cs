@@ -7,11 +7,14 @@ public class Card {
   public readonly int cost;
   public readonly string type;
 
-  public Card(string name, Sprite img, string stats, int cost, string type) {
+  public readonly CardRarity rarity;
+
+  public Card(string name, Sprite img, string stats, int cost, string type, CardRarity rarity) {
     this.name = name;
     this.img = img;
     this.stats = stats;
     this.cost = cost;
     this.type = type;
+    this.rarity = rarity;
   }
 }
