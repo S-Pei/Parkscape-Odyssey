@@ -4,10 +4,8 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    private GameState GameState = GameState.Instance;
     private GameInterfaceManager gameInterfaceManager;
-
-    [SerializeField]
-    private string role;
 
     private List<string> playerCards = new List<string> { "baseAtk", "baseAtk", "baseDef", "sprint", "baseDef", "sodaAid", "bigHeal", "baseAtk", "warCry", "baseDef", "enrage", "sprint"};
 
@@ -15,8 +13,11 @@ public class GameManager : MonoBehaviour
     void Start() {
         gameInterfaceManager = (GameInterfaceManager) GetComponent(typeof(GameInterfaceManager));
 
-        // Set image according to role
-        gameInterfaceManager.setRole(role);
+        // Initialise game state (temporary, move to lobby stage)
+        GameState.Initialize("RoomCode", PlayerFactory.CreateRogue("Player 1"), new List<Player>(), playerCards);
+
+        // Set up interface with GameState information
+        gameInterfaceManager.SetUpInterface();
     }
 
     // Update is called once per frame

@@ -698,7 +698,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53e91732ef4e6e0498d0605f6ac18806, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  role: Scout
 --- !u!114 &1068634071
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -717,12 +716,12 @@ MonoBehaviour:
     type: 3}
   playerIcon: {fileID: 1441628310}
   playerIcons:
-  - {fileID: 21300000, guid: 937ea58f71d59154ca661f047cee994d, type: 3}
-  - {fileID: 21300000, guid: 0e1cad1ea42a41f43b34455d36934594, type: 3}
-  - {fileID: 21300000, guid: b2f2e786d4d0eb642ac08e34f21a2981, type: 3}
-  - {fileID: 21300000, guid: a3d28f7b135001b4d98cda3b49234285, type: 3}
-  - {fileID: 21300000, guid: f719fb411bdf68b4c96f31db2239c7fb, type: 3}
-  - {fileID: 21300000, guid: b0661871ef367324c96eda5c5da21bfa, type: 3}
+  - {fileID: 21300000, guid: 8017e9e98c257054eacc06d985975d21, type: 3}
+  - {fileID: 21300000, guid: c85ea97992c01bf459cd9a3ee5f692a5, type: 3}
+  - {fileID: 21300000, guid: cf1129a22d8256846ac9fc78a090f0cf, type: 3}
+  - {fileID: 21300000, guid: 1283fe6019f8736478b3c6c981f4957a, type: 3}
+  - {fileID: 21300000, guid: cb00a2d9ed507a54ca72bde8f9412e7b, type: 3}
+  - {fileID: 21300000, guid: 31b261af4f8666f40877b8fe968abda1, type: 3}
 --- !u!4 &1068634072
 Transform:
   m_ObjectHideFlags: 0
@@ -942,7 +941,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 0e1cad1ea42a41f43b34455d36934594, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8017e9e98c257054eacc06d985975d21, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

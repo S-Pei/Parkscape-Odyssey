@@ -3,23 +3,49 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.ComponentModel;
 
 public class PlayerViewManager : MonoBehaviour
 {
-    private string role;
-    
     [SerializeField]
-    private TMP_Text playerRoleText;
+    private TMP_Text PlayerRoleText;
 
     [SerializeField]
-    private GameObject playerIcon;
+    private GameObject PlayerIcon;
 
-    public void SetRole(string role) {
-        this.role = role;
-        playerRoleText.text = role;
+    [SerializeField]
+    private TMP_Text HealthValue;
+
+    [SerializeField]
+    private TMP_Text ManaValue;
+
+    [SerializeField]
+    private TMP_Text StrengthValue;
+
+    [SerializeField]
+    private TMP_Text SpeedValue;
+
+    [SerializeField]
+    private TMP_Text AttackMultiplierValue;
+
+    [SerializeField]
+    private TMP_Text DefenceMultiplierValue;
+
+    [SerializeField]
+    private TMP_Text Description;
+
+    public void SetPlayer(Player player) {
+        PlayerRoleText.text = player.Role;
+        HealthValue.text = player.CurrentHealth.ToString() + "/" + player.MaxHealth.ToString();
+        ManaValue.text = player.Mana.ToString() + "/" + player.MaxMana.ToString();
+        StrengthValue.text = player.Strength.ToString();
+        SpeedValue.text = player.Speed.ToString();
+        AttackMultiplierValue.text = string.Format("{0:0.00}", player.AttackMultiplier);
+        DefenceMultiplierValue.text = string.Format("{0:0.00}", player.DefenceMultiplier);
+        Description.text = player.Description;
     }
 
-    public void SetRoleIcon(Sprite roleIcon) {
-        ((Image) playerIcon.GetComponent(typeof(Image))).sprite = roleIcon;
+    public void SetPlayerIcon(Sprite roleIcon) {
+        ((Image) PlayerIcon.GetComponent(typeof(Image))).sprite = roleIcon;
     }
 }

@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class GameInterfaceManager : MonoBehaviour
 {
+    private GameState GameState = GameState.Instance;
     private GameObject inventoryObject;
-    private string role;
 
     [SerializeField]
     private GameObject inventoryPrefab;
@@ -20,12 +20,12 @@ public class GameInterfaceManager : MonoBehaviour
     [SerializeField]
     private List<Sprite> playerIcons;
     private Dictionary<string, int> roles = new Dictionary<string, int> { 
-        { "Warrior",  0 },
+        { "Rogue",  0 },
         { "Mage",  1 },
         { "Faerie",  2 },
         { "Cleric",  3 },
         { "Scout",  4 },
-        { "Guardian",  5 }, };
+        { "Warrior",  5 }, };
 
     // Start is called before the first frame update
     void Start()
@@ -51,23 +51,20 @@ public class GameInterfaceManager : MonoBehaviour
         inventoryUIManager.DestroySelf();
     }
 
-    public void setRole(string role) {
-        this.role = role;
-        ((Image) playerIcon.GetComponent(typeof(Image))).sprite = playerIcons[roles[role]];
+    public void SetUpInterface() {
+        // Set up player icon.
+        ((Image) playerIcon.GetComponent(typeof(Image))).sprite = playerIcons[roles[GameState.MyPlayer.Role]];
     }
 
     // Opens the player view with the player's role informationa and stats
-    public void OpenPlayerView(/* Player player */) {
+    public void OpenPlayerView() {
         GameObject playerView = Instantiate(playerViewPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         playerView.SetActive(false);
         PlayerViewManager playerViewManager = (PlayerViewManager) playerView.GetComponent<PlayerViewManager>();
 
         // Role information
-        playerViewManager.SetRole(role);
-        playerViewManager.SetRoleIcon(playerIcons[roles[role]]);
-
-        // Stats
-        // playerViewManager.setStats(/* player */);
+        playerViewManager.SetPlayer(GameState.MyPlayer);
+        playerViewManager.SetPlayerIcon(playerIcons[roles[GameState.MyPlayer.Role]]);
 
         playerView.SetActive(true);
     }
