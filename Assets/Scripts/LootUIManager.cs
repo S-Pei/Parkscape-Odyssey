@@ -16,7 +16,7 @@ public class LootUIManager : MonoBehaviour
     [SerializeField]
     private GameObject popUpPanel;
 
-    private List<GameObject> cardsDisplaying;
+    private List<GameObject> cardsDisplaying = new();
 
     // private LootController lootController;
 
@@ -24,6 +24,7 @@ public class LootUIManager : MonoBehaviour
     void Start()
     {
         // lootController = GetComponent<LootController>();
+        closeCardConfirmationPopUp();
     }
 
    
