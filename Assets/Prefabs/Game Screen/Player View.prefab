@@ -140,6 +140,7 @@ MonoBehaviour:
   SpeedValue: {fileID: 3232697493165539711}
   AttackMultiplierValue: {fileID: 6835392004678724894}
   DefenceMultiplierValue: {fileID: 3994396441738641835}
+  Description: {fileID: 5395355924972515998}
 --- !u!1 &672189598602131897
 GameObject:
   m_ObjectHideFlags: 0

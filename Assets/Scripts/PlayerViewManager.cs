@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.ComponentModel;
 
 public class PlayerViewManager : MonoBehaviour
 {
@@ -30,6 +31,9 @@ public class PlayerViewManager : MonoBehaviour
     [SerializeField]
     private TMP_Text DefenceMultiplierValue;
 
+    [SerializeField]
+    private TMP_Text Description;
+
     public void SetPlayer(Player player) {
         PlayerRoleText.text = player.Role;
         HealthValue.text = player.CurrentHealth.ToString() + "/" + player.MaxHealth.ToString();
@@ -38,6 +42,7 @@ public class PlayerViewManager : MonoBehaviour
         SpeedValue.text = player.Speed.ToString();
         AttackMultiplierValue.text = string.Format("{0:0.00}", player.AttackMultiplier);
         DefenceMultiplierValue.text = string.Format("{0:0.00}", player.DefenceMultiplier);
+        Description.text = player.Description;
     }
 
     public void SetPlayerIcon(Sprite roleIcon) {

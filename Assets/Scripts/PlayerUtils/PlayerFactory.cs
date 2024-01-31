@@ -4,13 +4,40 @@ public class PlayerFactory {
     private const int BASEHEALTH = 75;
     private const int BASESPEED = 5;
 
+    private const string MageDescription = 
+        "A brilliant scholar, adept at manipulating the arcane forces. " 
+        + "He casts spells of various elements, effects, and ranges. "
+        + "A master of knowledge and logic, he seeks to uncover the secrets of magic.";
+
+    private const string WarriorDescription =
+        "A loyal champion, trained in the art of war. He fights with honor, strength, and courage. "
+        + "A protector of his friends, he shields them from harm. "
+        + "A hero of sacrifice, he gives his life for them.";
+
+    private const string RogueDescription =
+        "A shadowy figure, adept at stealth and deception. He strikes from the dark, "
+        + "using daggers and poison. A master of traps and lockpicking, he loots without remorse.";
+
+    private const string ClericDescription =
+        "A holy warrior, skilled in both combat and magic. He heals his allies, smites his foes, "
+        + "and invokes divine power. A leader of faith and valor, he inspires courage.";
+    
+    private const string FaerieDescription =
+        "A peculiar creature, with a knack for finding four-leaf clovers, lucky pennies, and shooting stars. "
+        + "They always seemed to be in the right place at the right time, avoiding danger and attracting fortune.";
+
+    private const string ScoutDescription =
+        "A keen explorer, gifted with sharp vision and curiosity. He sees things others miss, "
+        + "using his telescope and map. A master of navigation and tracking, he scouts the land ahead.";
+
     // Factory Methods
     public static Player CreateMage(string name) {
         return new Player(name: name, 
                           role: "Mage", 
                           speed: BASESPEED, 
                           maxHealth: BASEHEALTH - 10, 
-                          maxMana: BASEMANA + 1);
+                          maxMana: BASEMANA + 1,
+                          description: MageDescription);
     }
 
     public static Player CreateWarrior(string name) {
@@ -18,7 +45,8 @@ public class PlayerFactory {
                           role: "Warrior", 
                           speed: BASESPEED - 2, 
                           maxHealth: BASEHEALTH + 25, 
-                          maxMana: BASEMANA);
+                          maxMana: BASEMANA,
+                          description: WarriorDescription);
     }
 
     public static Player CreateRogue(string name) {
@@ -26,7 +54,8 @@ public class PlayerFactory {
                           role: "Rogue", 
                           speed: BASESPEED + 2, 
                           maxHealth: BASEHEALTH - 15, 
-                          maxMana: BASEMANA);
+                          maxMana: BASEMANA,
+                          description: RogueDescription);
     }
 
     public static Player CreateCleric(string name) {
@@ -34,7 +63,8 @@ public class PlayerFactory {
                           role: "Cleric", 
                           speed: BASESPEED, 
                           maxHealth: BASEHEALTH - 10, 
-                          maxMana: BASEMANA);
+                          maxMana: BASEMANA,
+                          description: ClericDescription);
     }
 
     public static Player CreateFaerie(string name) {
@@ -42,7 +72,8 @@ public class PlayerFactory {
                           role: "Faerie", 
                           speed: BASESPEED + 3, 
                           maxHealth: BASEHEALTH - 30, 
-                          maxMana: BASEMANA + 2);
+                          maxMana: BASEMANA + 2,
+                          description: FaerieDescription);
     }
 
     public static Player CreateScout(string name) {
@@ -50,6 +81,7 @@ public class PlayerFactory {
                           role: "Scout", 
                           speed: BASESPEED - 1, 
                           maxHealth: BASEHEALTH - 10, 
-                          maxMana: BASEMANA);
+                          maxMana: BASEMANA,
+                          description: ScoutDescription);
     }
 }
