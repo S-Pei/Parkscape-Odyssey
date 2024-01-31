@@ -9,6 +9,7 @@ using UnityEngine.Assertions.Must;
 public class CardsUIManager : MonoBehaviour
 {
 
+    private List<Card> cardsLs = new List<Card>();
     private Dictionary<string, (Sprite img, string stats)> cards = new Dictionary<string, (Sprite, string)>();
 
     [SerializeField]
@@ -75,5 +76,9 @@ public class CardsUIManager : MonoBehaviour
         } else {
             Debug.Log($"Cards Manager: Card image not found - {cardName}. Cannot create card.");
         }
+    }
+
+    public Card[] getAllAvailableCards() {
+        return cardsLs.ToArray();
     }
 }

@@ -11,12 +11,12 @@ public class LootUIManager : MonoBehaviour
     [SerializeField]
     private GameObject cardsSelectionPanel;
 
-    private LootController lootController;
+    // private LootController lootController;
 
     // Start is called before the first frame update
     void Start()
     {
-        lootController = GetComponent<LootController>();
+        // lootController = GetComponent<LootController>();
     }
 
    
@@ -30,6 +30,7 @@ public class LootUIManager : MonoBehaviour
     private void displayCard(Card card) {
         GameObject newCard = Instantiate(cardPrefab, cardsSelectionPanel.transform);
         CardRenderer cardRenderer = newCard.GetComponent<CardRenderer>();
-        
+        cardRenderer.renderCard(card);
+        cardRenderer.scaleCardSize(5);
     }
 }
