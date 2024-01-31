@@ -493,9 +493,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 411e6c24f644d4dcf9590f0614bf83b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardPrefab: {fileID: 4272154951897077414, guid: ed56a6262b8f043d68d050fac740cd19,
+  cardDisplayPrefab: {fileID: 4272154951897077414, guid: ed56a6262b8f043d68d050fac740cd19,
     type: 3}
   cardsSelectionPanel: {fileID: 7610153635592669806}
+  popUpPanel: {fileID: 1010945818562174542}
 --- !u!114 &572377967864925262
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1827,7 +1828,7 @@ PrefabInstance:
     - target: {fileID: 4272154951897077414, guid: ed56a6262b8f043d68d050fac740cd19,
         type: 3}
       propertyPath: m_TagString
-      value: CardsInventoryFocusedCard
+      value: CardsLootFocusedCard
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

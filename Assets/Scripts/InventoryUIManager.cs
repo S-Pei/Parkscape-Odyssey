@@ -103,7 +103,6 @@ public class InventoryUIManager : MonoBehaviour
         }
 
         popUpPanel.SetActive(false);
-
     }
 
     public void DestroySelf() {
