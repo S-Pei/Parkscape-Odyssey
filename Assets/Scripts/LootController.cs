@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class LootController : MonoBehaviour
 {
-    [SerializeField]
     private GameObject gameManager;
 
     private LootUIManager lootUIManager;
@@ -27,6 +26,8 @@ public class LootController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = GameObject.FindGameObjectWithTag("GameManager");
+
         if (GameObject.FindGameObjectsWithTag("CardsManager").Length <= 0) {
             cardsManager = Instantiate(cardsManagerPrefab);
             cardsManager.tag = "CardsManager";

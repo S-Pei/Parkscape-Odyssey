@@ -63,6 +63,7 @@ public class LootUIManager : MonoBehaviour
         focusedCard.transform.parent = popUpCardDisplayPanel.transform;
         focusedCard.tag = "CardsLootFocusedCard";
         cardRenderer.scaleCardSize(7.5f);
+        focusedCard.GetComponent<RectTransform>().localPosition = new Vector3(0, 120, 0);
 
         popUpPanel.SetActive(true);
 
