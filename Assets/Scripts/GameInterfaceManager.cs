@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class GameInterfaceManager : MonoBehaviour
 {
+    private GameState GameState = GameState.Instance;
     private GameObject inventoryObject;
-    private Player player;
 
     [SerializeField]
     private GameObject inventoryPrefab;
@@ -51,20 +51,20 @@ public class GameInterfaceManager : MonoBehaviour
         inventoryUIManager.DestroySelf();
     }
 
-    public void SetPlayer(Player player) {
-        this.player = player;
-        ((Image) playerIcon.GetComponent(typeof(Image))).sprite = playerIcons[roles[player.Role]];
+    public void SetUpInterface() {
+        // Set up player icon.
+        ((Image) playerIcon.GetComponent(typeof(Image))).sprite = playerIcons[roles[GameState.MyPlayer.Role]];
     }
 
     // Opens the player view with the player's role informationa and stats
-    public void OpenPlayerView(Player player) {
+    public void OpenPlayerView() {
         GameObject playerView = Instantiate(playerViewPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         playerView.SetActive(false);
         PlayerViewManager playerViewManager = (PlayerViewManager) playerView.GetComponent<PlayerViewManager>();
 
         // Role information
-        playerViewManager.SetPlayer(player);
-        playerViewManager.SetPlayerIcon(playerIcons[roles[player.Role]]);
+        playerViewManager.SetPlayer(GameState.MyPlayer);
+        playerViewManager.SetPlayerIcon(playerIcons[roles[GameState.MyPlayer.Role]]);
 
         playerView.SetActive(true);
     }
