@@ -6,8 +6,7 @@ public class GameManager : MonoBehaviour
 {
     private GameInterfaceManager gameInterfaceManager;
 
-    [SerializeField]
-    private string role;
+    private Player player = PlayerFactory.CreateWarrior("Player");
 
     private List<string> playerCards = new List<string> { "baseAtk", "baseAtk", "baseDef", "sprint", "baseDef", "sodaAid", "bigHeal", "baseAtk", "warCry", "baseDef", "enrage", "sprint"};
 
@@ -15,8 +14,8 @@ public class GameManager : MonoBehaviour
     void Start() {
         gameInterfaceManager = (GameInterfaceManager) GetComponent(typeof(GameInterfaceManager));
 
-        // Set image according to role
-        gameInterfaceManager.setRole(role);
+        // Set image according to role via player class
+        gameInterfaceManager.SetPlayer(player);
     }
 
     // Update is called once per frame
@@ -33,6 +32,6 @@ public class GameManager : MonoBehaviour
     }
 
     public void OpenPlayerView() {
-        gameInterfaceManager.OpenPlayerView();
+        gameInterfaceManager.OpenPlayerView(player);
     }
 }

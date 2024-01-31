@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class GameInterfaceManager : MonoBehaviour
 {
     private GameObject inventoryObject;
-    private string role;
+    private Player player;
 
     [SerializeField]
     private GameObject inventoryPrefab;
@@ -51,23 +51,20 @@ public class GameInterfaceManager : MonoBehaviour
         inventoryUIManager.DestroySelf();
     }
 
-    public void setRole(string role) {
-        this.role = role;
-        ((Image) playerIcon.GetComponent(typeof(Image))).sprite = playerIcons[roles[role]];
+    public void SetPlayer(Player player) {
+        this.player = player;
+        ((Image) playerIcon.GetComponent(typeof(Image))).sprite = playerIcons[roles[player.Role]];
     }
 
     // Opens the player view with the player's role informationa and stats
-    public void OpenPlayerView(/* Player player */) {
+    public void OpenPlayerView(Player player) {
         GameObject playerView = Instantiate(playerViewPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         playerView.SetActive(false);
         PlayerViewManager playerViewManager = (PlayerViewManager) playerView.GetComponent<PlayerViewManager>();
 
         // Role information
-        playerViewManager.SetRole(role);
-        playerViewManager.SetRoleIcon(playerIcons[roles[role]]);
-
-        // Stats
-        // playerViewManager.setStats(/* player */);
+        playerViewManager.SetPlayer(player);
+        playerViewManager.SetPlayerIcon(playerIcons[roles[player.Role]]);
 
         playerView.SetActive(true);
     }

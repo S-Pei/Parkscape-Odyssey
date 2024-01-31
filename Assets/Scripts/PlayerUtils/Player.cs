@@ -4,7 +4,6 @@ public class Player
     public string Name { get; }
     public string Role { get; }
     public int Speed { get; }
-
     public int MaxHealth { get; }
     public int CurrentHealth { get; }
     public int Mana { get; }
