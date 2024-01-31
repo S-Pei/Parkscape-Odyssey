@@ -1,0 +1,3 @@
+public enum CardNames {
+  BASE_ATK, BASE_DEF, WAR_CRY, ENRAGE, SPRINT, SODA_AID, BIG_HEAL
+}
