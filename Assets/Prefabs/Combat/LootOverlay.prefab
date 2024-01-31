@@ -913,9 +913,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: InventoryUIManager, NewAssembly
-        m_MethodName: closeCardTradePopUp
+      - m_Target: {fileID: 7538994759132039171}
+        m_TargetAssemblyTypeName: LootUIManager, NewAssembly
+        m_MethodName: closeCardConfirmationPopUp
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
