@@ -360,7 +360,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5123721447409271331}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 572377967864925262}
+        m_TargetAssemblyTypeName: LootController, NewAssembly
+        m_MethodName: confirmCardSelection
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1311935826215831389
 GameObject:
   m_ObjectHideFlags: 0
@@ -509,6 +521,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7adbc4f3c4e54269b3665273cabd755, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameManager: {fileID: 0}
   cardsManagerPrefab: {fileID: 231616820920950792, guid: c27743db8f3e04769872cfd6469c3d5e,
     type: 3}
   cardsNumber: 2
@@ -1624,7 +1637,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 687317730496694922}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 572377967864925262}
+        m_TargetAssemblyTypeName: LootController, NewAssembly
+        m_MethodName: denyCardSelection
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &7610153635592669806
 GameObject:
   m_ObjectHideFlags: 0
