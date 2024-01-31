@@ -30,18 +30,20 @@ public class CardsUIManager : MonoBehaviour
     private int cardsToCreate = 0;
 
     void Awake() {
-        if (cardNames.Count != cardImgs.Count 
-            || cardNames.Count != cardStats.Count 
-            || cardImgs.Count != cardStats.Count) {
-            Debug.LogWarning("Cards Manager: Card Names, Card Images and Card Stats provided do not have the same amount. Please check these fields.");
+        if (cardNames.Count == cardImgs.Count 
+                && cardNames.Count == cardStats.Count 
+                && cardNames.Count == cardRarities.Count) {
+            int i;
+            for (i = 0; i < Math.Min(cardNames.Count, cardImgs.Count); i++) {
+                // cards.Add(cardNames[i], (cardImgs[i], cardStats[i]));
+                cards.Add(new Card(cardNames[i], cardImgs[i], cardStats[i], 1, "none"));
+                Debug.Log($"Cards Manager: Card initialised - {cardNames[i]}");
+            }
+            return;
         }
+            
+        Debug.LogWarning("Cards Manager: Card Names, Card Images and Card Stats provided do not have the same amount. Please check these fields.");
 
-        int i;
-        for (i = 0; i < Math.Min(cardNames.Count, cardImgs.Count); i++) {
-            // cards.Add(cardNames[i], (cardImgs[i], cardStats[i]));
-            cards.Add(new Card(cardNames[i], cardImgs[i], cardStats[i], 1, "none"));
-            Debug.Log($"Cards Manager: Card initialised - {cardNames[i]}");
-        }
     }
 
     // // Update is called once per frame
