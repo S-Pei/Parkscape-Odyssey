@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class CardRenderer : MonoBehaviour
 {
+    private Card card;
+
     private float FRAME_WIDTH = 64;
     private float FRAME_HEIGHT = 128;
 
@@ -35,6 +37,8 @@ public class CardRenderer : MonoBehaviour
     }
 
     public void renderCard(Card card) {
+        this.card = card;
+
         // Render card image
         GameObject cardImgObj = transform.GetChild(1).gameObject;
         Image cardImgRenderer = cardImgObj.GetComponentInChildren<Image>();
@@ -71,5 +75,9 @@ public class CardRenderer : MonoBehaviour
 
     public (Sprite, string) getCardImgAndStats() {
         return (cardImage, cardStats);
+    }
+
+    public Card getCardDetails() {
+        return card;
     }
 }

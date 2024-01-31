@@ -5,7 +5,12 @@ using UnityEngine;
 
 public class LootController : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject gameManager;
+
     private LootUIManager lootUIManager;
+
+    private Destroyer destroyer;
 
     [SerializeField]
     private GameObject cardsManagerPrefab;
@@ -16,6 +21,8 @@ public class LootController : MonoBehaviour
 
     [SerializeField]
     private int cardsNumber = 2;
+    
+    private Card focusedCard; 
 
     // Start is called before the first frame update
     void Start()
@@ -29,6 +36,8 @@ public class LootController : MonoBehaviour
         cardsUIManager = cardsManager.GetComponent<CardsUIManager>();
         
         lootUIManager = GetComponent<LootUIManager>();
+
+        destroyer = GetComponent<Destroyer>();
 
         // Generate cards loot and display on screen
         Card[] cardsLoot = generateCardsLoot();
@@ -48,5 +57,30 @@ public class LootController : MonoBehaviour
         }
 
         return cardsLoot.ToArray();
+    }
+
+
+    // Loot selection confirmation
+    public void confirmCardSelection() {
+        if (focusedCard != null) {
+            addCardToPlayerDeck(focusedCard);
+            lootUIManager.closeCardConfirmationPopUp();
+            destroyer.DestroySelf();
+            return;
+        }
+        Debug.LogWarning("LootController: no focused card set.");
+    }
+
+    public void denyCardSelection() {
+        lootUIManager.closeCardConfirmationPopUp();
+    }
+
+    private void addCardToPlayerDeck(Card card) {
+        GameManager gameManagerScript = gameManager.GetComponent<GameManager>();
+        gameManagerScript.addCardToDeck(card);
+    }
+
+    public void setFocusedCard(Card card) {
+        focusedCard = card;
     }
 }

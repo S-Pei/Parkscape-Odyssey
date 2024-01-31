@@ -35,4 +35,9 @@ public class GameManager : MonoBehaviour
     public void OpenPlayerView() {
         gameInterfaceManager.OpenPlayerView();
     }
+
+    // Card Deck
+    public void addCardToDeck(Card card) {
+        playerCards.Add(card.name);
+    }
 }

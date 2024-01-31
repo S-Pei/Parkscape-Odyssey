@@ -18,12 +18,12 @@ public class LootUIManager : MonoBehaviour
 
     private List<GameObject> cardsDisplaying = new();
 
-    // private LootController lootController;
+    private LootController lootController;
 
     // Start is called before the first frame update
     void Start()
     {
-        // lootController = GetComponent<LootController>();
+        lootController = GetComponent<LootController>();
         closeCardConfirmationPopUp();
     }
 
@@ -52,12 +52,12 @@ public class LootUIManager : MonoBehaviour
         }
     }
 
-    private void openCardConfirmationPopUp(GameObject card) {
-        (Sprite img, string stats) = card.GetComponent<CardRenderer>().getCardImgAndStats();
+    private void openCardConfirmationPopUp(GameObject card) { 
+        Card cardDetails = card.GetComponent<CardRenderer>().getCardDetails();
 
         GameObject focusedCard = Instantiate(cardDisplayPrefab);
         CardRenderer cardRenderer = focusedCard.GetComponentInChildren<CardRenderer>();
-        cardRenderer.renderCard(img, stats);
+        cardRenderer.renderCard(cardDetails);
         
         GameObject popUpCardDisplayPanel = popUpPanel.transform.GetChild(1).gameObject;
         focusedCard.transform.parent = popUpCardDisplayPanel.transform;
@@ -65,6 +65,8 @@ public class LootUIManager : MonoBehaviour
         cardRenderer.scaleCardSize(7.5f);
 
         popUpPanel.SetActive(true);
+
+        lootController.setFocusedCard(cardDetails);
     }
 
     public void closeCardConfirmationPopUp() {
@@ -74,5 +76,7 @@ public class LootUIManager : MonoBehaviour
         }
 
         popUpPanel.SetActive(false);
+
+        lootController.setFocusedCard(null);
     }
 }
