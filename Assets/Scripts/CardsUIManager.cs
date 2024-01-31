@@ -9,8 +9,8 @@ using UnityEngine.Assertions.Must;
 public class CardsUIManager : MonoBehaviour
 {
 
-    private List<Card> cardsLs = new List<Card>();
-    private Dictionary<string, (Sprite img, string stats)> cards = new Dictionary<string, (Sprite, string)>();
+    private List<Card> cards = new List<Card>();
+    // private Dictionary<string, (Sprite img, string stats)> cards = new Dictionary<string, (Sprite, string)>();
 
     [SerializeField]
     private GameObject cardPrefab;
@@ -36,8 +36,8 @@ public class CardsUIManager : MonoBehaviour
 
         int i;
         for (i = 0; i < Math.Min(cardNames.Count, cardImgs.Count); i++) {
-            cards.Add(cardNames[i], (cardImgs[i], cardStats[i]));
-            cardsLs.Add(new Card(cardNames[i], cardImgs[i], cardStats[i], 1, "none"));
+            // cards.Add(cardNames[i], (cardImgs[i], cardStats[i]));
+            cards.Add(new Card(cardNames[i], cardImgs[i], cardStats[i], 1, "none"));
             Debug.Log($"Cards Manager: Card initialised - {cardNames[i]}");
         }        
     }
@@ -51,35 +51,36 @@ public class CardsUIManager : MonoBehaviour
     //     }
     // }
 
-    public (Sprite, string)? findCardDetails(string cardName) {
-        if (cards.ContainsKey(cardName)) {
-            return cards[cardName];
-        }
-        return null;
-    }
-
-
-    private void createCard(string cardName) {
-        if (cards.ContainsKey(cardName)) {
-            // Render card image
-            GameObject cardImgObj = cardPrefab.transform.GetChild(0).gameObject;
-            Sprite cardImg = cards[cardName].img;
-            SpriteRenderer cardImgRenderer = cardImgObj.GetComponent(typeof(SpriteRenderer)) as SpriteRenderer;
-            cardImgRenderer.sprite = cardImg;
-
-            // Render card stats
-            GameObject cardStatsObj = cardPrefab.transform.GetChild(1).gameObject;
-            string cardStat = cards[cardName].stats;
-            TextMeshPro textComp = cardStatsObj.GetComponent(typeof(TextMeshPro)) as TextMeshPro;
-            textComp.text = cardStat;
-
-            Instantiate(cardPrefab);
-        } else {
-            Debug.Log($"Cards Manager: Card image not found - {cardName}. Cannot create card.");
+    public Card findCardDetails(string cardName) {
+        try {
+            return cards.Find(c => c.name == cardName);
+        } catch (Exception) {
+            return null;
         }
     }
+
+
+    // private void createCard(string cardName) {
+    //     if (cards.ContainsKey(cardName)) {
+    //         // Render card image
+    //         GameObject cardImgObj = cardPrefab.transform.GetChild(0).gameObject;
+    //         Sprite cardImg = cards[cardName].img;
+    //         SpriteRenderer cardImgRenderer = cardImgObj.GetComponent(typeof(SpriteRenderer)) as SpriteRenderer;
+    //         cardImgRenderer.sprite = cardImg;
+
+    //         // Render card stats
+    //         GameObject cardStatsObj = cardPrefab.transform.GetChild(1).gameObject;
+    //         string cardStat = cards[cardName].stats;
+    //         TextMeshPro textComp = cardStatsObj.GetComponent(typeof(TextMeshPro)) as TextMeshPro;
+    //         textComp.text = cardStat;
+
+    //         Instantiate(cardPrefab);
+    //     } else {
+    //         Debug.Log($"Cards Manager: Card image not found - {cardName}. Cannot create card.");
+    //     }
+    // }
 
     public Card[] getAllAvailableCards() {
-        return cardsLs.ToArray();
+        return cards.ToArray();
     }
 }

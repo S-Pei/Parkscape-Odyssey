@@ -58,20 +58,20 @@ public class InventoryUIManager : MonoBehaviour
     }
 
     private GameObject displayCardAndApplyIndex(string cardName, int i) {
-        (Sprite img, string stats)? cardDetails = cardsUIManager.findCardDetails(cardName);
-        if (cardDetails.HasValue) {
-            GameObject newCard = Instantiate(cardDisplayPrefab);
-            CardRenderer cardRenderer = newCard.GetComponentInChildren<CardRenderer>();
-            cardRenderer.cardIndex = i;
-            cardRenderer.renderCard(cardDetails.Value.img, cardDetails.Value.stats);
-            newCard.transform.parent = cardsInventoryContent.transform;
-            cardRenderer.hardAdjustCardDetailsSize();
-            cardRenderer.scaleCardSize(1);
-            return newCard;
-        } else {
+        Card cardDetails = cardsUIManager.findCardDetails(cardName);
+        if (cardDetails == null) {
             Debug.LogWarning($"InventoryUIManager: Card not found in CardsManager - {cardName}");
             return null;
         }
+
+        GameObject newCard = Instantiate(cardDisplayPrefab);
+        CardRenderer cardRenderer = newCard.GetComponentInChildren<CardRenderer>();
+        cardRenderer.cardIndex = i;
+        cardRenderer.renderCard(cardDetails);
+        newCard.transform.parent = cardsInventoryContent.transform;
+        cardRenderer.hardAdjustCardDetailsSize();
+        cardRenderer.scaleCardSize(1);
+        return newCard;
     }
 
     private void addListenerForCards() {
@@ -82,11 +82,11 @@ public class InventoryUIManager : MonoBehaviour
     }
 
     private void openCardTradePopUp(GameObject card) {
-        (Sprite img, string stats) = card.GetComponent<CardRenderer>().getCardImgAndStats();
+        Card cardDetails = card.GetComponent<CardRenderer>().getCardDetails();
 
         GameObject focusedCard = Instantiate(cardDisplayPrefab);
         CardRenderer cardRenderer = focusedCard.GetComponentInChildren<CardRenderer>();
-        cardRenderer.renderCard(img, stats);
+        cardRenderer.renderCard(cardDetails);
         
         GameObject popUpCardDisplayPanel = popUpPanel.transform.GetChild(1).gameObject;
         focusedCard.transform.parent = popUpCardDisplayPanel.transform;
