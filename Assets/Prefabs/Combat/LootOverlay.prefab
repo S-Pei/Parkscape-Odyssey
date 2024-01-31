@@ -374,6 +374,8 @@ GameObject:
   - component: {fileID: 3412277987730908408}
   - component: {fileID: 4350038311419692135}
   - component: {fileID: 1037972576490428831}
+  - component: {fileID: 7538994759132039171}
+  - component: {fileID: 572377967864925262}
   m_Layer: 5
   m_Name: LootOverlay
   m_TagString: Untagged
@@ -479,6 +481,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ccc045310b2e2c43a07fb02879ce2b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7538994759132039171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1311935826215831389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 411e6c24f644d4dcf9590f0614bf83b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cardPrefab: {fileID: 4272154951897077414, guid: ed56a6262b8f043d68d050fac740cd19,
+    type: 3}
+  cardsSelectionPanel: {fileID: 7610153635592669806}
+--- !u!114 &572377967864925262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1311935826215831389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7adbc4f3c4e54269b3665273cabd755, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cardsManagerPrefab: {fileID: 231616820920950792, guid: c27743db8f3e04769872cfd6469c3d5e,
+    type: 3}
+  cardsNumber: 2
 --- !u!1 &1444579386231854154
 GameObject:
   m_ObjectHideFlags: 0
@@ -926,7 +958,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -28.6276}
+  m_AnchoredPosition: {x: 0, y: -28.627625}
   m_SizeDelta: {x: 569.3475, y: 36.5307}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8924946399222894893
@@ -1604,7 +1636,7 @@ GameObject:
   - component: {fileID: 6090616393454367443}
   - component: {fileID: 7724069986625148897}
   m_Layer: 5
-  m_Name: Cards Selection
+  m_Name: Cards Selection Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

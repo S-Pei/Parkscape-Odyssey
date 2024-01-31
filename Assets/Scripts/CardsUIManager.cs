@@ -37,6 +37,7 @@ public class CardsUIManager : MonoBehaviour
         int i;
         for (i = 0; i < Math.Min(cardNames.Count, cardImgs.Count); i++) {
             cards.Add(cardNames[i], (cardImgs[i], cardStats[i]));
+            cardsLs.Add(new Card(cardNames[i], cardImgs[i], cardStats[i], 1, "none"));
             Debug.Log($"Cards Manager: Card initialised - {cardNames[i]}");
         }        
     }
