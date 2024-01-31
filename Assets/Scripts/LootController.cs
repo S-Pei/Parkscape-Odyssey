@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,13 +28,25 @@ public class LootController : MonoBehaviour
         }
         cardsUIManager = cardsManager.GetComponent<CardsUIManager>();
         
-        
         lootUIManager = GetComponent<LootUIManager>();
+
+        // Generate cards loot and display on screen
+        Card[] cardsLoot = generateCardsLoot();
+        lootUIManager.displayCardsLoot(cardsLoot);
     }
 
 
     //TODO: Implement proper loot drop system, now it just randoms the card drops
-    private void generateCardsLoot() {
-        // cardsManager.
+    private Card[] generateCardsLoot() {
+        Card[] allCards = cardsUIManager.getAllAvailableCards();
+        List<Card> cardsLoot = new();
+
+        System.Random random = new();
+        for (int i = 0; i < cardsNumber; i++) {
+            Card cardLoot = allCards[random.Next(allCards.Length)];
+            cardsLoot.Add(cardLoot);
+        }
+
+        return cardsLoot.ToArray();
     }
 }

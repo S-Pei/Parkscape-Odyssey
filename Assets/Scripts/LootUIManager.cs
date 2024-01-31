@@ -21,7 +21,7 @@ public class LootUIManager : MonoBehaviour
 
    
    // Display cards loot
-    public void showCardsLoot(Card[] cards) {
+    public void displayCardsLoot(Card[] cards) {
         foreach(Card card in cards) {
             displayCard(card);
         }
