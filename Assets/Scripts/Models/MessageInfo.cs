@@ -1,5 +1,5 @@
-interface MessageInfo {
+public interface MessageInfo {
+    public string type {get; set;}
     public string toJson();
-    // public MessageInfo fromJson(string jsonString);
-    string processMessageInfo();
+    public string processMessageInfo();
 }

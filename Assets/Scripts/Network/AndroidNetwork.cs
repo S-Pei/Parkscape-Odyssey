@@ -48,7 +48,9 @@ public class AndroidNetwork : NetworkUtils {
     }
 
     public override void broadcast(string message) {
+        Debug.Log("starting to broadcast message " + message);
         p2pObj.Call("broadcast", message);
+        Debug.Log("broadcasted message " + message);
     }
     public override void send(string message, string deviceID) {
         p2pObj.Call("send", message, deviceID);
@@ -60,6 +62,10 @@ public class AndroidNetwork : NetworkUtils {
 
     public override string getMessageReceived() {
         return p2pObj.Call<string>("getNextReceivedMessage");
+    }
+
+    public override string getName() {
+        return p2pObj.Call<string>("getName");
     }
 
     /* Initialisation done automatically in the Unity Player Activity life cycle in Android Plugin. */

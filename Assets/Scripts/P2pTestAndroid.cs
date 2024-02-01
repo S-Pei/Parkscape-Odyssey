@@ -20,6 +20,8 @@ public class P2pTestAndroid : MonoBehaviour
     void Start() {
         #if UNITY_ANDROID
         networkUtils = new AndroidNetwork();
+        networkUtils.setRoomCode("1234");
+        name.text = networkUtils.getName();
         #endif
     }
 
@@ -45,7 +47,7 @@ public class P2pTestAndroid : MonoBehaviour
 
     // broadcasts "hello world" hardcoded string (called from UI)
     public void broadcastString() {
-        string TESTSTRING = "{\"messageID\":123456,\"type\":\"test\",\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"data\":\"helloworld\"}.}";
+        string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":0, \"data\":\"helloworld\"}}";
         networkUtils.broadcast(TESTSTRING);
     }
 } 

@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using UnityEngine;
 
 public abstract class NetworkUtils
 {
+    private string currentMessage;
     /* Cache of set of message IDs received so far. */
     protected HashSet<string> messageIDs{get; set;}
     /* Discover other endpoints and connect with endpoints with same name (room code) */
@@ -27,14 +29,18 @@ public abstract class NetworkUtils
     public abstract string getMessageReceived();
     /* (For IOS use) Initialises P2P. */
     public abstract void initP2P();
+    /* Mainly for testing. */
+    public abstract string getName();
 
     /* Called in Update to process any incoming messages. */
     public string processNewMessage() {
         string jsonMessage = this.getMessageReceived();
+        Debug.Log("received message: " + jsonMessage);
         if (!jsonMessage.Equals("")) {
-            Message message = JsonConvert.DeserializeObject<Message>(jsonMessage);
-            return message.processMessage();
+            Debug.Log("processing message: " + jsonMessage);
+            Message message = JsonConvert.DeserializeObject<Message>(jsonMessage, new NetworkJsonConverter());
+            currentMessage = message.processMessage();
         }
-        return "No new message";
+        return currentMessage;
     }
 }

@@ -104,6 +104,12 @@ public class IOSNetworkUtils:  NetworkUtils {
         modelInitialize();
     }
 
+    /* Mainly for testing. */
+    public override string getName() {
+        // TODO
+        return "";
+    }
+
     private string handleStrPtr(IntPtr pointer) {
         string str = Marshal.PtrToStringAnsi(pointer);
         return str;
