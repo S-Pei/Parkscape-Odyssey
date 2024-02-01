@@ -35,10 +35,7 @@ public class BattleManager : MonoBehaviour {
         drawPile = new Queue<string>(this.allCards);
         GenerateHand();
 
-        Debug.Log("Generated hand...");
-        foreach (string card in this.hand) {
-            Debug.Log(card);
-        }
+        Debug.Log(string.Format("Initial hand: ({0}).", string.Join(", ", this.hand)));
 
         // StartCoroutine(UnloadTheScene());
     }

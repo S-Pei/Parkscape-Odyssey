@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+
 
 public class GameManager : MonoBehaviour
 {
@@ -12,6 +14,7 @@ public class GameManager : MonoBehaviour
     };
   
     private bool isInEncounter = false;
+    private EventSystem eventSystem;
     private int score = 0;
 
     // Allow public retrieval of the player's cards, but prevent it from being modified
@@ -23,6 +26,7 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start() {
         gameInterfaceManager = (GameInterfaceManager) GetComponent(typeof(GameInterfaceManager));
+        eventSystem = GameObject.Find("EventSystem").GetComponent<EventSystem>();
     }
 
     // Update is called once per frame
@@ -48,6 +52,7 @@ public class GameManager : MonoBehaviour
         }
         Debug.Log($"Ending the encounter ({score} -> {score + pointsToAdd}).");
         score += pointsToAdd;
+        // eventSystem.enabled = true;
         isInEncounter = false;
     }
 
@@ -56,6 +61,7 @@ public class GameManager : MonoBehaviour
         float secondsToWait = 10;
         yield return new WaitForSeconds(secondsToWait);
         Debug.Log("Waited 10s to start battle.");
+        // eventSystem.enabled = false;
         SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
     }
 }

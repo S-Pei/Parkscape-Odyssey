@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class BattleUIManager : MonoBehaviour
+public class BattleUIManager : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler
 {
     private BattleManager battleManager;
 
@@ -36,7 +37,6 @@ public class BattleUIManager : MonoBehaviour
         );
 
         DisplayHand(battleManager.Hand);
-
     }
 
     // Update is called once per frame
@@ -46,8 +46,6 @@ public class BattleUIManager : MonoBehaviour
     }
 
     public void DisplayHand(List<string> cards) {
-        // TODO: Wait for the start function to finish
-
         // Instantiate the hand and add the card objects to displayCards
         for (int i = 0; i < cards.Count; i++) {
             string card = cards[i];
@@ -57,12 +55,10 @@ public class BattleUIManager : MonoBehaviour
             }
         }
 
-        addListenerForCards();
-    
         // Fan out the cards
         int handSize = displayCards.Count;
-        float zRot = 3.0f;
-        float xOffset = 60.0f;
+        float zRot = 1.5f;
+        float xOffset = (Screen.width / (1.5f *handSize)) - 80;
         float yOffset = 5.0f;
 
         for (int i = 0; i < handSize; i++) {
@@ -71,7 +67,7 @@ public class BattleUIManager : MonoBehaviour
             float rotZ = Mathf.Lerp(handSize * zRot, handSize * -zRot, align);
             float xPos = Mathf.Lerp(handSize * -xOffset, handSize * xOffset, align);
             float yPos = -Mathf.Abs(Mathf.Lerp(handSize * -yOffset, handSize * yOffset, align));
-            card.transform.position = new Vector3((Screen.width / 2) + xPos, yPos + 150, 0);
+            card.transform.position = new Vector3((Screen.width / 2) + xPos, yPos + 300, 0);
             card.transform.rotation = Quaternion.Euler(0, 0, rotZ);
         }
     
@@ -83,13 +79,13 @@ public class BattleUIManager : MonoBehaviour
             // Create a new instance of the card prefab, with parent BattleCanvas
             GameObject newCard = Instantiate(cardDisplayPrefab);
             newCard.transform.SetParent(
-                GameObject.FindGameObjectWithTag("BattleCanvas").transform, false
+                GameObject.FindGameObjectWithTag("BattleCanvas").transform, true
             );
             CardRenderer cardRenderer = newCard.GetComponentInChildren<CardRenderer>();
             cardRenderer.cardIndex = i;
             cardRenderer.renderCard(cardDetails.Value.img, cardDetails.Value.stats);
-            cardRenderer.hardAdjustCardDetailsSize();
-            cardRenderer.scaleCardSize(2);
+            // cardRenderer.hardAdjustCardDetailsSize();
+            cardRenderer.scaleCardSize(6);
             return newCard;
         } else {
             Debug.LogWarning($"InventoryUIManager: Card not found in CardsManager - {cardName}");
@@ -97,10 +93,15 @@ public class BattleUIManager : MonoBehaviour
         }
     }
 
-    private void addListenerForCards() {
-        foreach (GameObject card in displayCards) {
-            Button btn = card.AddComponent<Button>();
-            btn.onClick.AddListener(() => { Debug.Log($"Click on card {card}"); });
-        }
+    public void OnBeginDrag(PointerEventData eventData) {
+        Debug.Log("OnBeginDrag");
+    }
+
+    public void OnEndDrag(PointerEventData eventData) {
+        Debug.Log("OnEndDrag");
+    }
+
+    public void OnPointerDown(PointerEventData eventData) {
+        Debug.Log("OnPointerDown");
     }
 }
