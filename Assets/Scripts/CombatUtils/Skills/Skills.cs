@@ -21,7 +21,7 @@ class Skills {
     skillsDB.Add(SkillName.CATASTROPHE, new SKCatastrophe());
   }
 
-  private Skill Get(SkillName name) {
+  public Skill Get(SkillName name) {
     if (skillsDB.Count == 0) {
       Initialise();
     }
