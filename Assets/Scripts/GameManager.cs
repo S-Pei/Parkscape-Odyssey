@@ -31,10 +31,10 @@ public class GameManager : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
-        if (!isInEncounter) {
-            isInEncounter = true;
-            StartCoroutine(EncounterMonsterRandomly());
-        }
+        // if (!isInEncounter) {
+        //     isInEncounter = true;
+        //     StartCoroutine(EncounterMonsterRandomly());
+        // }
     }
 
     public void OpenInventory() {
@@ -52,8 +52,12 @@ public class GameManager : MonoBehaviour
         }
         Debug.Log($"Ending the encounter ({score} -> {score + pointsToAdd}).");
         score += pointsToAdd;
-        // eventSystem.enabled = true;
         isInEncounter = false;
+    }
+
+    public void StartEncounter() {
+        isInEncounter = true;
+        SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
     }
 
     IEnumerator EncounterMonsterRandomly() {
@@ -61,7 +65,6 @@ public class GameManager : MonoBehaviour
         float secondsToWait = 10;
         yield return new WaitForSeconds(secondsToWait);
         Debug.Log("Waited 10s to start battle.");
-        // eventSystem.enabled = false;
-        SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
+        StartEncounter();
     }
 }

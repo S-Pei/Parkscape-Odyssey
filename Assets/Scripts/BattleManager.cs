@@ -46,6 +46,19 @@ public class BattleManager : MonoBehaviour {
         // StartCoroutine(UnloadTheScene());
     }
 
+    private void DrawCard() {
+        // Check whether the draw pile is empty, and reshuffle if so
+        if (drawPile.Count == 0) {
+            Shuffle(allCards);
+            foreach (string card in allCards) {
+                drawPile.Enqueue(card);
+            }
+        }
+
+        // Add a card to the hand
+        hand.Add(drawPile.Dequeue());
+    }
+
     // Shuffle the list of cards from back to front
     private static void Shuffle(List<string> cards) {  
         int n = cards.Count;
