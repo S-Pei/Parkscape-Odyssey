@@ -40,7 +40,7 @@ public class GameInterfaceManager : MonoBehaviour
     }
 
     // Open with actual inventory stored in GameManager
-    public void OpenInventory(List<string> cards) {
+    public void OpenInventory(List<CardName> cards) {
         inventoryObject = Instantiate(inventoryPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         InventoryController inventoryController = (InventoryController) inventoryObject.GetComponent<InventoryController>();
         inventoryController.inventoryCards = cards;
