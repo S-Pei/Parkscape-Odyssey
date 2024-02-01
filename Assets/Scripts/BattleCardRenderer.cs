@@ -21,7 +21,7 @@ public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandl
     }
     public void OnEndDrag(PointerEventData eventData) {
         // Debug.Log("OnEndDrag");
-        StartCoroutine(ResetCardPosition(0.3f));
+        StartCoroutine(ResetCardPosition(0.2f));
     }
     public void OnDrag(PointerEventData eventData) {
         // Move the card to follow the pointer every frame
@@ -47,5 +47,9 @@ public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandl
             elapsedTime += Time.deltaTime;
             yield return null;
         }
+
+        // Snap back to starting position in case anything went wrong
+        rectTransform.position = defaultPosition;
+        rectTransform.rotation = defaultRotation; 
     }
 }
