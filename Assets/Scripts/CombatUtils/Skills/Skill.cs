@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
 abstract class Skill {
-  public readonly SkillName name;
+  abstract public SkillName Name { get; }
 
   public abstract void Perform(Monster monster, List<Player> players);
 }
