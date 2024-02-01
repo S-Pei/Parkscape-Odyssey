@@ -149,7 +149,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 179945470}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1.5, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -212,7 +212,7 @@ GameObject:
   - component: {fileID: 561644420}
   m_Layer: 5
   m_Name: Canvas
-  m_TagString: Untagged
+  m_TagString: BattleCanvas
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -461,6 +461,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f2ba5a3a43c13648a58460a04cfe5c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cardsManagerPrefab: {fileID: 231616820920950792, guid: c27743db8f3e04769872cfd6469c3d5e,
+    type: 3}
+  cardDisplayPrefab: {fileID: 4272154951897077414, guid: ed56a6262b8f043d68d050fac740cd19,
+    type: 3}
+  cardsDisplaying: []
 --- !u!4 &890020363
 Transform:
   m_ObjectHideFlags: 0

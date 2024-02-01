@@ -4,13 +4,13 @@ using UnityEngine.UI;
 
 public class CardRenderer : MonoBehaviour
 {
-    private float FRAME_WIDTH = 64;
-    private float FRAME_HEIGHT = 128;
+    private const float FRAME_WIDTH = 64;
+    private const float FRAME_HEIGHT = 128;
 
-    private float enforcedWidth = 224;
-    private float enforcedHeight = 448;
+    private const float enforcedWidth = 224;
+    private const float enforcedHeight = 448;
 
-    private int fontSize = 30;
+    private const int fontSize = 30;
 
     public bool inventoryCardFocus = false;
 

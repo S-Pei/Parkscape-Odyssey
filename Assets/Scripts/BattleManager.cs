@@ -5,20 +5,29 @@ using UnityEngine.SceneManagement;
 
 
 public class BattleManager : MonoBehaviour {
-    private const int HAND_SIZE = 5;
+    public const int HAND_SIZE = 5;
     
     private GameManager gameManager;
     private BattleUIManager battleUIManager;
     private List<string> allCards;
     private List<string> hand;
+
+    public List<string> Hand {
+        get { return hand; }
+        private set {}
+    }
     private Queue<string> drawPile;
 
     // Start is called before the first frame update
     void Start() {
+        // Set the encounter to be the active scene
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Battle"));
+
         // Delegate OnSceneUnloaded() to run when this scene unloads
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         gameManager = FindObjectOfType<GameManager>();
+        battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
 
         // Shuffle the player's cards and initialise the draw pile/hand
         allCards = new List<string>(gameManager.PlayerCards);
@@ -31,7 +40,7 @@ public class BattleManager : MonoBehaviour {
             Debug.Log(card);
         }
 
-        StartCoroutine(UnloadTheScene());
+        // StartCoroutine(UnloadTheScene());
     }
 
     // Update is called once per frame
