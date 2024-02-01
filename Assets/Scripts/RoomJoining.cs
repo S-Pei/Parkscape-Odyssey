@@ -24,27 +24,13 @@ public class RoomJoining : MonoBehaviour
             return;
         }
         string roomCode = roomCodeInput.text;
-        Debug.Log("Joining room: " + roomCode);
-        if (foundRoom(roomCode)) {
-            //  Join the room.
-        } else {
-            isLeader = true;
-            CreateRoom(roomCode);
-        }
+        Debug.Log("Joining room " + roomCode);
 
         // Set Up Lobby
         LobbyManager lobbyManager = (LobbyManager) lobbyPopUp.GetComponent(typeof(LobbyManager));
-        lobbyManager.SetUpLobby(roomCode, isLeader);
+        lobbyManager.SetUpLobby(roomCode);
         
         // Disable Room Selection Pop Up
         roomSelectionPopUpManager.closePopUp();
-    }
-
-    private void CreateRoom(string roomCode) {
-        //  Create the room.
-    }
-
-    private bool foundRoom(string roomCode) {
-        return roomCode == "123456";
     }
 }
