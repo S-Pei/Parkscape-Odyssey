@@ -5,7 +5,7 @@ public class Player
     public string Role { get; }
     public int Speed { get; }
     public int MaxHealth { get; }
-    public int CurrentHealth { get; }
+    public int CurrentHealth { get; private set; }
     public int Mana { get; }
     public int MaxMana { get; }
     public int Strength { get; }
@@ -34,4 +34,16 @@ public class Player
         Description = description;
     }
 
+
+    public void TakeDamage(int dmg) {
+        CurrentHealth -= dmg;
+    }
+
+    public void Heal(int amount) {
+        CurrentHealth += amount;
+    }
+
+    public bool IsDead() {
+        return CurrentHealth <= 0;
+    }
 }
