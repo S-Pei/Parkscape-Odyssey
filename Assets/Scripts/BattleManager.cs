@@ -18,31 +18,32 @@ public class BattleManager : MonoBehaviour {
     }
     private Queue<string> drawPile;
 
-    // Start is called before the first frame update
+    void Awake() {
+        gameManager = FindObjectOfType<GameManager>();
+        battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
+    }
+
     void Start() {
         // Set the encounter to be the active scene
+        // Cannot be run in Awake() as the scene is not loaded at that point
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Battle"));
 
         // Delegate OnSceneUnloaded() to run when this scene unloads
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 
-        gameManager = FindObjectOfType<GameManager>();
-        battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
-
-        // Shuffle the player's cards and initialise the draw pile/hand
+        // Shuffle the player's cards
         allCards = new List<string>(gameManager.PlayerCards);
         Shuffle(this.allCards);
-        drawPile = new Queue<string>(this.allCards);
-        GenerateHand();
 
+        // Add the shuffled cards to a queue to draw from
+        drawPile = new Queue<string>(this.allCards);
+
+        // Draw the initial hand and display it
+        GenerateHand();
         Debug.Log(string.Format("Initial hand: ({0}).", string.Join(", ", this.hand)));
+        battleUIManager.DisplayHand(hand);
 
         // StartCoroutine(UnloadTheScene());
-    }
-
-    // Update is called once per frame
-    void Update() {
-
     }
 
     // Shuffle the list of cards from back to front
