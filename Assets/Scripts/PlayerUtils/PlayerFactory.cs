@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 public class PlayerFactory {
     // Constants
     private const int BASEMANA = 3;
@@ -35,27 +38,28 @@ public class PlayerFactory {
         return new List<string> { "Mage", "Warrior", "Rogue", "Cleric", "Faerie", "Scout" };
     }
 
-    public static Player CreatePlayer(string name, string role) {
+    public static Player CreatePlayer(string id, string name, string role) {
         switch (role) {
             case "Mage":
-                return CreateMage(name);
+                return CreateMage(id, name);
             case "Warrior":
-                return CreateWarrior(name);
+                return CreateWarrior(id, name);
             case "Rogue":
-                return CreateRogue(name);
+                return CreateRogue(id, name);
             case "Cleric":
-                return CreateCleric(name);
+                return CreateCleric(id, name);
             case "Faerie":
-                return CreateFaerie(name);
+                return CreateFaerie(id, name);
             case "Scout":
-                return CreateScout(name);
+                return CreateScout(id, name);
             default:
-                throw new Exception("Invalid role: " + role);
+                throw new ArgumentException("Invalid role: " + role);
         }
     }
 
-    public static Player CreateMage(string name) {
-        return new Player(name: name, 
+    public static Player CreateMage(string id, string name) {
+        return new Player(id: id,
+                          name: name, 
                           role: "Mage", 
                           speed: BASESPEED, 
                           maxHealth: BASEHEALTH - 10, 
@@ -63,8 +67,9 @@ public class PlayerFactory {
                           description: MageDescription);
     }
 
-    public static Player CreateWarrior(string name) {
-        return new Player(name: name, 
+    public static Player CreateWarrior(string id, string name) {
+        return new Player(id: id,
+                          name: name, 
                           role: "Warrior", 
                           speed: BASESPEED - 2, 
                           maxHealth: BASEHEALTH + 25, 
@@ -72,8 +77,9 @@ public class PlayerFactory {
                           description: WarriorDescription);
     }
 
-    public static Player CreateRogue(string name) {
-        return new Player(name: name, 
+    public static Player CreateRogue(string id, string name) {
+        return new Player(id: id,
+                          name: name, 
                           role: "Rogue", 
                           speed: BASESPEED + 2, 
                           maxHealth: BASEHEALTH - 15, 
@@ -81,8 +87,9 @@ public class PlayerFactory {
                           description: RogueDescription);
     }
 
-    public static Player CreateCleric(string name) {
-        return new Player(name: name, 
+    public static Player CreateCleric(string id, string name) {
+        return new Player(id: id,
+                          name: name, 
                           role: "Cleric", 
                           speed: BASESPEED, 
                           maxHealth: BASEHEALTH - 10, 
@@ -90,8 +97,9 @@ public class PlayerFactory {
                           description: ClericDescription);
     }
 
-    public static Player CreateFaerie(string name) {
-        return new Player(name: name, 
+    public static Player CreateFaerie(string id, string name) {
+        return new Player(id: id,
+                          name: name, 
                           role: "Faerie", 
                           speed: BASESPEED + 3, 
                           maxHealth: BASEHEALTH - 30, 
@@ -99,8 +107,9 @@ public class PlayerFactory {
                           description: FaerieDescription);
     }
 
-    public static Player CreateScout(string name) {
-        return new Player(name: name, 
+    public static Player CreateScout(string id, string name) {
+        return new Player(id: id,
+                          name: name, 
                           role: "Scout", 
                           speed: BASESPEED - 1, 
                           maxHealth: BASEHEALTH - 10, 
