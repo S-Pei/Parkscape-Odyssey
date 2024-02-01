@@ -84,14 +84,14 @@ public class InventoryUIManager : MonoBehaviour
     private void openCardTradePopUp(GameObject card) {
         (Sprite img, string stats) = card.GetComponent<CardRenderer>().getCardImgAndStats();
 
-        GameObject focusedCard = Instantiate(cardDisplayPrefab);
+        GameObject popUpCardDisplayPanel = popUpPanel.transform.GetChild(1).gameObject;
+        GameObject focusedCard = Instantiate(cardDisplayPrefab, popUpCardDisplayPanel.transform);
+        focusedCard.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
         CardRenderer cardRenderer = focusedCard.GetComponentInChildren<CardRenderer>();
         cardRenderer.renderCard(img, stats);
         
-        GameObject popUpCardDisplayPanel = popUpPanel.transform.GetChild(1).gameObject;
-        focusedCard.transform.parent = popUpCardDisplayPanel.transform;
         focusedCard.tag = "CardsInventoryFocusedCard";
-        cardRenderer.scaleCardSize(7.5f);
+        cardRenderer.scaleCardSize(10f);
 
         popUpPanel.SetActive(true);
     }
