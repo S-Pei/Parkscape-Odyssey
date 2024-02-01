@@ -11,10 +11,10 @@ public class GameState {
     public string RoomCode = ""; 
     public Player MyPlayer = null;
     public List<Player> OtherPlayers = new();
-    public List<string> Mycards = new();
+    public List<CardName> Mycards = new();
 
     // Method will be called only during Game initialization.
-    public void Initialize(string roomCode, Player myPlayer, List<Player> otherPlayers, List<string> initialCards) {
+    public void Initialize(string roomCode, Player myPlayer, List<Player> otherPlayers, List<CardName> initialCards) {
         if (Initialized) {
             throw new Exception("GameState already initialized.");
         }
@@ -40,12 +40,12 @@ public class GameState {
         return null;
     }
 
-    public void AddCard(string card) {
+    public void AddCard(CardName card) {
         CheckInitialised();
         Mycards.Add(card);
     }
 
-    public void RemoveCard(string card) {
+    public void RemoveCard(CardName card) {
         CheckInitialised();
         Mycards.Remove(card);
     }
