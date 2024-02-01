@@ -7,6 +7,7 @@ public class LobbyManager : MonoBehaviour {
     private LobbyUIManager lobbyUIManager;
     private Dictionary<string, string> players = new Dictionary<string, string>();
     private int maxPlayerCount = 6;
+    private string roomCode = "";
 
     private bool isLeader = false;
     
@@ -24,6 +25,7 @@ public class LobbyManager : MonoBehaviour {
         // string myName = PlayerPrefs.GetString("name");
         string myName = "Player";
         this.isLeader = isLeader;
+        this.roomCode = roomCode;
         if (isLeader) {
             // Add yourself to the list of players.
             AddPlayer(SystemInfo.deviceUniqueIdentifier, myName + " (Leader)");
@@ -58,13 +60,19 @@ public class LobbyManager : MonoBehaviour {
     public void LeaderStartGame() {
         if (!isLeader)
             return;
-        // Tell everyone to start the game.
+
+        // Initialise the game state.
+        GameState gameState = GameState.Instance;
+        gameState.Initialize(SystemInfo.deviceUniqueIdentifier, roomCode, players);
+
+        // Share the Gamestate and to start the game.
 
         // Reset the lobby and disable scene.
         ExitLobby();
         StartGame();
     }
 
+    // Common method to start the game for both leader and non-leader.
     public void StartGame() {
         // Load the game scene.
         SceneManager.LoadScene("Gameplay");

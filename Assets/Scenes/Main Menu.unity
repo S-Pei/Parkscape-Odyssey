@@ -1847,7 +1847,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2141594438}
         m_TargetAssemblyTypeName: LobbyManager, NewAssembly
-        m_MethodName: StartGame
+        m_MethodName: LeaderStartGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
