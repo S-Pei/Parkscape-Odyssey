@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 
-class Skills {
+class SkillsController : MonoBehaviour {
   public Dictionary<SkillName, Skill> skillsDB = new();
 
   // Catastrophe
