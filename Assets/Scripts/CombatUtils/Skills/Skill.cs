@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-abstract class Skill {
+public abstract class Skill {
   abstract public SkillName Name { get; }
 
   public abstract void Perform(Monster monster, List<Player> players);

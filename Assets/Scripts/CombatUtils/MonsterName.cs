@@ -1,4 +1,4 @@
-enum MonsterName {
+public enum MonsterName {
   GOBLIN, DRAGON
 
 }

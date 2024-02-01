@@ -1,11 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-class Monster {
+public class Monster {
 
   public readonly MonsterName name;
-
-  public readonly Sprite img;
 
   public readonly int health;
 
@@ -13,12 +11,14 @@ class Monster {
 
   public readonly List<Skill> skills;
 
+  public readonly EnemyLevel level;
 
-  public Monster(MonsterName name, Sprite img, int health, int baseDamage, List<SkillName> skills) {
+
+  public Monster(MonsterName name, int health, int baseDamage, List<Skill> skills, EnemyLevel level) {
     this.name = name;
-    this.img = img;
     this.health = health;
     this.baseDamage = baseDamage;
-    // this.skills = skills;
+    this.skills = skills;
+    this.level = level;
   }
 }
