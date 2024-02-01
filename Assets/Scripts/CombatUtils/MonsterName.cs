@@ -1,0 +1,4 @@
+enum MonsterName {
+  GOBLIN, DRAGON
+
+}
