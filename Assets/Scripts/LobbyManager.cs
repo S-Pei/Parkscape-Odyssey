@@ -75,8 +75,7 @@ public class LobbyManager : MonoBehaviour {
     }
 
     public void SetUpLobby(string roomCode) {
-        // string myName = PlayerPrefs.GetString("name");
-        string myName = "Player";
+        string myName = PlayerPrefs.GetString("name");
         this.roomCode = roomCode;
         this.myID = "1234";
 
