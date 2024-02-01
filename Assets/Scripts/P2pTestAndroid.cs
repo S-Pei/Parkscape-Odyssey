@@ -17,6 +17,9 @@ public class P2pTestAndroid : MonoBehaviour
     
     private NetworkUtils networkUtils;
 
+    [SerializeField]
+    private TextMeshProUGUI sendStr;
+
     void Start() {
         #if UNITY_ANDROID
         networkUtils = new AndroidNetwork();
@@ -26,7 +29,7 @@ public class P2pTestAndroid : MonoBehaviour
     }
 
     void Update() {
-        dataStr.text = networkUtils.processNewMessage();
+        
     }
 
     // to be called from UI
@@ -47,7 +50,11 @@ public class P2pTestAndroid : MonoBehaviour
 
     // broadcasts "hello world" hardcoded string (called from UI)
     public void broadcastString() {
-        string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":0, \"data\":\"helloworld\"}}";
+        string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":0, \"data\":\""+ sendStr.text +"\"}}";
         networkUtils.broadcast(TESTSTRING);
+    }
+
+    public void updateString() {
+        dataStr.text = networkUtils.processNewMessage();
     }
 } 
