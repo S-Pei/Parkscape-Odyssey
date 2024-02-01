@@ -31,6 +31,29 @@ public class PlayerFactory {
         + "using his telescope and map. A master of navigation and tracking, he scouts the land ahead.";
 
     // Factory Methods
+    public static List<string> GetRoles() {
+        return new List<string> { "Mage", "Warrior", "Rogue", "Cleric", "Faerie", "Scout" };
+    }
+
+    public static Player CreatePlayer(string name, string role) {
+        switch (role) {
+            case "Mage":
+                return CreateMage(name);
+            case "Warrior":
+                return CreateWarrior(name);
+            case "Rogue":
+                return CreateRogue(name);
+            case "Cleric":
+                return CreateCleric(name);
+            case "Faerie":
+                return CreateFaerie(name);
+            case "Scout":
+                return CreateScout(name);
+            default:
+                throw new Exception("Invalid role: " + role);
+        }
+    }
+
     public static Player CreateMage(string name) {
         return new Player(name: name, 
                           role: "Mage", 
