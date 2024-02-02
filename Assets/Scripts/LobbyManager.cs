@@ -1,11 +1,10 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class LobbyManager : MonoBehaviour {
     private LobbyUIManager lobbyUIManager;
-    private Dictionary<string, string> players = new Dictionary<string, string>();
+    private Dictionary<string, string> players = new();
     private int maxPlayerCount = 6;
     private string roomCode = "";
     private bool isLeader = false;
@@ -16,7 +15,7 @@ public class LobbyManager : MonoBehaviour {
     
     // Initialisation
     void Start() {
-        lobbyUIManager = (LobbyUIManager) GetComponent(typeof(LobbyUIManager));
+        lobbyUIManager = GetComponent<LobbyUIManager>();
     }
 
     void Update() {

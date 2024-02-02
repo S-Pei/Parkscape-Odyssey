@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -8,7 +6,7 @@ public class GameManager : MonoBehaviour
 
     // Start is called before the first frame update
     void Start() {
-        gameInterfaceManager = (GameInterfaceManager) GetComponent(typeof(GameInterfaceManager));
+        gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
     }
 
