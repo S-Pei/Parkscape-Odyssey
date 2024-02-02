@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -17,14 +16,14 @@ public class LobbyUIManager : MonoBehaviour
     private PopUpManager lobbyPopUpManager;
     private PopUpManager startGameButtonPopUpManager;
 
-    private List<string> playerNames = new List<string>();
+    private List<string> playerNames = new();
     private int updateCounter = 0;
     private float spinCounter = 0;
     private int spinDuration = 1;
 
     void Start() {
         // Ensure pop up is closed at start.
-        lobbyPopUpManager = (PopUpManager) GetComponent(typeof(PopUpManager));
+        lobbyPopUpManager = GetComponent<PopUpManager>();
         lobbyPopUpManager.closePopUp();
         startGameButtonPopUpManager = (PopUpManager) startGameButton.GetComponent(typeof(PopUpManager));
     } 

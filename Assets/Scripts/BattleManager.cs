@@ -9,14 +9,14 @@ public class BattleManager : MonoBehaviour {
     
     private GameManager gameManager;
     private BattleUIManager battleUIManager;
-    private List<string> allCards;
-    private List<string> hand;
+    private List<CardName> allCards;
+    private List<CardName> hand;
 
-    public List<string> Hand {
+    public List<CardName> Hand {
         get { return hand; }
         private set {}
     }
-    private Queue<string> drawPile;
+    private Queue<CardName> drawPile;
 
     void Awake() {
         gameManager = FindObjectOfType<GameManager>();
@@ -32,11 +32,11 @@ public class BattleManager : MonoBehaviour {
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         // Shuffle the player's cards
-        allCards = new List<string>(gameManager.PlayerCards);
+        allCards = new List<CardName>(GameState.Instance.MyCards);
         Shuffle(this.allCards);
 
         // Add the shuffled cards to a queue to draw from
-        drawPile = new Queue<string>(this.allCards);
+        drawPile = new Queue<CardName>(this.allCards);
 
         // Draw the initial hand and display it
         GenerateHand();
@@ -50,7 +50,7 @@ public class BattleManager : MonoBehaviour {
         // Check whether the draw pile is empty, and reshuffle if so
         if (drawPile.Count == 0) {
             Shuffle(allCards);
-            foreach (string card in allCards) {
+            foreach (CardName card in allCards) {
                 drawPile.Enqueue(card);
             }
         }
@@ -60,7 +60,7 @@ public class BattleManager : MonoBehaviour {
     }
 
     // Shuffle the list of cards from back to front
-    private static void Shuffle(List<string> cards) {  
+    private static void Shuffle(List<CardName> cards) {  
         int n = cards.Count;
         while (n > 1) {
             // Select a random card from the front of the deck
@@ -69,7 +69,7 @@ public class BattleManager : MonoBehaviour {
             int k = Random.Range(0, n + 1);  
             
             // Swap cards[n] with cards[k]
-            string toSwap = cards[k];  
+            CardName toSwap = cards[k];  
             cards[k] = cards[n];  
             cards[n] = toSwap;  
         }
@@ -78,14 +78,14 @@ public class BattleManager : MonoBehaviour {
     private void GenerateHand() {
         // Initialise the hand as an empty list if not already done
         if (hand is null) {
-            hand = new List<string>();
+            hand = new List<CardName>();
         }
 
         while (hand.Count < HAND_SIZE) {
             // Check whether the draw pile is empty, and reshuffle if so
             if (drawPile.Count == 0) {
                 Shuffle(allCards);
-                foreach (string card in allCards) {
+                foreach (CardName card in allCards) {
                     drawPile.Enqueue(card);
                 }
             }

@@ -33,10 +33,10 @@ public class BattleUIManager : MonoBehaviour, IPointerDownHandler, IBeginDragHan
         cardsUIManager = cardsManager.GetComponent<CardsUIManager>();
     }
 
-    public void DisplayHand(List<string> cards) {
+    public void DisplayHand(List<CardName> cards) {
         // Instantiate the hand and add the card objects to displayCards
         for (int i = 0; i < cards.Count; i++) {
-            string card = cards[i];
+            CardName card = cards[i];
             GameObject newCard = displayCardAndApplyIndex(card, i);
             if (newCard != null) {
                 displayCards.Add(newCard);
@@ -51,24 +51,22 @@ public class BattleUIManager : MonoBehaviour, IPointerDownHandler, IBeginDragHan
         }
     }
 
-    private GameObject displayCardAndApplyIndex(string cardName, int i) {
-        (Sprite img, string stats)? cardDetails = cardsUIManager.findCardDetails(cardName);
-        if (cardDetails.HasValue) {
-            // Create a new instance of the card prefab, with parent BattleCanvas
-            GameObject newCard = Instantiate(cardDisplayPrefab);
-            newCard.transform.SetParent(
-                GameObject.FindGameObjectWithTag("BattleCanvas").transform, true
-            );
-            CardRenderer cardRenderer = newCard.GetComponentInChildren<CardRenderer>();
-            cardRenderer.cardIndex = i;
-            cardRenderer.renderCard(cardDetails.Value.img, cardDetails.Value.stats);
-            // cardRenderer.hardAdjustCardDetailsSize();
-            cardRenderer.scaleCardSize(6);
-            return newCard;
-        } else {
-            Debug.LogWarning($"InventoryUIManager: Card not found in CardsManager - {cardName}");
-            return null;
-        }
+    private GameObject displayCardAndApplyIndex(CardName cardName, int i) {
+        Card card = cardsUIManager.findCardDetails(cardName);
+        
+        // Create a new instance of the card prefab, with parent BattleCanvas
+        GameObject cardInstance = Instantiate(cardDisplayPrefab);
+        cardInstance.transform.SetParent(
+            GameObject.FindGameObjectWithTag("BattleCanvas").transform, true
+        );
+
+        // Set the rendered card's index and render the card
+        CardRenderer cardRenderer = cardInstance.GetComponentInChildren<CardRenderer>();
+        cardRenderer.cardIndex = i;
+        cardRenderer.renderCard(card.img, card.stats);
+        cardRenderer.scaleCardSize(6);
+
+        return cardInstance;
     }
 
     public static (Vector3, Quaternion) getCardPositionAtIndex(int i) {

@@ -8,6 +8,8 @@ TagManager:
   - CardsInventoryContent
   - CardsInventoryFocusedCard
   - BattleCanvas
+  - CardsLootFocusedCard
+  - GameManager
   layers:
   - Default
   - TransparentFX

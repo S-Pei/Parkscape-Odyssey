@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class InventoryController : MonoBehaviour
 {
-    public List<string> inventoryCards;
+    public List<CardName> inventoryCards;
 
     [SerializeField]
     private GameObject popUpPanel;

@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class CardRenderer : MonoBehaviour
 {
+    private Card card;
+
     private float FRAME_WIDTH = 64;
     private float FRAME_HEIGHT = 128;
 
@@ -34,6 +36,23 @@ public class CardRenderer : MonoBehaviour
         cardStats = cardStat;
     }
 
+    public void renderCard(Card card) {
+        this.card = card;
+
+        // Render card image
+        GameObject cardImgObj = transform.GetChild(1).gameObject;
+        Image cardImgRenderer = cardImgObj.GetComponentInChildren<Image>();
+        cardImgRenderer.sprite = card.img;
+        cardImage = card.img;
+
+
+        // Render card stats
+        GameObject cardStatsObj = transform.GetChild(2).gameObject;
+        TextMeshProUGUI textComp = cardStatsObj.GetComponentInChildren<TextMeshProUGUI>();
+        textComp.text = card.stats;
+        cardStats = card.stats;
+    }
+
     public void scaleCardSize(float scale) {
        GetComponent<RectTransform>().localScale = new Vector3(scale, scale, scale);
 
@@ -51,9 +70,14 @@ public class CardRenderer : MonoBehaviour
 
         GameObject cardsStatsObj = transform.GetChild(2).gameObject;
         cardsStatsObj.GetComponent<TextMeshProUGUI>().fontSize = fontSize;
+        cardsStatsObj.GetComponent<RectTransform>().sizeDelta = new Vector2(131.5f, 58.15f);
     }
 
     public (Sprite, string) getCardImgAndStats() {
         return (cardImage, cardStats);
+    }
+
+    public Card getCardDetails() {
+        return card;
     }
 }

@@ -1,12 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 public class RoomJoining : MonoBehaviour
 {
-    public GameObject lobbyPopUp;
-    public GameObject roomSelectionPopUp;
-    public TMP_InputField roomCodeInput;
+    [SerializeField]
+    private GameObject lobbyPopUp;
+    [SerializeField]
+    private GameObject roomSelectionPopUp;
+    [SerializeField]
+    private TMP_InputField roomCodeInput;
+    [SerializeField]
+    private TMP_InputField nameInput;
 
     private PopUpManager roomSelectionPopUpManager;
 
@@ -15,11 +18,23 @@ public class RoomJoining : MonoBehaviour
         // Ensure pop up is closed at start.
         roomSelectionPopUpManager  = (PopUpManager) roomSelectionPopUp.GetComponent(typeof(PopUpManager));
         roomSelectionPopUpManager.closePopUp();
+
+        // Pull in name from player prefs.
+        string name = PlayerPrefs.GetString("name");
+        nameInput.text = name;
     }
 
     public void JoinRoom() {
+        // Set name.
+        string name = nameInput.text;
+        PlayerPrefs.SetString("name", name);
+        if (name == "") {
+            Debug.Log("No name entered");
+            return;
+        }
+
         bool isLeader = false;
-        if (roomCodeInput == null) {
+        if (roomCodeInput.text == "") {
             Debug.Log("No room code entered");
             return;
         }

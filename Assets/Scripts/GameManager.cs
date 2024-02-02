@@ -1,32 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 
 public class GameManager : MonoBehaviour
 {
     private GameInterfaceManager gameInterfaceManager;
 
-    private List<string> playerCards = new List<string> {
-        "baseAtk", "baseAtk", "baseDef", "baseDef", "baseAtk", "baseDef"
-    };
-  
-    private bool isInEncounter = false;
-    private EventSystem eventSystem;
-    private int score = 0;
-
-    // Allow public retrieval of the player's cards, but prevent it from being modified
-    public List<string> PlayerCards {
-        get { return playerCards; }
-        private set { }
-    }
-
     // Start is called before the first frame update
     void Start() {
-        gameInterfaceManager = (GameInterfaceManager) GetComponent(typeof(GameInterfaceManager));
-        eventSystem = GameObject.Find("EventSystem").GetComponent<EventSystem>();
+        gameInterfaceManager = GetComponent<GameInterfaceManager>();
+        gameInterfaceManager.SetUpInterface();
     }
 
     // Update is called once per frame
@@ -38,8 +23,7 @@ public class GameManager : MonoBehaviour
     }
 
     public void OpenInventory() {
-        // TODO: decide if we should allow encounters with inventory open
-        gameInterfaceManager.OpenInventory(playerCards);
+        gameInterfaceManager.OpenInventory(GameState.Instance.MyCards);
     }
 
     public void CloseInventory() {
@@ -47,16 +31,16 @@ public class GameManager : MonoBehaviour
     }
 
     public void EndEncounter(int pointsToAdd=0) {
-        if (!isInEncounter) {
+        if (!GameState.Instance.IsInEncounter) {
             Debug.LogError("Attempted to end encounter when there was none.");
         }
-        Debug.Log($"Ending the encounter ({score} -> {score + pointsToAdd}).");
-        score += pointsToAdd;
-        isInEncounter = false;
+        Debug.Log($"Ending the encounter ({GameState.Instance.Score} -> {GameState.Instance.Score + pointsToAdd}).");
+        GameState.Instance.Score += pointsToAdd;
+        GameState.Instance.IsInEncounter = false;
     }
 
     public void StartEncounter() {
-        isInEncounter = true;
+        GameState.Instance.IsInEncounter = true;
         SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
     }
 
@@ -66,5 +50,9 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(secondsToWait);
         Debug.Log("Waited 10s to start battle.");
         StartEncounter();
+    }
+
+    public void OpenPlayerView() {
+        gameInterfaceManager.OpenPlayerView();
     }
 }
