@@ -110,8 +110,7 @@ public class LootController : MonoBehaviour
     }
 
     private void addCardToPlayerDeck(Card card) {
-        GameManager gameManagerScript = gameManager.GetComponent<GameManager>();
-        gameManagerScript.addCardToDeck(card);
+        GameState.Instance.AddCard(card.name);
     }
 
     public void setFocusedCard(Card card) {

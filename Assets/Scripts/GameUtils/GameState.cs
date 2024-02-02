@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+
 public class GameState {
     private static readonly Lazy<GameState> LazyGameState = new(() => new GameState());
 
@@ -11,17 +12,47 @@ public class GameState {
     public string RoomCode = ""; 
     public Player MyPlayer = null;
     public List<Player> OtherPlayers = new();
-    public List<CardName> Mycards = new();
+    public List<CardName> MyCards = new();
+
+    private List<CardName> InitialCards = new List<CardName> { 
+        CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
+        CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
+    };
 
     // Method will be called only during Game initialization.
-    public void Initialize(string roomCode, Player myPlayer, List<Player> otherPlayers, List<CardName> initialCards) {
-        if (Initialized) {
-            throw new Exception("GameState already initialized.");
+    public void Initialize(string myId, string roomCode, Dictionary<string, string> players) {
+        CheckNotInitialised();
+
+        RoomCode = roomCode;
+
+        // Random roles for each player.
+        List<string> roles = PlayerFactory.GetRoles();
+        Random random = new Random();
+        foreach (string id in players.Keys) {
+            string name = players[id];
+            string role = roles[random.Next(roles.Count)];
+            roles.Remove(role);
+            Player player = PlayerFactory.CreatePlayer(id, name, role);
+            if (id == myId) {
+                MyPlayer = player;
+            } else {
+                OtherPlayers.Add(player);
+            }
         }
+
+        // Set initial cards.
+        MyCards = InitialCards;
+
+        Initialized = true;
+    }
+
+    // Method to specify the initial state of the game.
+    public void Initialize(string roomCode, Player myPlayer, List<Player> otherPlayers, List<CardName> initialCards) {
+        CheckNotInitialised();
         RoomCode = roomCode;
         MyPlayer = myPlayer;
         OtherPlayers = otherPlayers;
-        Mycards = initialCards;
+        MyCards = initialCards;
         Initialized = true;
     }
 
@@ -42,17 +73,23 @@ public class GameState {
 
     public void AddCard(CardName card) {
         CheckInitialised();
-        Mycards.Add(card);
+        MyCards.Add(card);
     }
 
     public void RemoveCard(CardName card) {
         CheckInitialised();
-        Mycards.Remove(card);
+        MyCards.Remove(card);
     }
 
     private void CheckInitialised() {
         if (!Initialized) {
-            throw new Exception("GameState not initialized.");
+            throw new InvalidOperationException("GameState not initialized.");
+        }
+    }
+
+    private void CheckNotInitialised() {
+        if (Initialized) {
+            throw new InvalidOperationException("GameState already initialized.");
         }
     }
 
