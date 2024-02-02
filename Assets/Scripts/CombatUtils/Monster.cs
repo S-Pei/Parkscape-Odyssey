@@ -9,6 +9,8 @@ public class Monster {
 
   public readonly int health;
 
+  public readonly int defense;
+
   public readonly int baseDamage;
 
   public readonly List<Skill> skills;
@@ -16,10 +18,11 @@ public class Monster {
   public readonly EnemyLevel level;
 
 
-  public Monster(MonsterName name, Sprite img, int health, int baseDamage, List<Skill> skills, EnemyLevel level) {
+  public Monster(MonsterName name, Sprite img, int health, int defense, int baseDamage, List<Skill> skills, EnemyLevel level) {
     this.name = name;
     this.img = img;
     this.health = health;
+    this.defense = defense;
     this.baseDamage = baseDamage;
     this.skills = skills;
     this.level = level;

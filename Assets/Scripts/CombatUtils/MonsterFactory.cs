@@ -45,6 +45,7 @@ public sealed class MonsterFactory {
     return new Monster(name: MonsterName.GOBLIN,
                        img: img,
                        health: health,
+                       defense: 0,
                        baseDamage: IntRandomizer(5, 10), 
                        skills: skills,
                        level: health >= 50 ? EnemyLevel.MEDIUM : EnemyLevel.EASY);
@@ -66,6 +67,7 @@ public sealed class MonsterFactory {
     return new Monster(name: MonsterName.DRAGON,
                        img: img,
                        health: IntRandomizer(250, 400), 
+                       defense: 0,
                        baseDamage: IntRandomizer(15, 30), 
                        skills: skills,
                        level: health >= 300 ? EnemyLevel.HARD : EnemyLevel.BOSS);
