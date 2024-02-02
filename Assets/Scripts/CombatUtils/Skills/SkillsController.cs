@@ -65,7 +65,7 @@ class SkillsController {
     if (skillsDB.ContainsKey(name)) {
       return skillsDB[name];
     }
-
+    
     return null;
   }
 }
