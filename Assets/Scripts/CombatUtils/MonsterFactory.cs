@@ -35,8 +35,8 @@ public sealed class MonsterFactory {
     {
         skillsController.Get(SkillName.NORMAL_ATTACK),
         skillsController.Get(SkillName.BLOCK),
+        skillsController.Get(SkillName.ENRAGE),
         // skillsController.Get(SkillName.TAUNT),
-        // skillsController.Get(SkillName.ENRAGE)
     };
 
     int health = IntRandomizer(30, 55);

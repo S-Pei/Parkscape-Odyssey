@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 class SkillsController {
   public Dictionary<SkillName, Skill> skillsDB = new();
@@ -13,7 +12,7 @@ class SkillsController {
     public override SkillName Name => SkillName.NORMAL_ATTACK;
 
     public override void Perform(Monster monster, List<Player> players) {
-      players[0].TakeDamage(monster.baseDamage);
+      players[0].TakeDamage(monster.BaseDamage);
     }
   }
 
@@ -21,7 +20,7 @@ class SkillsController {
     public override SkillName Name => SkillName.AOE_NORMAL_ATTACK;
 
     public override void Perform(Monster monster, List<Player> players) {
-      players[0].TakeDamage(Convert.ToInt32(monster.baseDamage * 0.8));
+      players[0].TakeDamage(Convert.ToInt32(monster.BaseDamage * 0.8));
     }
   }
 
@@ -29,7 +28,16 @@ class SkillsController {
     public override SkillName Name => SkillName.BLOCK;
 
     public override void Perform(Monster monster, List<Player> players) {
-      monster.increaseDef();
+      monster.IncreaseDef();
+    }
+  }
+
+  private class SKEnrage : Skill {
+    public override SkillName Name => SkillName.ENRAGE;
+
+    public override void Perform(Monster monster, List<Player> players) {
+      monster.TakeDamage(6);
+      monster.Strengthen(10);
     }
   }
 
@@ -49,6 +57,7 @@ class SkillsController {
     skillsDB.Add(SkillName.NORMAL_ATTACK, new SKNormalAttack());
     skillsDB.Add(SkillName.AOE_NORMAL_ATTACK, new SKAoeNormalAttack());
     skillsDB.Add(SkillName.BLOCK, new SKBlock());
+    skillsDB.Add(SkillName.ENRAGE, new SKEnrage());
     skillsDB.Add(SkillName.CATASTROPHE, new SKCatastrophe());
   }
 
