@@ -33,11 +33,10 @@ public sealed class MonsterFactory {
   private static Monster CreateGoblin(Sprite img) {
     List<Skill> skills = new()
     {
-        // skillsController.Get(SkillName.NORMAL_ATTACK),
+        skillsController.Get(SkillName.NORMAL_ATTACK),
+        skillsController.Get(SkillName.BLOCK),
         // skillsController.Get(SkillName.TAUNT),
-        // skillsController.Get(SkillName.BLOCK),
         // skillsController.Get(SkillName.ENRAGE)
-        skillsController.Get(SkillName.CATASTROPHE),
     };
 
     int health = IntRandomizer(30, 55);
@@ -46,6 +45,7 @@ public sealed class MonsterFactory {
                        img: img,
                        health: health,
                        defense: 0,
+                       defenseAmount: 15,
                        baseDamage: IntRandomizer(5, 10), 
                        skills: skills,
                        level: health >= 50 ? EnemyLevel.MEDIUM : EnemyLevel.EASY);
@@ -54,9 +54,9 @@ public sealed class MonsterFactory {
   private static Monster CreateDragon(Sprite img) {
     List<Skill> skills = new()
     {
-        // skillsController.Get(SkillName.NORMAL_ATTACK),
-        // skillsController.Get(SkillName.AOE_NORMAL_ATTACK),
-        // skillsController.Get(SkillName.BLOCK),
+        skillsController.Get(SkillName.NORMAL_ATTACK),
+        skillsController.Get(SkillName.AOE_NORMAL_ATTACK),
+        skillsController.Get(SkillName.BLOCK),
         // skillsController.Get(SkillName.ENRAGE),
         // skillsController.Get(SkillName.FLY),
         skillsController.Get(SkillName.CATASTROPHE),
@@ -68,6 +68,7 @@ public sealed class MonsterFactory {
                        img: img,
                        health: IntRandomizer(250, 400), 
                        defense: 0,
+                       defenseAmount: 80,
                        baseDamage: IntRandomizer(15, 30), 
                        skills: skills,
                        level: health >= 300 ? EnemyLevel.HARD : EnemyLevel.BOSS);
