@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public sealed class MonsterFactory {
 
@@ -14,44 +15,56 @@ public sealed class MonsterFactory {
   private readonly static SkillsController skillsController = new();
 
   private static int IntRandomizer(int min, int max) {
-    Random random = new();
+    System.Random random = new();
     double multiplier = random.NextDouble();
     return min + Convert.ToInt32((max - min) * multiplier);
   }
 
+  public static Monster CreateMonster(MonsterName name, Sprite img) {
+      return name switch
+      {
+          MonsterName.GOBLIN => CreateGoblin(img),
+          MonsterName.DRAGON => CreateDragon(img),
+          _ => null,
+      };
+  }
 
-  public static Monster CreateGoblin() {
+
+  private static Monster CreateGoblin(Sprite img) {
     List<Skill> skills = new()
     {
-        skillsController.Get(SkillName.NORMAL_ATTACK),
-        skillsController.Get(SkillName.TAUNT),
-        skillsController.Get(SkillName.BLOCK),
-        skillsController.Get(SkillName.ENRAGE)
+        // skillsController.Get(SkillName.NORMAL_ATTACK),
+        // skillsController.Get(SkillName.TAUNT),
+        // skillsController.Get(SkillName.BLOCK),
+        // skillsController.Get(SkillName.ENRAGE)
+        skillsController.Get(SkillName.CATASTROPHE),
     };
 
     int health = IntRandomizer(30, 55);
 
-    return new Monster(name: MonsterName.GOBLIN, 
-                       health: health, 
+    return new Monster(name: MonsterName.GOBLIN,
+                       img: img,
+                       health: health,
                        baseDamage: IntRandomizer(5, 10), 
                        skills: skills,
                        level: health >= 50 ? EnemyLevel.MEDIUM : EnemyLevel.EASY);
   }
 
-  public static Monster CreateDragon() {
+  private static Monster CreateDragon(Sprite img) {
     List<Skill> skills = new()
     {
-        skillsController.Get(SkillName.NORMAL_ATTACK),
-        skillsController.Get(SkillName.AOE_NORMAL_ATTACK),
-        skillsController.Get(SkillName.BLOCK),
-        skillsController.Get(SkillName.ENRAGE),
-        skillsController.Get(SkillName.FLY),
+        // skillsController.Get(SkillName.NORMAL_ATTACK),
+        // skillsController.Get(SkillName.AOE_NORMAL_ATTACK),
+        // skillsController.Get(SkillName.BLOCK),
+        // skillsController.Get(SkillName.ENRAGE),
+        // skillsController.Get(SkillName.FLY),
         skillsController.Get(SkillName.CATASTROPHE),
     };
 
     int health = IntRandomizer(250, 400);
 
-    return new Monster(name: MonsterName.DRAGON, 
+    return new Monster(name: MonsterName.DRAGON,
+                       img: img,
                        health: IntRandomizer(250, 400), 
                        baseDamage: IntRandomizer(15, 30), 
                        skills: skills,

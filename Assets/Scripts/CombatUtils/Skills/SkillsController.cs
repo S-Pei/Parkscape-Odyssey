@@ -1,8 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-class SkillsController : MonoBehaviour {
+class SkillsController {
   public Dictionary<SkillName, Skill> skillsDB = new();
+
+  public SkillsController() {
+      Initialise();
+  }
 
   // Catastrophe
   private class SKCatastrophe : Skill {
@@ -21,10 +25,6 @@ class SkillsController : MonoBehaviour {
   }
 
   public Skill Get(SkillName name) {
-    if (skillsDB.Count == 0) {
-      Initialise();
-    }
-
     if (skillsDB.ContainsKey(name)) {
       return skillsDB[name];
     }
