@@ -13,6 +13,8 @@ public class GameState {
     public Player MyPlayer = null;
     public List<Player> OtherPlayers = new();
     public List<CardName> MyCards = new();
+    public bool IsInEncounter = false;
+    public int Score = 0;
 
     private List<CardName> InitialCards = new List<CardName> { 
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
