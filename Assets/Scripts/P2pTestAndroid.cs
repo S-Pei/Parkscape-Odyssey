@@ -15,6 +15,9 @@ public class P2pTestAndroid : MonoBehaviour
     
     private NetworkUtils networkUtils;
 
+    [SerializeField]
+    private TextMeshProUGUI sendStr;
+
     void Start() {
         networkUtils = NetworkManager.Instance.NetworkUtils;
         networkUtils.setRoomCode("1234");
@@ -23,10 +26,6 @@ public class P2pTestAndroid : MonoBehaviour
     }
 
     void Update() {
-        // System.Func<MessageInfo, CallbackStatus> callback = (MessageInfo msgInfo) => {
-        //     return CallbackStatus.PROCESSED;
-        // };
-        // dataStr.text = networkUtils.onReceive(callback);
     }
 
     // to be called from UI
@@ -48,7 +47,11 @@ public class P2pTestAndroid : MonoBehaviour
 
     // broadcasts "hello world" hardcoded string (called from UI)
     public void broadcastString() {
-        string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":\"TEST\", \"data\":\"helloworld\"}}";
+        // Test string for android
+        // string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":\"TEST\", \"data\":\"helloworld\"}}";
+        // networkUtils.broadcast(TESTSTRING);
+        // Test string for ios
+        string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":0, \"data\":\""+ sendStr.text +"\"}}";
         networkUtils.broadcast(TESTSTRING);
     }
 
@@ -64,5 +67,10 @@ public class P2pTestAndroid : MonoBehaviour
             return CallbackStatus.NOT_PROCESSED;
         };
         networkUtils.onReceive(callback);
+        
+    }
+
+    public void updateString() {
+        dataStr.text = networkUtils.processNewMessage();
     }
 } 
