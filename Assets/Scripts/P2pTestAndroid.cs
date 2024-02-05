@@ -13,27 +13,24 @@ public class P2pTestAndroid : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI dataStr;
     
-    private AndroidJavaObject p2pObj;
-    
     private NetworkUtils networkUtils;
 
     [SerializeField]
     private TextMeshProUGUI sendStr;
 
     void Start() {
-        #if UNITY_ANDROID
-        networkUtils = new AndroidNetwork();
+        networkUtils = NetworkManager.Instance.NetworkUtils;
         networkUtils.setRoomCode("1234");
         name.text = networkUtils.getName();
-        #endif
+        InvokeRepeating("OnReceive", 0.0f, 1.0f);
     }
 
     void Update() {
-        
     }
 
     // to be called from UI
     public void startDiscovering() {
+        networkUtils.stopDiscovering();
         networkUtils.startDiscovering();
     }
 
@@ -50,8 +47,27 @@ public class P2pTestAndroid : MonoBehaviour
 
     // broadcasts "hello world" hardcoded string (called from UI)
     public void broadcastString() {
+        // Test string for android
+        // string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":\"TEST\", \"data\":\"helloworld\"}}";
+        // networkUtils.broadcast(TESTSTRING);
+        // Test string for ios
         string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":0, \"data\":\""+ sendStr.text +"\"}}";
         networkUtils.broadcast(TESTSTRING);
+    }
+
+    public void OnReceive() {
+        System.Func<Message, CallbackStatus> callback = (Message msg) => {
+            if (msg.messageInfo.messageType == MessageType.TEST) {
+                TestMessageInfo testMsgInfo = (TestMessageInfo) msg.messageInfo;
+                Debug.Log("ran callback");
+                Debug.Log("received message: " + testMsgInfo.data);
+                dataStr.text = testMsgInfo.data;
+                return CallbackStatus.PROCESSED;
+            }
+            return CallbackStatus.NOT_PROCESSED;
+        };
+        networkUtils.onReceive(callback);
+        
     }
 
     public void updateString() {

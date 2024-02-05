@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 public class TestMessageInfo : MessageInfo {
-    private string data {get; set;}
-    public string type {get; set;} = "test";
+    public string data {get; set;}
+    public MessageType messageType {get; set;} = MessageType.TEST;
 
     public TestMessageInfo(string data) {
         this.data = data;
