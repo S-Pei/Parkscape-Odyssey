@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MonsterController : MonoBehaviour
@@ -9,7 +11,7 @@ public class MonsterController : MonoBehaviour
     [SerializeField]
     private List<Sprite> monsterImgs;
 
-    private readonly Dictionary<MonsterName, Monster> allMonsters = new();
+    private readonly Dictionary<MonsterName, Sprite> allMonsters = new();
 
 
     void Awake() {
@@ -20,13 +22,17 @@ public class MonsterController : MonoBehaviour
 
         // Initialise data for all monsters
         for (int i = 0; i < monsterNames.Count; i++) {
-            Monster monsterData = MonsterFactory.CreateMonster(monsterNames[i], monsterImgs[i]);
-            if (monsterData != null) {
-                allMonsters.Add(monsterNames[i], monsterData);
-                Debug.Log($"MonsterController: Successfully initialised monster - {monsterNames[i]}");
-            } else {
-                Debug.LogWarning($"MonsterController: Error initializing montser - {monsterNames[i]}");
-            }
+            allMonsters.Add(monsterNames[i], monsterImgs[i]);
         }
+    }
+
+    public Monster createMonster(MonsterName name) {
+        Sprite img = allMonsters[name];
+        return MonsterFactory.CreateMonster(name, img);
+    }
+
+    public MonsterName GetRandomMonster() {
+        int index = UnityEngine.Random.Range(0, monsterNames.Count);
+        return monsterNames[index];
     }
 }

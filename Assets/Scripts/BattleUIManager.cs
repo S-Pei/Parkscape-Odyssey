@@ -13,7 +13,11 @@ public class BattleUIManager : MonoBehaviour, IPointerDownHandler, IBeginDragHan
     [SerializeField]
     private GameObject cardDisplayPrefab;
     [SerializeField]
+    private GameObject monsterDisplayPrefab;
+    [SerializeField]
     private List<GameObject> displayCards = new List<GameObject>();
+    [SerializeField]
+    private GameObject enemyPanel;
     private GameObject cardsManager;
     private CardsUIManager cardsUIManager;
 
@@ -49,6 +53,12 @@ public class BattleUIManager : MonoBehaviour, IPointerDownHandler, IBeginDragHan
             card.transform.position = cardPosition;
             card.transform.rotation = cardRotation;
         }
+    }
+
+    public void DisplayMonster(Monster monster) {
+        GameObject monsterInstance = Instantiate(monsterDisplayPrefab, enemyPanel.transform, false);
+        MonsterRenderer monsterRenderer = monsterInstance.GetComponentInChildren<MonsterRenderer>();
+        monsterRenderer.renderMonster(monster);
     }
 
     private GameObject displayCardAndApplyIndex(CardName cardName, int i) {

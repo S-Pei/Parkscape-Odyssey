@@ -9,6 +9,7 @@ public class BattleManager : MonoBehaviour {
     
     private GameManager gameManager;
     private BattleUIManager battleUIManager;
+    private MonsterController monsterController;
     private List<CardName> allCards;
     private List<CardName> hand;
 
@@ -16,11 +17,15 @@ public class BattleManager : MonoBehaviour {
         get { return hand; }
         private set {}
     }
+
     private Queue<CardName> drawPile;
+
+    private Monster monster;
 
     void Awake() {
         gameManager = FindObjectOfType<GameManager>();
         battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
+        monsterController = (MonsterController) GetComponent(typeof(MonsterController));
     }
 
     void Start() {
@@ -38,10 +43,20 @@ public class BattleManager : MonoBehaviour {
         // Add the shuffled cards to a queue to draw from
         drawPile = new Queue<CardName>(this.allCards);
 
-        // Draw the initial hand and display it
+        // Draw the initial hand
         GenerateHand();
         Debug.Log(string.Format("Initial hand: ({0}).", string.Join(", ", this.hand)));
+
+        // Select a random monster to fight
+        MonsterName monsterName = monsterController.GetRandomMonster();
+        monster = monsterController.createMonster(monsterName);
+
+        // Print which monster the player is fighting
+        Debug.Log(string.Format("Fighting {0}.", monsterName));
+
+        // Display the hand and monster
         battleUIManager.DisplayHand(hand);
+        battleUIManager.DisplayMonster(monster);
 
         // StartCoroutine(UnloadTheScene());
     }
