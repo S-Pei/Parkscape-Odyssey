@@ -13,24 +13,25 @@ public class P2pTestAndroid : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI dataStr;
     
-    private AndroidJavaObject p2pObj;
-    
     private NetworkUtils networkUtils;
 
     void Start() {
-        #if UNITY_ANDROID
-        networkUtils = new AndroidNetwork();
+        networkUtils = NetworkManager.Instance.NetworkUtils;
         networkUtils.setRoomCode("1234");
         name.text = networkUtils.getName();
-        #endif
+        InvokeRepeating("OnReceive", 0.0f, 1.0f);
     }
 
     void Update() {
-        dataStr.text = networkUtils.processNewMessage();
+        // System.Func<MessageInfo, CallbackStatus> callback = (MessageInfo msgInfo) => {
+        //     return CallbackStatus.PROCESSED;
+        // };
+        // dataStr.text = networkUtils.onReceive(callback);
     }
 
     // to be called from UI
     public void startDiscovering() {
+        networkUtils.stopDiscovering();
         networkUtils.startDiscovering();
     }
 
@@ -47,7 +48,21 @@ public class P2pTestAndroid : MonoBehaviour
 
     // broadcasts "hello world" hardcoded string (called from UI)
     public void broadcastString() {
-        string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":0, \"data\":\"helloworld\"}}";
+        string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":\"TEST\", \"data\":\"helloworld\"}}";
         networkUtils.broadcast(TESTSTRING);
+    }
+
+    public void OnReceive() {
+        System.Func<Message, CallbackStatus> callback = (Message msg) => {
+            if (msg.messageInfo.messageType == MessageType.TEST) {
+                TestMessageInfo testMsgInfo = (TestMessageInfo) msg.messageInfo;
+                Debug.Log("ran callback");
+                Debug.Log("received message: " + testMsgInfo.data);
+                dataStr.text = testMsgInfo.data;
+                return CallbackStatus.PROCESSED;
+            }
+            return CallbackStatus.NOT_PROCESSED;
+        };
+        networkUtils.onReceive(callback);
     }
 } 
