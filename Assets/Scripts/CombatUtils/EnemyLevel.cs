@@ -1,4 +1,4 @@
-enum EnemyLevel {
+public enum EnemyLevel {
   EASY,
   MEDIUM,
   HARD,
