@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+using UnityEngine.UI;
+using TMPro;
 
 public class BattleManager : MonoBehaviour {
     public const int HAND_SIZE = 5;
@@ -12,10 +13,29 @@ public class BattleManager : MonoBehaviour {
     private List<CardName> allCards;
     private List<CardName> hand;
 
+    [SerializeField]
+    private GameObject playerCurrentHealth;
+
+    [SerializeField]
+    private GameObject playerCurrentMana;
+
+    [SerializeField]
+    private GameObject playerMaxMana;
+
+    [SerializeField]
+    private GameObject playerDrawPileNumber;
+
+    [SerializeField]
+    private GameObject playerDiscardPileNumber;
+
+    [SerializeField]
+    private List<GameObject> otherPlayerStat;
+    
+
     public List<CardName> Hand {
         get { return hand; }
         private set {}
-    }
+    }  
     private Queue<CardName> drawPile;
 
     void Awake() {
@@ -41,7 +61,16 @@ public class BattleManager : MonoBehaviour {
         // Draw the initial hand and display it
         GenerateHand();
         Debug.Log(string.Format("Initial hand: ({0}).", string.Join(", ", this.hand)));
-        battleUIManager.DisplayHand(hand);
+        battleUIManager.DisplayHand(hand); 
+
+        // Initializes Player's health, current mana and max mana
+        UpdatesPlayerStats();
+
+        // Initializes Player's card number
+        UpdateCardNumber();
+
+        // Initializes Player's Stat
+        InitializesPlayerStat();
 
         // StartCoroutine(UnloadTheScene());
     }
@@ -56,10 +85,50 @@ public class BattleManager : MonoBehaviour {
         }
 
         // Add a card to the hand
-        hand.Add(drawPile.Dequeue());
+        hand.Add(drawPile.Dequeue()); 
     }
 
-    // Shuffle the list of cards from back to front
+    // Updates Player's health, current mana and max mana
+    private void UpdatesPlayerStats() {
+        Player myPlayer = GameState.Instance.MyPlayer;
+        playerCurrentHealth.GetComponent<TextMeshProUGUI>().text = myPlayer.CurrentHealth.ToString();
+        playerCurrentMana.GetComponent<TextMeshProUGUI>().text = myPlayer.Mana.ToString();
+        playerMaxMana.GetComponent<TextMeshProUGUI>().text = myPlayer.MaxMana.ToString();
+    }
+
+    private void UpdateCardNumber() {
+        playerDrawPileNumber.GetComponent<TextMeshProUGUI>().text = (drawPile.Count).ToString();
+        playerDiscardPileNumber.GetComponent<TextMeshProUGUI>().text = (allCards.Count - drawPile.Count - hand.Count).ToString();
+    }
+
+    // Initializes other Player's health and icon.
+    private void InitializesPlayerStat() {
+        List<Player> otherPlayers = GameState.Instance.OtherPlayers;
+        for (int i = 0; i < GameState.Instance.maxPlayerCount - 1; i++) {
+            if (i < otherPlayers.Count) {
+                otherPlayerStat[i].transform.GetChild(0).GetComponent<Image>().sprite = otherPlayers[i].Icon;
+                otherPlayerStat[i].transform.GetChild(1)
+                                  .transform.GetChild(0)
+                                  .GetComponent<TextMeshProUGUI>().text = otherPlayers[i].CurrentHealth.ToString();
+            }
+            else {
+                otherPlayerStat[i].transform.GetChild(0).gameObject.SetActive(false);
+                otherPlayerStat[i].transform.GetChild(1).gameObject.SetActive(false);
+            }
+        }
+    }
+
+    // Updates other Player's health.
+    private void UpdateOtherPlayerStats() {
+        List<Player> otherPlayers = GameState.Instance.OtherPlayers;
+        for (int i = 0; i < otherPlayers.Count; i++) {
+            otherPlayerStat[i].transform.GetChild(1)
+                                .transform.GetChild(0)
+                                .GetComponent<TextMeshProUGUI>().text = otherPlayers[i].CurrentHealth.ToString();
+        }
+    }
+
+    // Shuffle the list of cards from back to front 
     private static void Shuffle(List<CardName> cards) {  
         int n = cards.Count;
         while (n > 1) {

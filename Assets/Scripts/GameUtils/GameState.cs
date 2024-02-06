@@ -7,6 +7,8 @@ public class GameState {
 
     public static GameState Instance { get { return LazyGameState.Value; } }
 
+    public int maxPlayerCount = 6;
+
     // Fields
     public bool Initialized = false;
     public string RoomCode = ""; 
