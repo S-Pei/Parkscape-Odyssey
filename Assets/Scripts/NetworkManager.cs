@@ -28,6 +28,9 @@ public class NetworkManager : MonoBehaviour {
         #if UNITY_ANDROID
         networkUtils = AndroidNetwork.Instance;
         #endif
+        #if UNITY_IOS
+        networkUtils = IOSNetwork.Instance;
+        #endif
         // InvokeRepeating("OnReceive", 0.0f, 1.0f);
     }
 

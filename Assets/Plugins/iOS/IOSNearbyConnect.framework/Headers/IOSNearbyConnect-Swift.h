@@ -310,13 +310,13 @@ SWIFT_EXTERN int8_t const * _Nonnull modelGetConnectedEndpoints(void) SWIFT_WARN
 SWIFT_EXTERN int8_t const * _Nonnull modelGetDiscoveredEndpoints(void) SWIFT_WARN_UNUSED_RESULT;
 
 
-SWIFT_EXTERN int8_t const * _Nonnull modelGetMessages(void) SWIFT_WARN_UNUSED_RESULT;
-
-
-SWIFT_EXTERN int8_t const * _Nonnull modelGetNewMessages(void) SWIFT_WARN_UNUSED_RESULT;
-
-
 SWIFT_EXTERN void modelInitialize(void);
+
+
+SWIFT_EXTERN int8_t const * _Nonnull modelPeekMessage(void) SWIFT_WARN_UNUSED_RESULT;
+
+
+SWIFT_EXTERN int8_t const * _Nonnull modelPopMessage(void) SWIFT_WARN_UNUSED_RESULT;
 
 
 SWIFT_EXTERN void modelSendString(int8_t const * _Nonnull message, int8_t const * _Nonnull endpointID);
