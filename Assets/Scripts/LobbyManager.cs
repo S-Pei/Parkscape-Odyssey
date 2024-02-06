@@ -184,7 +184,7 @@ public class LobbyManager : MonoBehaviour {
         network.broadcast(startGameMessage.toJson());
 
         // Reset the lobby and disable scene.
-        ExitLobby();
+        AcceptMessages = false;
         StartGame();
     }
 
@@ -215,6 +215,12 @@ public class LobbyManager : MonoBehaviour {
         if (message.messageInfo.messageType != MessageType.LOBBYMESSAGE)
             return CallbackStatus.NOT_PROCESSED;
         
+        
+        // Ignore if no longer accepting messages.
+        if (!AcceptMessages)
+            return CallbackStatus.DORMANT;
+
+
         // Ignore if no longer accepting messages.
         if (!AcceptMessages)
             return CallbackStatus.DORMANT;
@@ -223,6 +229,10 @@ public class LobbyManager : MonoBehaviour {
         switch (lobbyMessage.Type) {
             case LobbyMessageType.MEMBER_AM_I_IN:
             case LobbyMessageType.MEMBER_JOIN:
+                // Ignore if not accepting
+                if (!AcceptMessages)
+                    break;
+
                 // Ignore if not leader.
                 if (!isLeader)
                     break;
@@ -264,6 +274,9 @@ public class LobbyManager : MonoBehaviour {
                 }
                 break;
             case LobbyMessageType.LEADER_PLAYERS:
+                if (!AcceptMessages)
+                    break;
+
                 if (isLeader)
                     break;
 
@@ -298,8 +311,6 @@ public class LobbyManager : MonoBehaviour {
                         && !player.Key.Equals(myID) && !player.Key.Equals(leaderID))
                         RemovePlayer(player.Key);
                 }
-
-                
                 break;
             case LobbyMessageType.LEADER_START:
                 GameState gameState = GameState.Instance;
@@ -307,6 +318,12 @@ public class LobbyManager : MonoBehaviour {
                 StartGame();
                 break;
             case LobbyMessageType.LEADER_LEAVE:
+                if (isLeader)
+                    break;
+
+                if (!AcceptMessages)
+                    break;
+
                 ExitLobby();
                 break;
         }
