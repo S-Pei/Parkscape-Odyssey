@@ -24,16 +24,18 @@ public class RoomJoining : MonoBehaviour
         nameInput.text = name;
     }
 
-    public void JoinRoom() {
-        // Set name.
+    void SetName() {
         string name = nameInput.text;
         PlayerPrefs.SetString("name", name);
         if (name == "") {
             Debug.Log("No name entered");
             return;
         }
+    }
 
-        bool isLeader = false;
+    public void JoinRoom(bool isLeader) {
+        SetName();
+
         if (roomCodeInput.text == "") {
             Debug.Log("No room code entered");
             return;
@@ -43,7 +45,7 @@ public class RoomJoining : MonoBehaviour
 
         // Set Up Lobby
         LobbyManager lobbyManager = (LobbyManager) lobbyPopUp.GetComponent(typeof(LobbyManager));
-        lobbyManager.SetUpLobby(roomCode);
+        lobbyManager.SetUpLobby(roomCode, isLeader);
         
         // Disable Room Selection Pop Up
         roomSelectionPopUpManager.closePopUp();

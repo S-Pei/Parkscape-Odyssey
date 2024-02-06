@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 public class Message {
     private string messageID;
-    private string sentFrom;
+    public string sentFrom;
     [JsonProperty("messageInfo")]
     public MessageInfo messageInfo{get; set;}
     public string toJson() {
