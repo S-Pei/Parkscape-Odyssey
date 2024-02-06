@@ -6,12 +6,18 @@ using TMPro;
 
 public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandler, IDragHandler {
     private RectTransform rectTransform;
+
+    private float canvasScaleFactor;
     // private BattleUIManager battleUIManager;
 
     
     private void Awake() {
+        Canvas canvas = (Canvas) FindObjectOfType(typeof(Canvas));
+        canvasScaleFactor = canvas.scaleFactor;
         rectTransform = GetComponent<RectTransform>();
         // battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
+        // Print the scale factor of the canvas
+        // Debug.Log("Canvas scale factor: " + canvas.scaleFactor);
     }
 
     public void OnBeginDrag(PointerEventData eventData) {
@@ -25,7 +31,7 @@ public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandl
     }
     public void OnDrag(PointerEventData eventData) {
         // Move the card to follow the pointer every frame
-        rectTransform.anchoredPosition += eventData.delta;
+        rectTransform.anchoredPosition += eventData.delta / canvasScaleFactor;
     }
 
     private IEnumerator ResetCardPosition (float time) {

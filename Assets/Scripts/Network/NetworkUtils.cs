@@ -31,6 +31,8 @@ public abstract class NetworkUtils
     public abstract void initP2P();
     /* Mainly for testing. */
     public abstract string getName();
+    /* Listener function */
+    public abstract void onReceive(System.Func<Message, CallbackStatus> callback);
 
     /* Called in Update to process any incoming messages. */
     public string processNewMessage() {
@@ -43,4 +45,10 @@ public abstract class NetworkUtils
         }
         return currentMessage;
     }
+}
+
+public enum CallbackStatus {
+    PROCESSED=0,
+    NOT_PROCESSED=1,
+    DORMANT=2
 }

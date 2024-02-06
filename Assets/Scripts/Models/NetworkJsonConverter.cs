@@ -13,19 +13,30 @@ public class NetworkJsonConverter : JsonConverter
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
         JObject jsonObject = JObject.Load(reader);
-        Debug.Log("jsonObject: " + jsonObject.ToString());
+
+        Debug.Log("Parsing messageinfo");
 
         // Determine the type based on the "type" field
-        if (jsonObject["type"] == null)
+        if (jsonObject["messageType"] == null)
         {
             throw new JsonSerializationException("type field is missing");
         }
-        int type = jsonObject.Value<int>("type");
-        Debug.Log("type: " + type);
-        if (Enum.IsDefined(typeof(MessageType), type))
+        string type = jsonObject.Value<string>("messageType");
+        
+        if (type.Equals(MessageType.TEST.ToString()))
         {
             return jsonObject.ToObject<TestMessageInfo>(serializer);
+        } 
+        else if (type.Equals(MessageType.LOBBYMESSAGE.ToString()))
+        {
+            return jsonObject.ToObject<LobbyMessage>(serializer);
+        } 
+        else if (type.Equals(MessageType.GAMESTATE.ToString()))
+        {
+            return jsonObject.ToObject<GameStateMessage>(serializer);
         }
+
+        Debug.Log("Parsed messageinfo" + jsonObject.ToString());
 
         throw new JsonSerializationException("Unknown type");
     }
