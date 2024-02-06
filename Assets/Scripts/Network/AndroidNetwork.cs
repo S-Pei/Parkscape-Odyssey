@@ -1,12 +1,23 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 #if UNITY_ANDROID
 public class AndroidNetwork : NetworkUtils {
     private AndroidJavaObject p2pObj;
     private NetworkUtils networkUtils;
+    private static AndroidNetwork instance;
 
-    public AndroidNetwork() {
+    public static AndroidNetwork Instance {
+        get {
+            if (instance == null) {
+                instance = new AndroidNetwork();
+            }
+            return instance;
+        }
+    }
+
+    private AndroidNetwork() {
         this.messageIDs = new HashSet<string>();
         AndroidJavaClass unityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
         p2pObj = unityClass.GetStatic<AndroidJavaObject>("currentActivity"); 
@@ -66,6 +77,17 @@ public class AndroidNetwork : NetworkUtils {
 
     public override string getName() {
         return p2pObj.Call<string>("getName");
+    }
+
+    public override void onReceive(System.Func<Message, CallbackStatus> callback) {
+        string jsonMessage = this.getMessageReceived();
+        if (!jsonMessage.Equals("")) {
+            Message message = JsonConvert.DeserializeObject<Message>(jsonMessage, new NetworkJsonConverter());
+            CallbackStatus status = callback(message);
+            if (status == CallbackStatus.PROCESSED || status == CallbackStatus.DORMANT) {
+                p2pObj.Call("popProcessedMessage");
+            }
+        }
     }
 
     /* Initialisation done automatically in the Unity Player Activity life cycle in Android Plugin. */
