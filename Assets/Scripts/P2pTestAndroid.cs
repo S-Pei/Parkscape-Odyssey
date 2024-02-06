@@ -48,10 +48,10 @@ public class P2pTestAndroid : MonoBehaviour
     // broadcasts "hello world" hardcoded string (called from UI)
     public void broadcastString() {
         // Test string for android
-        // string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":\"TEST\", \"data\":\"helloworld\"}}";
+        string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":\"TEST\", \"data\":\"helloworld\"}}";
         // networkUtils.broadcast(TESTSTRING);
         // Test string for ios
-        string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":0, \"data\":\""+ sendStr.text +"\"}}";
+        // string TESTSTRING = "{\"messageID\":123456,\"messageType\":\"Text\",\"sentFrom\":\"94C1\",\"messageInfo\":{\"type\":0, \"data\":\""+ sendStr.text +"\"}}";
         networkUtils.broadcast(TESTSTRING);
     }
 
