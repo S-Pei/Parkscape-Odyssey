@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
+using UnityEngine.UI;
 
 
 public class EncounterController : MonoBehaviour
@@ -30,9 +31,11 @@ public class EncounterController : MonoBehaviour
 
     private string leaderId;
 
+    private EncounterStatus encounterStatus;
+
     // p2p network
     private NetworkUtils network;
-    private bool AcceptMessages = false;
+    private bool AcceptMessages = true;
     private readonly float baseFreq = 0.1f;
     private int msgFreq = 0;
     private int msgFreqCounter = 0;
@@ -83,7 +86,7 @@ public class EncounterController : MonoBehaviour
     }
 
     public void CreateEncounterLobby(string encounterId, List<Monster> monsters) {
-        AcceptMessages = true;
+        // AcceptMessages = true;
 
         GameObject encounterLobby = Instantiate(encounterLobbyOverlay);
         
@@ -124,7 +127,17 @@ public class EncounterController : MonoBehaviour
         switch (encounterMessage.Type) {
             case EncounterMessageType.FOUND_ENCOUNTER:
                 // Broadcast to all players that an encounter has been found.
-                Instantiate(encounterFoundPopup, gameplayCanvas.transform);
+                ShowEncounterFoundPopup();
+                break;
+            case EncounterMessageType.JOIN_ENCOUNTER:
+                // Add player to the encounter lobby.
+                string playerName = GameState.Instance.PlayersDetails[message.sentFrom].Name;
+                encounterLobbyUIManager.MemberJoinedParty(playerName);
+                SendJoinedEncounterConfirmationMessage(message.sentFrom);
+                break;
+            case EncounterMessageType.JOINED_ENCOUNTER_CONFIRMATION:
+                // Stop sending join encounter messages.
+                StopSendingJoinEncounterMessages();
                 break;
         }
 
@@ -138,17 +151,56 @@ public class EncounterController : MonoBehaviour
         if (!AcceptMessages) {
             return;
         }
+
+        if (encounterStatus == EncounterStatus.JOINING_LOBBY) {
+            EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.JOIN_ENCOUNTER);
+            Debug.Log("Sending join encounter message to leader: " + leaderId);
+            network.send(encounterMessage.toJson(), leaderId);
+        }
     }
 
-    public void BroadcastFoundEncounterMessage() {
+    private void BroadcastFoundEncounterMessage() {
         EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.FOUND_ENCOUNTER);
         network.broadcast(encounterMessage.toJson());
+    }
+
+    public void AcceptJoinEncounter() {
+        // AcceptMessages = true;
+
+        // Send a message to the leader to request to join encounter.
+        SendJoinEncounterMessage();
+    }
+
+    public void SendJoinEncounterMessage() {
+        encounterStatus = EncounterStatus.JOINING_LOBBY;
+    }
+
+    private void ShowEncounterFoundPopup() {
+        GameObject popup = Instantiate(encounterFoundPopup, gameplayCanvas.transform);
+        popup.transform.GetChild(1).gameObject.GetComponent<Button>().onClick.AddListener(AcceptJoinEncounter);
+        popup.transform.GetChild(2).gameObject.GetComponent<Button>().onClick.AddListener(() => Destroy(popup));
+    }
+
+    private void SendJoinedEncounterConfirmationMessage(string sendTo) {
+        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.JOINED_ENCOUNTER_CONFIRMATION);
+        network.send(encounterMessage.toJson(), sendTo);
+    }
+
+    private void StopSendingJoinEncounterMessages() {
+        encounterStatus = EncounterStatus.JOINED_LOBBY;
     }
 }
 
 
 public enum EncounterMessageType {
     FOUND_ENCOUNTER,
+    JOIN_ENCOUNTER,
+    JOINED_ENCOUNTER_CONFIRMATION,
+}
+
+enum EncounterStatus {
+    JOINING_LOBBY,
+    JOINED_LOBBY,
 }
 
 
