@@ -30,13 +30,15 @@ public class EncounterController : MonoBehaviour
     private int msgFreqCounter = 0;
 
     
-    void Awake() {
+    void Start() {
         // Setup p2p network
         msgFreq = GameState.Instance.maxPlayerCount;
         network = NetworkManager.Instance.NetworkUtils;
         InvokeRepeating("HandleMessages", 0.0f, baseFreq);
         encounterUIManager = GetComponent<EncounterUIManager>();
         monsterController = monsterManager.GetComponent<MonsterController>();
+
+        CreateMonsterSpawn(); // TEMPORARY
     }
 
     private void CreateMonsterSpawn() {
@@ -48,9 +50,11 @@ public class EncounterController : MonoBehaviour
 
         // Create a new enemy spawn
         GameObject monsterSpawn = Instantiate(encounterSpawn, interfacePanel.transform);
+        EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
+        encounterSpawnManager.EncounterSpawnInit(encounterId, monsters);
 
         // TODO: Set the position of the monster to predetermined position with an algorithm.
-        monsterSpawn.transform.position = new Vector3(0, 0, 0);
+        monsterSpawn.transform.localPosition = new Vector3(0, 0, 0);
     }
 
     private List<Monster> GenerateEncounterMonsters() {

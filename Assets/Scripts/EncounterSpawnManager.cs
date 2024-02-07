@@ -4,16 +4,21 @@ using UnityEngine;
 
 public class EncounterSpawnManager : MonoBehaviour
 {
-    public List<Monster> monsters;
+    private List<Monster> monsters;
 
-    public string encounterId;
+    private string encounterId;
 
-    [SerializeField]
-    private GameObject encounterController;
+    private GameObject encounterManager;
+
+    public void EncounterSpawnInit(string encounterId, List<Monster> monsters) {
+        this.encounterId = encounterId;
+        this.monsters = monsters;
+        encounterManager = GameObject.FindGameObjectWithTag("EncounterManager");
+    }
 
     public void CreateEncounterLobby() {
         // Create a new encounter lobby
-        encounterController.GetComponent<EncounterController>()
+        encounterManager.GetComponent<EncounterController>()
             .CreateEncounterLobby(encounterId, monsters);
     }
 }

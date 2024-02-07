@@ -10,6 +10,7 @@ TagManager:
   - BattleCanvas
   - CardsLootFocusedCard
   - GameManager
+  - EncounterManager
   layers:
   - Default
   - TransparentFX
