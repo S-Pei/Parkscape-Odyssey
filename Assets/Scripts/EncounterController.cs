@@ -31,7 +31,7 @@ public class EncounterController : MonoBehaviour
 
     private string leaderId;
 
-    private EncounterStatus encounterStatus;
+    private EncounterStatus encounterStatus = EncounterStatus.IDLE;
 
     // p2p network
     private NetworkUtils network;
@@ -209,6 +209,7 @@ public enum EncounterMessageType {
 }
 
 enum EncounterStatus {
+    IDLE,
     START_LOBBY,
     JOINING_LOBBY,
     JOINED_LOBBY,
