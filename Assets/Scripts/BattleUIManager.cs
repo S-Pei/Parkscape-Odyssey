@@ -4,8 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class BattleUIManager : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler
-{
+public class BattleUIManager : MonoBehaviour {
     private BattleManager battleManager;
 
     [SerializeField]
@@ -90,20 +89,8 @@ public class BattleUIManager : MonoBehaviour, IPointerDownHandler, IBeginDragHan
         float xPos = Mathf.Lerp(handSize * -xOffset, handSize * xOffset, align);
         float yPos = -Mathf.Abs(Mathf.Lerp(handSize * -yOffset, handSize * yOffset, align));
         return (
-            new Vector3((Screen.width / 2) + xPos, yPos + 300, 0),
+            new Vector3((Screen.width / 2) + xPos, yPos + 325, 0),
             Quaternion.Euler(0, 0, rotZ)
         );
-    }
-
-    public void OnBeginDrag(PointerEventData eventData) {
-        Debug.Log("OnBeginDrag");
-    }
-
-    public void OnEndDrag(PointerEventData eventData) {
-        Debug.Log("OnEndDrag");
-    }
-
-    public void OnPointerDown(PointerEventData eventData) {
-        Debug.Log("OnPointerDown");
     }
 }
