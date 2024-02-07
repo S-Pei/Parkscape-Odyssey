@@ -40,6 +40,8 @@ public class EncounterController : MonoBehaviour
     private int msgFreq = 0;
     private int msgFreqCounter = 0;
 
+    private bool receivedEncounter = false;
+
     
     void Start() {
         // Setup p2p network
@@ -94,7 +96,7 @@ public class EncounterController : MonoBehaviour
         encounterLobbyUIManager.LeaderEncounterLobbyInit(encounterId, monsters);
 
         // Broadcast to all players that an encounter has been found.
-        BroadcastFoundEncounterMessage();
+        encounterStatus = EncounterStatus.START_LOBBY;
     }
 
     // ------------------------------ P2P NETWORK ------------------------------
@@ -152,6 +154,11 @@ public class EncounterController : MonoBehaviour
             return;
         }
 
+        if (encounterStatus == EncounterStatus.START_LOBBY) {
+            EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.FOUND_ENCOUNTER);
+            network.broadcast(encounterMessage.toJson());
+        }
+
         if (encounterStatus == EncounterStatus.JOINING_LOBBY) {
             EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.JOIN_ENCOUNTER);
             Debug.Log("Sending join encounter message to leader: " + leaderId);
@@ -176,6 +183,9 @@ public class EncounterController : MonoBehaviour
     }
 
     private void ShowEncounterFoundPopup() {
+        if (encounterStatus == EncounterStatus.JOINING_LOBBY) {
+            return;
+        }
         GameObject popup = Instantiate(encounterFoundPopup, gameplayCanvas.transform);
         popup.transform.GetChild(1).gameObject.GetComponent<Button>().onClick.AddListener(AcceptJoinEncounter);
         popup.transform.GetChild(2).gameObject.GetComponent<Button>().onClick.AddListener(() => Destroy(popup));
@@ -199,6 +209,7 @@ public enum EncounterMessageType {
 }
 
 enum EncounterStatus {
+    START_LOBBY,
     JOINING_LOBBY,
     JOINED_LOBBY,
 }
