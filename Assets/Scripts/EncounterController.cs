@@ -22,6 +22,14 @@ public class EncounterController : MonoBehaviour
     [SerializeField]
     private GameObject interfacePanel;
 
+    [SerializeField]
+    private GameObject encounterFoundPopup;
+
+    [SerializeField]
+    private GameObject gameplayCanvas;
+
+    private string leaderId;
+
     // p2p network
     private NetworkUtils network;
     private bool AcceptMessages = false;
@@ -81,6 +89,9 @@ public class EncounterController : MonoBehaviour
         
         encounterLobbyUIManager = encounterLobby.GetComponent<EncounterLobbyUIManager>();
         encounterLobbyUIManager.LeaderEncounterLobbyInit(encounterId, monsters);
+
+        // Broadcast to all players that an encounter has been found.
+        BroadcastFoundEncounterMessage();
     }
 
     // ------------------------------ P2P NETWORK ------------------------------
@@ -112,7 +123,8 @@ public class EncounterController : MonoBehaviour
         EncounterMessage encounterMessage = (EncounterMessage) message.messageInfo;
         switch (encounterMessage.Type) {
             case EncounterMessageType.FOUND_ENCOUNTER:
-                // openEncounterLobbyOverlay();
+                // Broadcast to all players that an encounter has been found.
+                Instantiate(encounterFoundPopup, gameplayCanvas.transform);
                 break;
         }
 
@@ -126,6 +138,11 @@ public class EncounterController : MonoBehaviour
         if (!AcceptMessages) {
             return;
         }
+    }
+
+    public void BroadcastFoundEncounterMessage() {
+        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.FOUND_ENCOUNTER);
+        network.broadcast(encounterMessage.toJson());
     }
 }
 

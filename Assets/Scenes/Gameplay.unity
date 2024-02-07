@@ -158,6 +158,9 @@ MonoBehaviour:
   encounterSpawn: {fileID: 3745809111643982938, guid: 7d5885d07aa7e40379a8e4786af6bb23,
     type: 3}
   interfacePanel: {fileID: 640020643}
+  encounterFoundPopup: {fileID: 2087278705650436577, guid: fb5dfb8f2d1424add9200af6a99ac1a4,
+    type: 3}
+  gameplayCanvas: {fileID: 1802788016}
 --- !u!4 &114873852
 Transform:
   m_ObjectHideFlags: 0
