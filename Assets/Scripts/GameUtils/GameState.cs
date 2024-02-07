@@ -15,6 +15,8 @@ public class GameState {
     public string RoomCode = ""; 
     public Player MyPlayer = null;
     public List<Player> OtherPlayers = new();
+
+    public Dictionary<string, Player> PlayersDetails = new();
     public List<CardName> MyCards = new() {
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
         CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
@@ -41,6 +43,7 @@ public class GameState {
             string role = roles[random.Next(roles.Count)];
             roles.Remove(role);
             Player player = PlayerFactory.CreatePlayer(id, name, role);
+            PlayersDetails.Add(id, player);
             if (id == myID) {
                 MyPlayer = player;
             } else {
