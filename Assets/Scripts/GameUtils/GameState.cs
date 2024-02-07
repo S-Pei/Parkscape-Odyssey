@@ -136,6 +136,17 @@ public class GameState {
         throw new NotImplementedException();
     }
 
+    public void Reset() {
+        RoomCode = "";
+        MyPlayer = null;
+        OtherPlayers = new();
+        PlayersDetails = new();
+        MyCards = InitialCards;
+        IsInEncounter = false;
+        Score = 0;
+        Initialized = false;
+    }
+
     private void CheckInitialised() {
         if (!Initialized) {
             throw new InvalidOperationException("GameState not initialized.");
