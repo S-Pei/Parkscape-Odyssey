@@ -25,6 +25,8 @@ public class NetworkManager : MonoBehaviour {
             instance = this;
             DontDestroyOnLoad(this.gameObject);
         }
+        networkUtils = DebugNetwork.Instance;
+
         #if UNITY_ANDROID
         networkUtils = AndroidNetwork.Instance;
         #endif
