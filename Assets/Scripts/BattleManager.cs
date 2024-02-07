@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
 
 
 public class BattleManager : MonoBehaviour {
@@ -140,8 +141,7 @@ public class BattleMessage : MessageInfo
     public MessageType messageType { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
 
     public string toJson() {
-        throw new NotImplementedException();
-        // return JsonConvert.SerializeObject(this);
+        return JsonConvert.SerializeObject(this);
     }
 
     public string processMessageInfo() {
