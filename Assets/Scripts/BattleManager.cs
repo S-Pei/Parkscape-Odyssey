@@ -222,61 +222,27 @@ public class BattleManager : MonoBehaviour {
 
         // Every msgFreq seconds, send messages.
         if (msgFreqCounter >= msgFreq) {
-            // SendMessages();
+            SendMessages();
             msgFreqCounter = 0;
         } else {
             msgFreqCounter++;
         }
     }
 
-    // private void SendMessages() {
-    //     Debug.Log("Attempting to send battle messages.");
-    //     if (network == null)
-    //         return;
+    private void SendMessages() {
+        Debug.Log("Attempting to send battle messages.");
+        if (network == null)
+            return;
 
-    //     if (!AcceptMessages) {
-    //         Debug.Log("Not accepting messages.");
-    //         return;
-    //     }
+        if (!AcceptMessages) {
+            Debug.Log("Not accepting messages.");
+            return;
+        }
 
-    //     Debug.Log("Sending Lobby Messages.");
-    //     // Leader check if any devices have disconnected.
-    //     if (isLeader) {
-    //         bool changed = false;
-    //         List<string> newConnectedDevices = network.getConnectedDevices();
-    //         Debug.Log("Connected Devices: " + network.getConnectedDevices().Count);
-    //         foreach (string deviceID in connectedDevices) {
-    //             if (!newConnectedDevices.Contains(deviceID)) {
-    //                 RemovePlayer(deviceID);
-    //                 changed = true;
-    //             }
-    //         }
-    //         connectedDevices = newConnectedDevices;
-    //         if (changed) {
-    //             LobbyMessage disconnectedPlayersMessage = new(isLeader, players, myName);
-    //             network.broadcast(disconnectedPlayersMessage.toJson());
-    //         }
-    //     } else {
-    //         // If i have not found the leader yet, broadcast my presence.
-    //         Debug.Log("Connected Devices: " + network.getConnectedDevices().Count);
-    //         if (leaderID.Equals("")) {
-    //             foreach (string id in network.getConnectedDevices()) {
-    //                 Debug.Log("IDK Sending AMIIN message to " + id);
-    //                 LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_AM_I_IN, false, myName, id);
-    //                 network.send(amIInMessage.toJson(), id);
-    //             }
-    //         } else {
-    //             // Check if I'm in the lobby every maxFreq seconds.
-    //             Debug.Log("Sending AMIIN message to " + leaderID);
-    //             LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_AM_I_IN, false, myName, leaderID);
-    //             network.send(amIInMessage.toJson(), leaderID);
+        Debug.Log("Sending Battle Messages.");
 
-    //             // Check if the game has started every 5 seconds after 60 
-    //             LobbyMessage startedYetMessage = new(LobbyMessageType.MEMBER_STARTED_YET, false, myName, leaderID);
-    //             network.send(startedYetMessage.toJson(), leaderID);
-    //         }
-    //     }
-    // }
+        // TDDO: Send messages to connected devices.
+    }
     
     private CallbackStatus HandleMessage(Message message) {
         // TODO
