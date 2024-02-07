@@ -85,9 +85,9 @@ public class GameState {
     public GameStateMessage ToMessage() {
         CheckInitialised();
         Dictionary<string, string> playerRoles = new();
-        playerRoles.Add(MyPlayer.Name, MyPlayer.Role);
+        playerRoles.Add(myID, MyPlayer.Role);
         foreach (Player player in OtherPlayers) {
-            playerRoles.Add(player.Name, player.Role);
+            playerRoles.Add(player.Id, player.Role);
         }
 
         Dictionary<string, string> playerNames = new();
@@ -112,9 +112,11 @@ public class GameState {
             }
         }
         OtherPlayers = players;
+
         // Initialise other fields
         RoomCode = roomCode;
         this.myID = myID;
+        MyCards = InitialCards;
 
         Initialized = true;
     }
