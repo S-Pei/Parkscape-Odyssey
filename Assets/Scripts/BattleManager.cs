@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -81,7 +82,7 @@ public class BattleManager : MonoBehaviour {
             // Select a random card from the front of the deck
             // (up to the current position to shuffle) to swap
             n--;
-            int k = Random.Range(0, n + 1);  
+            int k = UnityEngine.Random.Range(0, n + 1);  
             
             // Swap cards[n] with cards[k]
             CardName toSwap = cards[k];  
@@ -127,5 +128,23 @@ public class BattleManager : MonoBehaviour {
         Debug.Log("Waited 10s to end battle.");
 
         SceneManager.UnloadSceneAsync("Battle");
+    }
+}
+
+public enum BattleMessageType {
+
+}
+
+public class BattleMessage : MessageInfo
+{
+    public MessageType messageType { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+
+    public string toJson() {
+        throw new NotImplementedException();
+        // return JsonConvert.SerializeObject(this);
+    }
+
+    public string processMessageInfo() {
+        return "";
     }
 }
