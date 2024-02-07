@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class Player
 {
     // Properties
@@ -11,6 +13,7 @@ public class Player
     public int MaxMana { get; }
     public int Strength { get; }
     public string Description { get; }
+    public Sprite Icon { get; set; }
 
     // Multipliers
     public float AttackMultiplier { get; set; }

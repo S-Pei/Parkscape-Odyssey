@@ -30,6 +30,7 @@ public class LobbyUIManager : MonoBehaviour
 
     // Called when code is submitted in the room selection pop up
     public void SetUpLobby(string roomCode, bool isLeader) {
+        Debug.Log("Setting up lobby with room code " + roomCode);
         this.roomCode = roomCode;
         this.isLeader = isLeader;
         roomCodeText.text = roomCode;

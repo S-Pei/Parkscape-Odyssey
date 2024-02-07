@@ -81,8 +81,11 @@ public class AndroidNetwork : NetworkUtils {
 
     public override void onReceive(System.Func<Message, CallbackStatus> callback) {
         string jsonMessage = this.getMessageReceived();
+        Debug.Log("Received message onReceive: " + jsonMessage);
         if (!jsonMessage.Equals("")) {
+            Debug.Log("Received nonempty message");
             Message message = JsonConvert.DeserializeObject<Message>(jsonMessage, new NetworkJsonConverter());
+            Debug.Log("MEssage type:" + message.messageInfo.messageType.ToString());
             CallbackStatus status = callback(message);
             if (status == CallbackStatus.PROCESSED || status == CallbackStatus.DORMANT) {
                 p2pObj.Call("popProcessedMessage");
