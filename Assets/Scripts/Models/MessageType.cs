@@ -1,3 +1,11 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+[JsonConverter(typeof(StringEnumConverter))]
 public enum MessageType {
-    Test=0
+    TEST,
+    LOBBYMESSAGE,
+    GAMESTATE,
+    ENCOUNTERMESSAGE,
+    BATTLEMESSAGE,
 }

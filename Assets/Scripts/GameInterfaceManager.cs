@@ -20,6 +20,25 @@ public class GameInterfaceManager : MonoBehaviour
     [SerializeField]
     private List<Sprite> playerIcons;
 
+    private Dictionary<string, int> roleToIcon = new Dictionary<string, int>()
+        {
+            { "Rogue", 0 },
+            { "Mage", 1 },
+            { "Faerie", 2 },
+            { "Cleric", 3 },
+            { "Scout", 4 },
+            { "Warrior", 5 }
+        };
+
+    void Awake() {
+        Player myPlayer = GameState.Instance.MyPlayer;
+        myPlayer.Icon = GetIcon(myPlayer.Role);
+        List<Player> otherPlayers = GameState.Instance.OtherPlayers;
+        foreach (Player p in otherPlayers) {
+            p.Icon = GetIcon(p.Role);
+        }
+    }
+
     // Open with actual inventory stored in GameManager
     public void OpenInventory(List<CardName> cards) {
         inventoryObject = Instantiate(inventoryPrefab, new Vector3(0, 0, 0), Quaternion.identity);
@@ -34,7 +53,7 @@ public class GameInterfaceManager : MonoBehaviour
 
     public void SetUpInterface() {
         // Set up player icon.
-        ((Image) playerIcon.GetComponent(typeof(Image))).sprite = GetIcon(GameState.MyPlayer.Role);
+        ((Image) playerIcon.GetComponent(typeof(Image))).sprite = GameState.MyPlayer.Icon;
     }
 
     // Opens the player view with the player's role informationa and stats
@@ -45,17 +64,15 @@ public class GameInterfaceManager : MonoBehaviour
 
         // Role information
         playerViewManager.SetPlayer(GameState.MyPlayer);
-        playerViewManager.SetPlayerIcon(GetIcon(GameState.MyPlayer.Role));
+        playerViewManager.SetPlayerIcon(GameState.MyPlayer.Icon);
 
         playerView.SetActive(true);
     }
 
     private Sprite GetIcon(string role) {
-        foreach (Sprite icon in playerIcons) {
-            if (icon.name.Contains(role)) {
-                return icon;
-            }
+        if (!roleToIcon.ContainsKey(role)) {
+            throw new Exception("Role Icon not found");
         }
-        throw new Exception("Role Icon not found");
+        return playerIcons[roleToIcon[role]];
     }
 }
