@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Newtonsoft.Json;
 using TMPro;
 
 public class BattleManager : MonoBehaviour {
@@ -31,6 +33,14 @@ public class BattleManager : MonoBehaviour {
 
     [SerializeField]
     private List<GameObject> otherPlayerStat;
+
+
+    // p2p networking
+    private NetworkUtils network;
+    private readonly float msgHandlingFreq = 0.1f;
+    private readonly int msgFreq = 0;
+    private int msgFreqCounter = 0;
+    private bool AcceptMessages = false;
     
 
     public List<CardName> Hand {
@@ -45,6 +55,10 @@ public class BattleManager : MonoBehaviour {
         gameManager = FindObjectOfType<GameManager>();
         battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
         monsterController = (MonsterController) GetComponent(typeof(MonsterController));
+
+        // Setup p2p network
+        network = NetworkManager.Instance.NetworkUtils;
+        InvokeRepeating("HandleMessages", 0.0f, msgHandlingFreq);
     }
 
     void Start() {
@@ -149,7 +163,7 @@ public class BattleManager : MonoBehaviour {
             // Select a random card from the front of the deck
             // (up to the current position to shuffle) to swap
             n--;
-            int k = Random.Range(0, n + 1);  
+            int k = UnityEngine.Random.Range(0, n + 1);  
             
             // Swap cards[n] with cards[k]
             CardName toSwap = cards[k];  
@@ -195,5 +209,66 @@ public class BattleManager : MonoBehaviour {
         Debug.Log("Waited 10s to end battle.");
 
         SceneManager.UnloadSceneAsync("Battle");
+    }
+
+
+    // ------------------------------ P2P NETWORK ------------------------------
+    private void HandleMessages() {
+        Func<Message, CallbackStatus> callback = (Message msg) => {
+            return HandleMessage(msg);
+        };
+        network.onReceive(callback);
+
+        // Every msgFreq seconds, send messages.
+        if (msgFreqCounter >= msgFreq) {
+            SendMessages();
+            msgFreqCounter = 0;
+        } else {
+            msgFreqCounter++;
+        }
+    }
+
+    private void SendMessages() {
+        Debug.Log("Attempting to send battle messages.");
+        if (network == null)
+            return;
+
+        if (!AcceptMessages) {
+            Debug.Log("Not accepting messages.");
+            return;
+        }
+
+        Debug.Log("Sending Battle Messages.");
+
+        // TDDO: Send messages to connected devices.
+    }
+    
+    private CallbackStatus HandleMessage(Message message) {
+        // TODO
+        return CallbackStatus.NOT_PROCESSED;
+    }
+}
+
+public enum BattleMessageType {
+
+}
+
+public class BattleMessage : MessageInfo
+{
+    public MessageType messageType {get; set;}
+    public BattleMessageType Type {get; set;}
+
+    [JsonConstructor]
+    public BattleMessage(BattleMessageType type) {
+        messageType = MessageType.BATTLEMESSAGE;
+        Type = type;
+    }
+
+    public string toJson() {
+        return JsonConvert.SerializeObject(this);
+    }
+
+    public string processMessageInfo() {
+        return "";
     }
 }

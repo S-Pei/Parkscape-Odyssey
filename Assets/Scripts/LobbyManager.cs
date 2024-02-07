@@ -39,7 +39,7 @@ public class LobbyManager : MonoBehaviour {
             myID = SystemInfo.deviceUniqueIdentifier;
             msgFreq = maxPlayerCount;
             network = NetworkManager.Instance.NetworkUtils;
-            InvokeRepeating("HandleMessages", 0.0f, 1.0f);
+            InvokeRepeating("HandleMessages", 0.0f, baseFreq);
 			DontDestroyOnLoad(gameObject);
 		}else 
             Destroy(gameObject);

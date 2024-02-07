@@ -6,4 +6,6 @@ public enum MessageType {
     TEST,
     LOBBYMESSAGE,
     GAMESTATE,
+    ENCOUNTERMESSAGE,
+    BATTLEMESSAGE,
 }
