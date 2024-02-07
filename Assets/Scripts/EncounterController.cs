@@ -9,6 +9,18 @@ public class EncounterController : MonoBehaviour
 {
     [SerializeField]
     private GameObject encounterLobbyOverlay;
+    private EncounterUIManager encounterUIManager;
+    private EncounterLobbyUIManager encounterLobbyUIManager;
+
+    [SerializeField]
+    private GameObject monsterManager;
+    private MonsterController monsterController;
+
+    [SerializeField]
+    private GameObject encounterSpawn;
+
+    [SerializeField]
+    private GameObject interfacePanel;
 
     // p2p network
     private NetworkUtils network;
@@ -23,11 +35,48 @@ public class EncounterController : MonoBehaviour
         msgFreq = GameState.Instance.maxPlayerCount;
         network = NetworkManager.Instance.NetworkUtils;
         InvokeRepeating("HandleMessages", 0.0f, baseFreq);
+        encounterUIManager = GetComponent<EncounterUIManager>();
+        monsterController = monsterManager.GetComponent<MonsterController>();
     }
 
-    public void CreateEncounterLobby() {
+    private void CreateMonsterSpawn() {
+        // Generate monsters for the encounter.
+        List<Monster> monsters = GenerateEncounterMonsters();
+
+        // Generate unique id for the encounter.
+        string encounterId = Guid.NewGuid().ToString();
+
+        // Create a new enemy spawn
+        GameObject monsterSpawn = Instantiate(encounterSpawn, interfacePanel.transform);
+
+        // TODO: Set the position of the monster to predetermined position with an algorithm.
+        monsterSpawn.transform.position = new Vector3(0, 0, 0);
+    }
+
+    private List<Monster> GenerateEncounterMonsters() {
+        List<Monster> monsters = new List<Monster>();
+
+        // Select a random number between 1 and maxPlayerCount to determine the number of monsters in the encounter.
+        int numMonsters = UnityEngine.Random.Range(1, GameState.Instance.maxPlayerCount);
+
+        // Select a type of monster for the encounter.
+        MonsterName monsterName = (MonsterName) UnityEngine.Random.Range(0, Enum.GetValues(typeof(MonsterName)).Length);
+
+        // Create the monsters.
+        for (int i = 0; i < numMonsters; i++) {
+            Monster monster = monsterController.createMonster(monsterName);
+            monsters.Add(monster);
+        }
+        return monsters;
+    }
+
+    public void CreateEncounterLobby(string encounterId, List<Monster> monsters) {
         AcceptMessages = true;
-        Instantiate(encounterLobbyOverlay);
+
+        GameObject encounterLobby = Instantiate(encounterLobbyOverlay);
+        
+        encounterLobbyUIManager = encounterLobby.GetComponent<EncounterLobbyUIManager>();
+        encounterLobbyUIManager.LeaderEncounterLobbyInit(encounterId, monsters);
     }
 
     // ------------------------------ P2P NETWORK ------------------------------
@@ -59,7 +108,7 @@ public class EncounterController : MonoBehaviour
         EncounterMessage encounterMessage = (EncounterMessage) message.messageInfo;
         switch (encounterMessage.Type) {
             case EncounterMessageType.FOUND_ENCOUNTER:
-                // openEncounterLobbyPopup();
+                // openEncounterLobbyOverlay();
                 break;
         }
 

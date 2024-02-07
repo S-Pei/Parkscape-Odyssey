@@ -2477,6 +2477,7 @@ GameObject:
   - component: {fileID: 5036429883471077774}
   - component: {fileID: 7269934474762479295}
   - component: {fileID: 8530333091116376915}
+  - component: {fileID: 1083578784825972182}
   m_Layer: 5
   m_Name: EncounterLobbyOverlay
   m_TagString: Untagged
@@ -2581,3 +2582,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ccc045310b2e2c43a07fb02879ce2b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1083578784825972182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8800040468546104307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a3f12265dde041ed954609a42b31d3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  partyMemberSlots:
+  - {fileID: 1764808801709887355}
+  - {fileID: 6501707460270986662}
+  - {fileID: 7964895220062894295}
+  - {fileID: 4232315897150642624}
+  - {fileID: 7763489121161244296}
+  - {fileID: 7659842658412594159}
+  partyMembers: []
