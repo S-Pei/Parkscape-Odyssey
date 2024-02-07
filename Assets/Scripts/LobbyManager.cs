@@ -165,17 +165,14 @@ public class LobbyManager : MonoBehaviour {
         network.setRoomCode(roomCode);
         network.startDiscovering();
 
-        // Add buffer time for advertising to work.
-        System.Threading.Thread.Sleep(1000);
-
-        network.startAdvertising();
-
         this.isLeader = isLeader;
         if (!isLeader) {
             // Wait for room to be found.
             if (!FindRoom())
                 throw new Exception("Room not found.");
         }
+
+        network.startAdvertising();
 
         AcceptMessages = true;
 
@@ -226,24 +223,22 @@ public class LobbyManager : MonoBehaviour {
         // Ignore if not a lobby message.
         if (message.messageInfo.messageType != MessageType.LOBBYMESSAGE)
             return CallbackStatus.NOT_PROCESSED;
-        
-        
-        // Ignore if no longer accepting messages.
-        if (!AcceptMessages)
-            return CallbackStatus.DORMANT;
-
-
-        // Ignore if no longer accepting messages.
-        if (!AcceptMessages)
-            return CallbackStatus.DORMANT;
 
         LobbyMessage lobbyMessage = (LobbyMessage) message.messageInfo;
+
+        Debug.Log("Accepting status: " + AcceptMessages);
+        
+        
+        // Ignore if no longer accepting messages.
+        if (!AcceptMessages && lobbyMessage.Type != LobbyMessageType.MEMBER_STARTED_YET)
+            return CallbackStatus.DORMANT;
+        
+        Debug.Log("Lobby message is not dormanted, processing...");
+
+
         switch (lobbyMessage.Type) {
             case LobbyMessageType.MEMBER_AM_I_IN:
             case LobbyMessageType.MEMBER_JOIN:
-                // Ignore if not accepting
-                if (!AcceptMessages)
-                    break;
 
                 // Ignore if not leader.
                 if (!isLeader)
@@ -288,9 +283,6 @@ public class LobbyManager : MonoBehaviour {
                 network.send(startedYetMessage.toJson(), message.sentFrom);
                 break;
             case LobbyMessageType.LEADER_PLAYERS:
-                if (!AcceptMessages)
-                    break;
-
                 if (isLeader)
                     break;
 
@@ -327,9 +319,6 @@ public class LobbyManager : MonoBehaviour {
                 }
                 break;
             case LobbyMessageType.LEADER_START:
-                if (!AcceptMessages)
-                    break;
-
                 if (isLeader)
                     break;
 
@@ -339,9 +328,6 @@ public class LobbyManager : MonoBehaviour {
                 break;
             case LobbyMessageType.LEADER_LEAVE:
                 if (isLeader)
-                    break;
-
-                if (!AcceptMessages)
                     break;
 
                 ExitLobby();
