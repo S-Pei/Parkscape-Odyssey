@@ -138,7 +138,15 @@ public enum BattleMessageType {
 
 public class BattleMessage : MessageInfo
 {
-    public MessageType messageType { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+    public MessageType messageType {get; set;}
+
+    public BattleMessageType Type {get; set;}
+
+    [JsonConstructor]
+    public BattleMessage(BattleMessageType type) {
+        messageType = MessageType.BATTLEMESSAGE;
+        Type = type;
+    }
 
     public string toJson() {
         return JsonConvert.SerializeObject(this);
