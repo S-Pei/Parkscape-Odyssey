@@ -213,7 +213,7 @@ public class BattleManager : MonoBehaviour {
     }
 
 
-    // ----------------------------- P2P NETWORKS -----------------------------
+    // ------------------------------ P2P NETWORK ------------------------------
     private void HandleMessages() {
         Func<Message, CallbackStatus> callback = (Message msg) => {
             return HandleMessage(msg);
