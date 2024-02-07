@@ -1,18 +1,18 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class LobbyManager : MonoBehaviour {
     private LobbyUIManager lobbyUIManager;
-    private Dictionary<string, string> players = new Dictionary<string, string>();
+    private Dictionary<string, string> players = new();
     private int maxPlayerCount = 6;
+    private string roomCode = "";
 
     private bool isLeader = false;
     
     // Initialisation
     void Start() {
-        lobbyUIManager = (LobbyUIManager) GetComponent(typeof(LobbyUIManager));
+        lobbyUIManager = GetComponent<LobbyUIManager>();
     }
 
     // Listen for any changes in the lobby or start of game.
@@ -21,9 +21,9 @@ public class LobbyManager : MonoBehaviour {
     }
 
     public void SetUpLobby(string roomCode, bool isLeader) {
-        // string myName = PlayerPrefs.GetString("name");
-        string myName = "Player";
+        string myName = PlayerPrefs.GetString("name");
         this.isLeader = isLeader;
+        this.roomCode = roomCode;
         if (isLeader) {
             // Add yourself to the list of players.
             AddPlayer(SystemInfo.deviceUniqueIdentifier, myName + " (Leader)");
@@ -58,13 +58,19 @@ public class LobbyManager : MonoBehaviour {
     public void LeaderStartGame() {
         if (!isLeader)
             return;
-        // Tell everyone to start the game.
+
+        // Initialise the game state.
+        GameState gameState = GameState.Instance;
+        gameState.Initialize(SystemInfo.deviceUniqueIdentifier, roomCode, players);
+
+        // Share the Gamestate and to start the game.
 
         // Reset the lobby and disable scene.
         ExitLobby();
         StartGame();
     }
 
+    // Common method to start the game for both leader and non-leader.
     public void StartGame() {
         // Load the game scene.
         SceneManager.LoadScene("Gameplay");
