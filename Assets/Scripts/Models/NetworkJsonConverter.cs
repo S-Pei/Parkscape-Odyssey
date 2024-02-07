@@ -14,17 +14,29 @@ public class NetworkJsonConverter : JsonConverter
     {
         JObject jsonObject = JObject.Load(reader);
 
+        Debug.Log("Parsing messageinfo");
+
         // Determine the type based on the "type" field
-        if (jsonObject["type"] == null)
+        if (jsonObject["messageType"] == null)
         {
             throw new JsonSerializationException("type field is missing");
         }
-        string type = jsonObject.Value<string>("type");
+        string type = jsonObject.Value<string>("messageType");
         
         if (type.Equals(MessageType.TEST.ToString()))
         {
             return jsonObject.ToObject<TestMessageInfo>(serializer);
+        } 
+        else if (type.Equals(MessageType.LOBBYMESSAGE.ToString()))
+        {
+            return jsonObject.ToObject<LobbyMessage>(serializer);
+        } 
+        else if (type.Equals(MessageType.GAMESTATE.ToString()))
+        {
+            return jsonObject.ToObject<GameStateMessage>(serializer);
         }
+
+        Debug.Log("Parsed messageinfo" + jsonObject.ToString());
 
         throw new JsonSerializationException("Unknown type");
     }
