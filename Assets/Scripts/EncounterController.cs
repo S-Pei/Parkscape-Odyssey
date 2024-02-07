@@ -7,6 +7,9 @@ using Newtonsoft.Json;
 
 public class EncounterController : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject encounterLobbyOverlay;
+
     // p2p network
     private NetworkUtils network;
     private bool AcceptMessages = false;
@@ -20,6 +23,11 @@ public class EncounterController : MonoBehaviour
         msgFreq = GameState.Instance.maxPlayerCount;
         network = NetworkManager.Instance.NetworkUtils;
         InvokeRepeating("HandleMessages", 0.0f, baseFreq);
+    }
+
+    public void CreateEncounterLobby() {
+        AcceptMessages = true;
+        Instantiate(encounterLobbyOverlay);
     }
 
     // ------------------------------ P2P NETWORK ------------------------------
