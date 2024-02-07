@@ -1,4 +1,8 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
+using System.Collections;
+
 
 public class GameManager : MonoBehaviour
 {
@@ -12,7 +16,10 @@ public class GameManager : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
-        
+        // if (!isInEncounter) {
+        //     isInEncounter = true;
+        //     StartCoroutine(EncounterMonsterRandomly());
+        // }
     }
 
     public void OpenInventory() {
@@ -21,6 +28,28 @@ public class GameManager : MonoBehaviour
 
     public void CloseInventory() {
         gameInterfaceManager.CloseInventory();
+    }
+
+    public void EndEncounter(int pointsToAdd=0) {
+        if (!GameState.Instance.IsInEncounter) {
+            Debug.LogError("Attempted to end encounter when there was none.");
+        }
+        Debug.Log($"Ending the encounter ({GameState.Instance.Score} -> {GameState.Instance.Score + pointsToAdd}).");
+        GameState.Instance.Score += pointsToAdd;
+        GameState.Instance.IsInEncounter = false;
+    }
+
+    public void StartEncounter() {
+        GameState.Instance.IsInEncounter = true;
+        SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
+    }
+
+    IEnumerator EncounterMonsterRandomly() {
+        // float secondsToWait = Random.Range(5, 20);
+        float secondsToWait = 10;
+        yield return new WaitForSeconds(secondsToWait);
+        Debug.Log("Waited 10s to start battle.");
+        StartEncounter();
     }
 
     public void OpenPlayerView() {

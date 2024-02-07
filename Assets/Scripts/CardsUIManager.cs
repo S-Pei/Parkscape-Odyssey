@@ -41,7 +41,6 @@ public class CardsUIManager : MonoBehaviour
                 Card newCard = new Card(cardNames[i], cardImgs[i], cardStats[i], 1, "none", cardRarities[i]);
                 cards.Add(newCard);
                 asignCardByRarity(newCard);
-                Debug.Log($"Cards Manager: Card initialised - {cardNames[i]}");
             }
             return;
         }

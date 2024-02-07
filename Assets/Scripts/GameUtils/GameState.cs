@@ -13,7 +13,12 @@ public class GameState {
     public string RoomCode = ""; 
     public Player MyPlayer = null;
     public List<Player> OtherPlayers = new();
-    public List<CardName> MyCards = new();
+    public List<CardName> MyCards = new() {
+        CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
+        CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
+    };
+    public bool IsInEncounter = false;
+    public int Score = 0;
 
     private List<CardName> InitialCards = new List<CardName> { 
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
