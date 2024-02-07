@@ -24,7 +24,9 @@ public class NetworkJsonConverter : JsonConverter
         if (type.Equals(MessageType.TEST.ToString()))
         {
             return jsonObject.ToObject<TestMessageInfo>(serializer);
-        } else if (type.Equals(MessageType.BATTLEMESSAGE.ToString())) {
+        } 
+        else if (type.Equals(MessageType.BATTLEMESSAGE.ToString())) 
+        {
             return jsonObject.ToObject<BattleMessage>(serializer);
         }
 

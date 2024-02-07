@@ -15,6 +15,13 @@ public class BattleManager : MonoBehaviour {
     private List<CardName> allCards;
     private List<CardName> hand;
 
+    // p2p networking
+    private NetworkUtils network;
+    private readonly float msgHandlingFreq = 0.1f;
+    private readonly int msgFreq = 0;
+    private int msgFreqCounter = 0;
+    private bool AcceptMessages = false;
+
     public List<CardName> Hand {
         get { return hand; }
         private set {}
@@ -28,6 +35,10 @@ public class BattleManager : MonoBehaviour {
         gameManager = FindObjectOfType<GameManager>();
         battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
         monsterController = (MonsterController) GetComponent(typeof(MonsterController));
+
+        // Setup p2p network
+        network = NetworkManager.Instance.NetworkUtils;
+        InvokeRepeating("HandleMessages", 0.0f, msgHandlingFreq);
     }
 
     void Start() {
@@ -130,6 +141,77 @@ public class BattleManager : MonoBehaviour {
 
         SceneManager.UnloadSceneAsync("Battle");
     }
+
+
+    // ----------------------------- P2P NETWORKS -----------------------------
+    private void HandleMessages() {
+        Func<Message, CallbackStatus> callback = (Message msg) => {
+            return HandleMessage(msg);
+        };
+        network.onReceive(callback);
+
+        // Every msgFreq seconds, send messages.
+        if (msgFreqCounter >= msgFreq) {
+            // SendMessages();
+            msgFreqCounter = 0;
+        } else {
+            msgFreqCounter++;
+        }
+    }
+
+    // private void SendMessages() {
+    //     Debug.Log("Attempting to send battle messages.");
+    //     if (network == null)
+    //         return;
+
+    //     if (!AcceptMessages) {
+    //         Debug.Log("Not accepting messages.");
+    //         return;
+    //     }
+
+    //     Debug.Log("Sending Lobby Messages.");
+    //     // Leader check if any devices have disconnected.
+    //     if (isLeader) {
+    //         bool changed = false;
+    //         List<string> newConnectedDevices = network.getConnectedDevices();
+    //         Debug.Log("Connected Devices: " + network.getConnectedDevices().Count);
+    //         foreach (string deviceID in connectedDevices) {
+    //             if (!newConnectedDevices.Contains(deviceID)) {
+    //                 RemovePlayer(deviceID);
+    //                 changed = true;
+    //             }
+    //         }
+    //         connectedDevices = newConnectedDevices;
+    //         if (changed) {
+    //             LobbyMessage disconnectedPlayersMessage = new(isLeader, players, myName);
+    //             network.broadcast(disconnectedPlayersMessage.toJson());
+    //         }
+    //     } else {
+    //         // If i have not found the leader yet, broadcast my presence.
+    //         Debug.Log("Connected Devices: " + network.getConnectedDevices().Count);
+    //         if (leaderID.Equals("")) {
+    //             foreach (string id in network.getConnectedDevices()) {
+    //                 Debug.Log("IDK Sending AMIIN message to " + id);
+    //                 LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_AM_I_IN, false, myName, id);
+    //                 network.send(amIInMessage.toJson(), id);
+    //             }
+    //         } else {
+    //             // Check if I'm in the lobby every maxFreq seconds.
+    //             Debug.Log("Sending AMIIN message to " + leaderID);
+    //             LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_AM_I_IN, false, myName, leaderID);
+    //             network.send(amIInMessage.toJson(), leaderID);
+
+    //             // Check if the game has started every 5 seconds after 60 
+    //             LobbyMessage startedYetMessage = new(LobbyMessageType.MEMBER_STARTED_YET, false, myName, leaderID);
+    //             network.send(startedYetMessage.toJson(), leaderID);
+    //         }
+    //     }
+    // }
+    
+    private CallbackStatus HandleMessage(Message message) {
+        // TODO
+        return CallbackStatus.NOT_PROCESSED;
+    }
 }
 
 public enum BattleMessageType {
@@ -139,7 +221,6 @@ public enum BattleMessageType {
 public class BattleMessage : MessageInfo
 {
     public MessageType messageType {get; set;}
-
     public BattleMessageType Type {get; set;}
 
     [JsonConstructor]
