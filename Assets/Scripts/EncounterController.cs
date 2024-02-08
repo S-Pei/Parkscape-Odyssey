@@ -208,10 +208,10 @@ public class EncounterController : MonoBehaviour
         }
         GameObject popup = Instantiate(encounterFoundPopup, gameplayCanvas.transform);
         foreach (Transform child in popup.transform) {
-            if (child.name == "AcceptButton") {
+            if (child.name == "YesButton") {
                 child.GetComponent<Button>().onClick.AddListener(AcceptJoinEncounter);
             }
-            if (child.name == "CancelButton") {
+            if (child.name == "NoButton") {
                 child.GetComponent<Button>().onClick.AddListener(() => Destroy(popup));
             }
         }
