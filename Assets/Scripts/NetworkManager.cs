@@ -14,7 +14,7 @@ public class NetworkManager : MonoBehaviour {
 
     private readonly float baseFreq = 0.3f; // per second
 
-    private Dictionary<string, string> connectedPlayers = new ();
+    private Dictionary<string, (string, int counter)> connectedPlayers = new ();
     private int numConnectedPlayers = 0;
 
     private readonly float pingFreq = 2f;
@@ -84,6 +84,15 @@ public class NetworkManager : MonoBehaviour {
     // Handle incoming messages for all managers.
     private CallbackStatus HandleMessage(Message message) {
         switch(message.messageInfo.messageType) {
+            case MessageType.PINGMESSAGE:
+                // Received a ping message from someone else.
+                PingMessageInfo pingMessage = (PingMessageInfo)message.messageInfo;
+                if (!connectedPlayers.ContainsKey(pingMessage.playerId)) {
+                    connectedPlayers[pingMessage.playerId] = (pingMessage.playerName, 10);
+                } else {
+                    connectedPlayers[pingMessage.playerId].Item2 = 10;
+                    numConnectedPlayers++;
+                }
             case MessageType.LOBBYMESSAGE:
                 if (lobbyManager != null) {
                     return lobbyManager.HandleMessage(message);
@@ -105,7 +114,14 @@ public class NetworkManager : MonoBehaviour {
         if (networkUtils == null)
             return;
 
-        // networkUtils.broadcast
+        // Send ping messages to all connected players every PingFreq.
+        if (pingTimer >= pingFreq) {
+            PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
+            networkUtils.broadcast(pingMessage.toJson());
+            pingTimer = 0;
+        } else {
+            pingTimer += baseFreq;
+        }
         
         if (lobbyManager != null) {
             lobbyManager.SendMessages();
