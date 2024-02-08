@@ -29,6 +29,10 @@ public sealed class MonsterFactory {
       };
   }
 
+  public static Monster CreateMonsterWithValues(MonsterName name, Sprite img, int health, int defense, int defenseAmount, int baseDamage, List<Skill> skills, EnemyLevel level) {
+      return new Monster(name, img, health, defense, defenseAmount, baseDamage, skills, level);
+  }
+
 
   private static Monster CreateGoblin(Sprite img) {
     List<Skill> skills = new()

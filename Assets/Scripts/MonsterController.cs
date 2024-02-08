@@ -35,4 +35,9 @@ public class MonsterController : MonoBehaviour
         int index = UnityEngine.Random.Range(0, monsterNames.Count);
         return monsterNames[index];
     }
+
+    // Gets monster sprite
+    public Sprite GetMonsterSprite(MonsterName name) {
+        return allMonsters[name];
+    }
 }
