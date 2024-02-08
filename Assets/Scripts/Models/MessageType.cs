@@ -8,4 +8,5 @@ public enum MessageType {
     GAMESTATE,
     ENCOUNTERMESSAGE,
     BATTLEMESSAGE,
+    TRADE,
 }
