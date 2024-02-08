@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,7 +11,13 @@ public class NetworkManager : MonoBehaviour {
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
 
-    private readonly float baseFreq = 0.1f; // per second
+    private readonly float baseFreq = 0.3f; // per second
+
+    private Dictionary<string, string> connectedPlayers = new ();
+    private int numConnectedPlayers = 0;
+
+    private readonly float pingFreq = 2f;
+    private float pingTimer = 0;
 
 
     public static NetworkManager Instance {
@@ -96,6 +103,8 @@ public class NetworkManager : MonoBehaviour {
     private void SendMessages() {
         if (networkUtils == null)
             return;
+
+        // networkUtils.broadcast
         
         if (lobbyManager != null) {
             lobbyManager.SendMessages();
@@ -103,6 +112,22 @@ public class NetworkManager : MonoBehaviour {
 
         if (encounterController != null) {
             encounterController.SendMessages();
+        }
+    }
+
+
+    private class PingMessageInfo : MessageInfo
+    {
+        public MessageType messageType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public string processMessageInfo()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string toJson()
+        {
+            throw new NotImplementedException();
         }
     }
 }
