@@ -11,6 +11,7 @@ public class BattleManager : MonoBehaviour {
     public const int HAND_SIZE = 5;
     
     private GameManager gameManager;
+    private GameInterfaceManager gameInterfaceManager;
     private BattleUIManager battleUIManager;
     private MonsterController monsterController;
     private List<CardName> allCards;
@@ -53,12 +54,13 @@ public class BattleManager : MonoBehaviour {
 
     void Awake() {
         gameManager = FindObjectOfType<GameManager>();
+        gameInterfaceManager = (GameInterfaceManager) FindObjectOfType(typeof(GameInterfaceManager));
         battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
         monsterController = (MonsterController) GetComponent(typeof(MonsterController));
 
         // Setup p2p network
-        network = NetworkManager.Instance.NetworkUtils;
-        InvokeRepeating("HandleMessages", 0.0f, msgHandlingFreq);
+        // network = NetworkManager.Instance.NetworkUtils;
+        // InvokeRepeating("HandleMessages", 0.0f, msgHandlingFreq);
     }
 
     void Start() {
@@ -134,6 +136,10 @@ public class BattleManager : MonoBehaviour {
         List<Player> otherPlayers = GameState.Instance.OtherPlayers;
         for (int i = 0; i < GameState.Instance.maxPlayerCount - 1; i++) {
             if (i < otherPlayers.Count) {
+                if (otherPlayers[i].Icon == null) {
+                    Debug.Log(gameInterfaceManager);
+                    otherPlayers[i].Icon = gameInterfaceManager.GetIcon(otherPlayers[i].Role);
+                }
                 otherPlayerStat[i].transform.GetChild(0).GetComponent<Image>().sprite = otherPlayers[i].Icon;
                 otherPlayerStat[i].transform.GetChild(1)
                                   .transform.GetChild(0)
