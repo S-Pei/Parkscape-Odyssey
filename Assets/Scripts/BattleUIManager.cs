@@ -54,6 +54,29 @@ public class BattleUIManager : MonoBehaviour {
         }
     }
 
+    public void RemoveCardFromHand(int index) {
+        // Remove the card from the displayCards list and destroy it
+        GameObject card = displayCards[index];
+        displayCards.RemoveAt(index);
+
+        // Update the card index of the remaining cards
+        for (int i = 0; i < displayCards.Count; i++) {
+            GameObject cardInstance = displayCards[i];
+            CardRenderer cardRenderer = cardInstance.GetComponentInChildren<CardRenderer>();
+            cardRenderer.cardIndex = i;
+        }
+
+        // Call the repositioning coroutine in each card's renderer
+        for (int i = 0; i < displayCards.Count; i++) {
+            Debug.Log("Repositioning card " + i + " of " + displayCards.Count);
+            GameObject cardInstance = displayCards[i];
+            BattleCardRenderer cardRenderer = cardInstance.GetComponentInChildren<BattleCardRenderer>();
+            StartCoroutine(cardRenderer.ResetCardPosition(0.2f));
+        }
+
+        Destroy(card);
+    }
+
     public void DisplayMonster(Monster monster) {
         GameObject monsterInstance = Instantiate(monsterDisplayPrefab, enemyPanel.transform, false);
         MonsterRenderer monsterRenderer = monsterInstance.GetComponentInChildren<MonsterRenderer>();
@@ -72,19 +95,22 @@ public class BattleUIManager : MonoBehaviour {
         // Set the rendered card's index and render the card
         CardRenderer cardRenderer = cardInstance.GetComponentInChildren<CardRenderer>();
         cardRenderer.cardIndex = i;
-        cardRenderer.renderCard(card.img, card.stats);
+        cardRenderer.renderCard(card);
         cardRenderer.scaleCardSize(6);
 
         return cardInstance;
     }
 
-    public static (Vector3, Quaternion) getCardPositionAtIndex(int i) {
-        int handSize = BattleManager.HAND_SIZE;
+    public (Vector3, Quaternion) getCardPositionAtIndex(int i) {
+        Debug.Log("Getting card position for index" + i + "; hand size:" + this.displayCards.Count);
+        int handSize = this.displayCards.Count;
         float zRot = 1.5f;
-        float xOffset = (Screen.width / (1.5f * handSize)) - 80;
+        float xOffset = handSize >= 5
+            ? ((Screen.width / (1.5f * handSize)) - 80)
+            : 100.0f;
         float yOffset = 5.0f;
 
-        float align = i / (handSize - 1.0f);
+        float align = handSize > 1 ? (i / (handSize - 1.0f)) : 0.5f;
         float rotZ = Mathf.Lerp(handSize * zRot, handSize * -zRot, align);
         float xPos = Mathf.Lerp(handSize * -xOffset, handSize * xOffset, align);
         float yPos = -Mathf.Abs(Mathf.Lerp(handSize * -yOffset, handSize * yOffset, align));

@@ -8,16 +8,18 @@ public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandl
     private RectTransform rectTransform;
 
     private float canvasScaleFactor;
-    // private BattleUIManager battleUIManager;
+
+    private bool selectThisCard = false;
+    private BattleUIManager battleUIManager;
+    private BattleManager battleManager;
 
     
     private void Awake() {
         Canvas canvas = (Canvas) FindObjectOfType(typeof(Canvas));
         canvasScaleFactor = canvas.scaleFactor;
         rectTransform = GetComponent<RectTransform>();
-        // battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
-        // Print the scale factor of the canvas
-        // Debug.Log("Canvas scale factor: " + canvas.scaleFactor);
+        battleUIManager = (BattleUIManager) FindObjectOfType(typeof(BattleUIManager));
+        battleManager = (BattleManager) FindObjectOfType(typeof(BattleManager));
     }
 
     public void OnBeginDrag(PointerEventData eventData) {
@@ -27,19 +29,49 @@ public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandl
     }
     public void OnEndDrag(PointerEventData eventData) {
         // Debug.Log("OnEndDrag");
-        StartCoroutine(ResetCardPosition(0.2f));
+        if (!selectThisCard) {
+            // Snap back to starting position
+            StartCoroutine(ResetCardPosition(0.2f));
+            return;
+        } else {
+            // Inform the battle manager that this card is to be played
+            Debug.Log("Playing card: " + this.getCardDetails().name);
+            // battleManager.PlayCard(this.cardIndex);
+
+            // Remove the card from the hand on-screen, and shift
+            // the other cards to fill the gap
+            battleUIManager.RemoveCardFromHand(this.cardIndex);
+
+
+            // StartCoroutine(ResetCardPosition(0.2f));
+        }
     }
+
     public void OnDrag(PointerEventData eventData) {
         // Move the card to follow the pointer every frame
         rectTransform.anchoredPosition += eventData.delta / canvasScaleFactor;
     }
 
-    private IEnumerator ResetCardPosition (float time) {
+    void OnTriggerEnter2D(Collider2D other) {
+        if(other.gameObject.GetComponent<MonsterRenderer>()) {
+            // Collision with monster - select this card
+            selectThisCard = true;
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other) {
+        if(other.gameObject.GetComponent<MonsterRenderer>()) {
+            // No more collision - deselect this card
+            selectThisCard = false;
+        }
+    }
+
+    public IEnumerator ResetCardPosition (float time) {
         Vector3 startingPosition  = rectTransform.position;
         Vector3 startingRotation  = rectTransform.eulerAngles;
 
         (Vector3 defaultPosition, Quaternion defaultRotation) =
-            BattleUIManager.getCardPositionAtIndex(this.cardIndex);
+            battleUIManager.getCardPositionAtIndex(this.cardIndex);
 
         float elapsedTime = 0;
         
