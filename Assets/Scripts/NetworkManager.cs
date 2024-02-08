@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
+
 
 public class NetworkManager : MonoBehaviour {
     private static NetworkManager instance;
@@ -114,20 +115,27 @@ public class NetworkManager : MonoBehaviour {
             encounterController.SendMessages();
         }
     }
+}
 
 
-    private class PingMessageInfo : MessageInfo
-    {
-        public MessageType messageType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+public class PingMessageInfo : MessageInfo {
+        public MessageType messageType { get; set; }
+        public string playerId { get; set; }
+        public string playerName { get; set; }
 
-        public string processMessageInfo()
-        {
-            throw new NotImplementedException();
+
+        [JsonConstructor]
+        public PingMessageInfo(string playerName) {
+            this.messageType = MessageType.PINGMESSAGE;
+            this.playerId = SystemInfo.deviceUniqueIdentifier;
+            this.playerName = playerName;
+        }
+        
+        public string toJson() {
+            return JsonConvert.SerializeObject(this);
         }
 
-        public string toJson()
-        {
-            throw new NotImplementedException();
+        public string processMessageInfo() {
+            return "";
         }
-    }
 }
