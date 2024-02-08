@@ -186,13 +186,13 @@ build-android:
 #    - fastlane supply --aab "${BUILD_NAME}.aab" --track internal --package_name com.youcompany.yourgame --json_key ./gpc_token.json
 #  needs: ["build-android"]
 
-build-ios-xcode:
-  <<: *build
-  image: $IMAGE:$UNITY_VERSION-ios-$IMAGE_VERSION
-  variables:
-    BUILD_TARGET: iOS
-  tags:
-    - build-ios
+# build-ios-xcode:
+#   <<: *build
+#   image: $IMAGE:$UNITY_VERSION-ios-$IMAGE_VERSION
+#   variables:
+#     BUILD_TARGET: iOS
+#   tags:
+#     - build-ios
 
 #build-and-deploy-ios:
 #  stage: deploy
