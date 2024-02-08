@@ -57,8 +57,8 @@ public class BattleManager : MonoBehaviour {
         monsterController = (MonsterController) GetComponent(typeof(MonsterController));
 
         // Setup p2p network
-        network = NetworkManager.Instance.NetworkUtils;
-        InvokeRepeating("HandleMessages", 0.0f, msgHandlingFreq);
+        // network = NetworkManager.Instance.NetworkUtils;
+        // InvokeRepeating("HandleMessages", 0.0f, msgHandlingFreq);
     }
 
     void Start() {

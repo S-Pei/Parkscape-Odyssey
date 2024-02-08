@@ -1,11 +1,23 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using UnityEngine.PlayerLoop;
 
 public class GameState {
+    private static bool DEBUGMODE = false;
     private static readonly Lazy<GameState> LazyGameState = new(() => new GameState());
 
-    public static GameState Instance { get { return LazyGameState.Value; } }
+    public static GameState Instance { get {
+        GameState gameState = LazyGameState.Value;
+        if (DEBUGMODE && !gameState.Initialized) {
+            gameState.Initialize("1", "123", new Dictionary<string, string> {
+                {"1", "Player 1"},
+                {"2", "Player 2"},
+                {"3", "Player 3"},
+                {"4", "Player 4"},
+            });
+        }
+        return gameState; } }
 
     public int maxPlayerCount = 6;
 
