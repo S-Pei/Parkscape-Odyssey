@@ -104,6 +104,8 @@ public class BattleManager : MonoBehaviour {
         Debug.Log("BattleManager started.");
         otherPlayerStat = battleUIManager.DisplayOtherPlayers(GameState.Instance.OtherPlayers);
 
+        Debug.Log("Length of otherPlayerStat: " + otherPlayerStat.Count);
+
         // Initializes Player's Stat
         InitializesPlayerStat();
 
@@ -134,6 +136,13 @@ public class BattleManager : MonoBehaviour {
 
         // Update the player order
         UpdatePlayerOrder();
+
+        // Draw 5 cards if the hand is empty
+        if (hand.Count == 0) {
+            for (int i = 0; i < HAND_SIZE; i++) {
+                DrawCard();
+            }
+        }
     }
 
     private void DrawCard() {
@@ -146,7 +155,9 @@ public class BattleManager : MonoBehaviour {
         }
 
         // Add a card to the hand
-        hand.Add(drawPile.Dequeue()); 
+        CardName drawnCard = drawPile.Dequeue();
+        hand.Add(drawnCard);
+        battleUIManager.AddToHand(drawnCard);
     }
 
     // Updates Player's health, current mana and max mana
@@ -165,6 +176,7 @@ public class BattleManager : MonoBehaviour {
     // Initializes other Player's health and icon.
     private void InitializesPlayerStat() {
         List<Player> otherPlayers = GameState.Instance.OtherPlayers;
+        Debug.Log(otherPlayers);
         for (int i = 0; i < GameState.Instance.maxPlayerCount - 1; i++) {
             if (i < otherPlayers.Count) {
                 if (otherPlayers[i].Icon == null) {
@@ -175,10 +187,6 @@ public class BattleManager : MonoBehaviour {
                 otherPlayerStat[i].transform.GetChild(1)
                                   .transform.GetChild(0)
                                   .GetComponent<TextMeshProUGUI>().text = otherPlayers[i].CurrentHealth.ToString();
-            }
-            else {
-                otherPlayerStat[i].transform.GetChild(0).gameObject.SetActive(false);
-                otherPlayerStat[i].transform.GetChild(1).gameObject.SetActive(false);
             }
         }
     }

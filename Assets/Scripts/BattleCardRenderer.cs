@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 
-public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandler, IDragHandler {
+public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerClickHandler {
     private RectTransform rectTransform;
 
     private float canvasScaleFactor;
@@ -12,6 +12,10 @@ public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandl
     private bool selectThisCard = false;
     private BattleUIManager battleUIManager;
     private BattleManager battleManager;
+
+    private float lastTapTime = 0;
+
+    private float doubleTapThreshold = 0.3f;
 
     
     private void Awake() {
@@ -35,7 +39,7 @@ public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandl
             return;
         } else {
             // Inform the battle manager that this card is to be played
-            Debug.Log("Playing card: " + this.getCardDetails().name);
+            Debug.Log("Playing card: " + this.GetCardDetails().name);
             battleManager.PlayCard(this.cardIndex);
         }
     }
@@ -82,5 +86,15 @@ public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandl
         // Snap back to starting position in case anything went wrong
         rectTransform.position = defaultPosition;
         rectTransform.rotation = defaultRotation; 
+    }
+
+    public void OnPointerClick(PointerEventData eventData){
+        float currentTimeClick = eventData.clickTime;
+        if(Mathf.Abs(currentTimeClick - lastTapTime) < doubleTapThreshold){
+            Debug.Log("DOUBLE CLICK");
+            Debug.Log(this.GetCardDetails());
+            battleUIManager.DisplayCardDescription(this.GetCardDetails());
+        }
+        lastTapTime = currentTimeClick;
     }
 }
