@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
+using System.Linq;
 
 
 public class NetworkManager : MonoBehaviour {
@@ -12,7 +13,9 @@ public class NetworkManager : MonoBehaviour {
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
 
-    private readonly float baseFreq = 0.3f; // per second
+    private readonly float baseFreq = 0.1f; // per second
+    private readonly float baseSendFreq = 0.6f; // per second
+    private float baseSendTimer = 0.6f; // per second
 
     private Dictionary<string, string> connectedPlayers = new ();
     private Dictionary<string, float> connectedPlayersTimer = new();
@@ -80,13 +83,18 @@ public class NetworkManager : MonoBehaviour {
         };
         networkUtils.onReceive(callback);
 
-        SendMessages();
+        if (baseSendTimer >= baseSendFreq) {
+            SendMessages();
+            baseSendTimer = 0;
+        } else {
+            baseSendTimer += baseFreq;
+        }
 
         CountdownPlayersLoseConnectionTimer();
     }
 
     private void CountdownPlayersLoseConnectionTimer() {
-        foreach (string id in connectedPlayersTimer.Keys) {
+        foreach (string id in connectedPlayersTimer.Keys.ToList()) {
             connectedPlayersTimer[id] -= baseFreq;
             if (connectedPlayersTimer[id] <= 0) {
                 // Player has not pinged for more than disconnectTimeout, consider player disconnected.
@@ -99,6 +107,7 @@ public class NetworkManager : MonoBehaviour {
 
     // Handle incoming messages for all managers.
     private CallbackStatus HandleMessage(Message message) {
+        Debug.Log("Got message");
         switch(message.messageInfo.messageType) {
             case MessageType.PINGMESSAGE:
                 // Received a ping message from someone else.
@@ -108,9 +117,10 @@ public class NetworkManager : MonoBehaviour {
                     numConnectedPlayers += 1;
                 }
                 connectedPlayersTimer[pingMessage.playerId] = disconnectTimeout;
-                break;
+                return CallbackStatus.PROCESSED;
             case MessageType.LOBBYMESSAGE:
                 if (lobbyManager != null) {
+                    Debug.Log("Lobby type and lobby manager not null");
                     return lobbyManager.HandleMessage(message);
                 } else {
                     return CallbackStatus.DORMANT;
@@ -131,13 +141,15 @@ public class NetworkManager : MonoBehaviour {
             return;
 
         // Send ping messages to all connected players every PingFreq.
-        if (pingTimer >= pingFreq) {
-            PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
-            networkUtils.broadcast(pingMessage.toJson());
-            pingTimer = 0;
-        } else {
-            pingTimer += baseFreq;
-        }
+        // if (networkUtils.getConnectedDevices().Count > 0) {
+        //     if (pingTimer >= pingFreq) {
+        //         PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
+        //         networkUtils.broadcast(pingMessage.toJson());
+        //         pingTimer = 0;
+        //     } else {
+        //         pingTimer += baseFreq;
+        //     }
+        // }
         
         if (lobbyManager != null) {
             lobbyManager.SendMessages(numConnectedPlayers, connectedPlayers);
