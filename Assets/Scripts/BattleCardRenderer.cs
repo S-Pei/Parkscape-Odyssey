@@ -36,14 +36,7 @@ public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandl
         } else {
             // Inform the battle manager that this card is to be played
             Debug.Log("Playing card: " + this.getCardDetails().name);
-            // battleManager.PlayCard(this.cardIndex);
-
-            // Remove the card from the hand on-screen, and shift
-            // the other cards to fill the gap
-            battleUIManager.RemoveCardFromHand(this.cardIndex);
-
-
-            // StartCoroutine(ResetCardPosition(0.2f));
+            battleManager.PlayCard(this.cardIndex);
         }
     }
 

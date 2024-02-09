@@ -109,7 +109,31 @@ public class BattleManager : MonoBehaviour {
 
         // StartCoroutine(UnloadTheScene());
         UpdatePlayerOrder();
+    }
 
+    // TODO: Implement the logic for playing a card, including mana checking
+    public void PlayCard(int cardIndex) {
+        // Play the card with the given index
+        CardName card = hand[cardIndex];
+        Debug.Log(string.Format("Playing card: {0}.", card));
+
+        // Remove the card from the hand
+        hand.RemoveAt(cardIndex);
+
+        // Update the hand on-screen
+        battleUIManager.RemoveCardFromHand(cardIndex);
+
+        // Update the player's stats
+        UpdatesPlayerStats();
+
+        // Update the player's card number
+        UpdateCardNumber();
+
+        // Update the other players' stats
+        UpdateOtherPlayerStats();
+
+        // Update the player order
+        UpdatePlayerOrder();
     }
 
     private void DrawCard() {
