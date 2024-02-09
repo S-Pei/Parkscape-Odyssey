@@ -104,15 +104,26 @@ public class LobbyManager : MonoBehaviour {
             return;
         }
 
+        if (network.getConnectedDevices().Count <=  0) {
+            Debug.Log("No connected DEVICES. not attempting to send messages...");
+            if (numConnectedPlayers <= 0) {
+                Debug.Log("No connected PLAYERS yet, pinging to get player (but still sending)...");
+                return;
+            }
+            return;
+        }
+
+        // IDs of connected players.
+        List<string> connectedIDs = new List<string>(connectedPlayers.Keys);
+
+
         if (isLeader) {
             // Leader check if any devices have disconnected.
-            // List<string> connectedDevices = network.getConnectedDevices();
-            // List<string> connectedIDs = new List<String>(connectedPlayers.Keys);
-            // foreach (string id in players.Keys) {
-            //     if (!connectedIDs.Contains(id) && !id.Equals(myID)) {
-            //         RemovePlayer(id);
-            //     }
-            // }
+            foreach (string id in players.Keys) {
+                if (!connectedIDs.Contains(id) && !id.Equals(myID)) {
+                    RemovePlayer(id);
+                }
+            }
             
             // Check if game has started and broadcast the game state to everyone.
             if (GameState.Instance.Initialized) {
@@ -125,11 +136,9 @@ public class LobbyManager : MonoBehaviour {
                 network.broadcast(lobbyMessage.toJson());
             }
         } else {
-            // Debug.Log("Connected Players: " + numConnectedPlayers);
-
             // If I lost connection to the leader then I should exit the lobby after 10 seconds
             // connectedDevices = network.getConnectedDevices();
-            if (!leaderID.Equals("") && !connectedDevices.Contains(leaderID)) {
+            if (!leaderID.Equals("") && !connectedIDs.Contains(leaderID)) {
                 if (disconnectCount < 100) {
                     disconnectCount++;
                 } else {
