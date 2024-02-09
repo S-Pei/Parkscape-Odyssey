@@ -14,8 +14,8 @@ public class NetworkManager : MonoBehaviour {
     private EncounterController encounterController;
 
     private readonly float baseFreq = 0.1f; // per second
-    private readonly float baseSendFreq = 0.6f; // per second
-    private float baseSendTimer = 0.6f; // per second
+    private readonly float baseSendFreq = 0.2f; // per second
+    private float baseSendTimer = 0f; // per second
 
     private Dictionary<string, string> connectedPlayers = new ();
     private Dictionary<string, float> connectedPlayersTimer = new();
@@ -141,15 +141,15 @@ public class NetworkManager : MonoBehaviour {
             return;
 
         // Send ping messages to all connected players every PingFreq.
-        // if (networkUtils.getConnectedDevices().Count > 0) {
-        //     if (pingTimer >= pingFreq) {
-        //         PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
-        //         networkUtils.broadcast(pingMessage.toJson());
-        //         pingTimer = 0;
-        //     } else {
-        //         pingTimer += baseFreq;
-        //     }
-        // }
+        if (networkUtils.getConnectedDevices().Count > 0) {
+            if (pingTimer >= pingFreq) {
+                PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
+                networkUtils.broadcast(pingMessage.toJson());
+                pingTimer = 0;
+            } else {
+                pingTimer += baseFreq * (baseSendFreq / baseFreq);
+            }
+        }
         
         if (lobbyManager != null) {
             lobbyManager.SendMessages(numConnectedPlayers, connectedPlayers);
