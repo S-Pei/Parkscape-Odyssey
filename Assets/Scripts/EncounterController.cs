@@ -67,6 +67,7 @@ public class EncounterController : MonoBehaviour
         monsterController = monsterManager.GetComponent<MonsterController>();
 
         CreateMonsterSpawn(); // TEMPORARY
+
     }
 
     private void CreateMonsterSpawn() {
@@ -193,6 +194,7 @@ public class EncounterController : MonoBehaviour
 
     public void AcceptJoinEncounter() {
         // AcceptMessages = true;
+        Debug.Log("Accepting join encounter");
 
         // Send a message to the leader to request to join encounter.
         SendJoinEncounterMessage();
@@ -203,16 +205,14 @@ public class EncounterController : MonoBehaviour
     }
 
     private void ShowEncounterFoundPopup() {
-        if (encounterStatus == EncounterStatus.JOINING_LOBBY) {
+        if (encounterStatus == EncounterStatus.JOINING_LOBBY || encounterStatus == EncounterStatus.RECEIVED_ENCOUNTER_POPUP) {
             return;
         }
+        encounterStatus = EncounterStatus.RECEIVED_ENCOUNTER_POPUP;
         GameObject popup = Instantiate(encounterFoundPopup, gameplayCanvas.transform);
         foreach (Transform child in popup.transform) {
             if (child.name == "YesButton") {
                 child.GetComponent<Button>().onClick.AddListener(AcceptJoinEncounter);
-            }
-            if (child.name == "NoButton") {
-                child.GetComponent<Button>().onClick.AddListener(() => Destroy(popup));
             }
         }
     }
@@ -277,6 +277,7 @@ enum EncounterStatus {
     START_LOBBY,
     JOINING_LOBBY,
     JOINED_LOBBY,
+    RECEIVED_ENCOUNTER_POPUP,
 }
 
 
