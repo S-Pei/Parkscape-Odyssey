@@ -3,27 +3,41 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using TMPro;
 
 public class BattleUIManager : MonoBehaviour {
     private BattleManager battleManager;
 
     [SerializeField]
     private GameObject cardsManagerPrefab;
+
     [SerializeField]
     private GameObject cardDisplayPrefab;
+
     [SerializeField]
     private GameObject monsterDisplayPrefab;
+
+    [SerializeField]
+    private GameObject cardDescriptionPanel;
+
     [SerializeField]
     private GameObject playerStatPrefab;
     [SerializeField]
     private List<GameObject> displayCards = new List<GameObject>();
+
     [SerializeField]
     private GameObject enemyPanel;
     [SerializeField]
     private GameObject otherPlayersPanel;
+    
+    [SerializeField]
+    private GameObject handPanel;
+
     private GameObject cardsManager;
     private CardsUIManager cardsUIManager;
     private Dictionary<string, GameObject> playerStats = new Dictionary<string, GameObject>();
+
+    private PopUpManager popUpManager;
 
     void Awake () {
         // Find the BattleManager
@@ -39,15 +53,30 @@ public class BattleUIManager : MonoBehaviour {
 
         // Extract the CardsUIManager from the CardManager
         cardsUIManager = cardsManager.GetComponent<CardsUIManager>();
+
+        // Find the PopUpManager for the card description and initialise it to closed
+        popUpManager = (PopUpManager) GameObject.FindGameObjectWithTag("CardDescription").GetComponent(typeof(PopUpManager));
+        popUpManager.closePopUp();
     }
 
     public List<GameObject> DisplayOtherPlayers(List<Player> otherPlayers) {
         // Instantiate the playerStatPrefab for each player in otherPlayers
         Debug.Log("number of players: " + otherPlayers.Count);
-        foreach (Player player in otherPlayers) {
+        for (int i = 0; i < GameState.Instance.maxPlayerCount - 1; i++) {
+            // Initialise an empty playerStat prefab whether there will be a player there or not
             GameObject playerStat = Instantiate(playerStatPrefab, otherPlayersPanel.transform, false);
-            playerStat.transform.GetChild(0).GetComponent<Image>().sprite = player.Icon;
-            playerStats.Add(player.Id, playerStat);
+            if (i < otherPlayers.Count) {
+                // For valid other players, set the icon and add to the list
+                Player player = otherPlayers[i];
+                playerStat.transform.GetChild(0).GetComponent<Image>().sprite = player.Icon;
+                playerStats.Add(player.Id, playerStat);
+            } else {
+                // Disable the icon and health info for nonexistent players
+                // These playerStat prefabs do not belong to any player, so
+                // do not append them to the list that we return.
+                playerStat.transform.GetChild(0).gameObject.SetActive(false);
+                playerStat.transform.GetChild(1).gameObject.SetActive(false);
+            }
         }
         return new List<GameObject>(playerStats.Values);
     }
@@ -57,6 +86,16 @@ public class BattleUIManager : MonoBehaviour {
         for (int i = 0; i < sortedPlayerIds.Count; i++) {
             GameObject playerStat = playerStats[sortedPlayerIds[i]];
             playerStat.transform.SetSiblingIndex(i);
+        }
+    }
+
+    public void RepositionCards(List<GameObject> cards) {
+        for (int i = 0; i < cards.Count; i++) {
+            // GameObject cardInstance = displayCards[i];
+            // (Vector3 cardPosition, Quaternion cardRotation) = getCardPositionAtIndex(i);
+            // cardInstance.transform.localPosition = cardPosition;
+            // cardInstance.transform.rotation = cardRotation;
+            StartCoroutine(displayCards[i].GetComponentInChildren<BattleCardRenderer>().ResetCardPosition(0.1f));
         }
     }
 
@@ -70,12 +109,41 @@ public class BattleUIManager : MonoBehaviour {
             }
         }
 
-        for (int i = 0; i < BattleManager.HAND_SIZE; i++) {
-            GameObject card = displayCards[i];
-            (Vector3 cardPosition, Quaternion cardRotation) = getCardPositionAtIndex(i);
-            card.transform.position = cardPosition;
-            card.transform.rotation = cardRotation;
+        // The positions of the cards must be instantiated *after* displayCards is fully populated
+        // This is because the card's index is used to calculate its position
+        RepositionCards(displayCards);
+        
+    }
+
+    public void AddToHand(CardName card) {
+        // Add the card to the displayCards list and instantiate it
+        int i = displayCards.Count;
+        GameObject newCard = displayCardAndApplyIndex(card, i);
+        if (newCard != null) {
+            displayCards.Add(newCard);
         }
+        RepositionCards(displayCards);
+    }
+
+    // This is called only when displaying the hand for the first time
+    private GameObject displayCardAndApplyIndex(CardName cardName, int i) {
+        Card card = cardsUIManager.findCardDetails(cardName);
+
+        // (Vector3 cardPosition, Quaternion cardRotation) = getCardPositionAtIndex(i);
+        
+        // Create a new instance of the card prefab in the correct world position, with parent handPanel
+        GameObject cardInstance = Instantiate(cardDisplayPrefab, handPanel.transform, true);
+
+        // Set the rendered card's index
+        BattleCardRenderer cardRenderer = cardInstance.GetComponentInChildren<BattleCardRenderer>();
+        cardRenderer.cardIndex = i;
+
+
+        // Scale and render the card
+        cardRenderer.RenderCard(card);
+        cardRenderer.ScaleCardSize(6);
+        
+        return cardInstance;
     }
 
     public void RemoveCardFromHand(int index) {
@@ -92,7 +160,6 @@ public class BattleUIManager : MonoBehaviour {
 
         // Call the repositioning coroutine in each card's renderer
         for (int i = 0; i < displayCards.Count; i++) {
-            Debug.Log("Repositioning card " + i + " of " + displayCards.Count);
             GameObject cardInstance = displayCards[i];
             BattleCardRenderer cardRenderer = cardInstance.GetComponentInChildren<BattleCardRenderer>();
             StartCoroutine(cardRenderer.ResetCardPosition(0.2f));
@@ -107,29 +174,8 @@ public class BattleUIManager : MonoBehaviour {
         monsterRenderer.renderMonster(monster);
     }
 
-    private GameObject displayCardAndApplyIndex(CardName cardName, int i) {
-        Card card = cardsUIManager.findCardDetails(cardName);
-        
-        // Create a new instance of the card prefab, with parent BattleCanvas
-        GameObject cardInstance = Instantiate(cardDisplayPrefab);
-        cardInstance.transform.SetParent(
-            GameObject.FindGameObjectWithTag("BattleCanvas").transform, true
-        );
-
-        // Set the rendered card's index and render the card
-        CardRenderer cardRenderer = cardInstance.GetComponentInChildren<CardRenderer>();
-        cardRenderer.cardIndex = i;
-        cardRenderer.renderCard(card);
-        cardRenderer.scaleCardSize(6);
-
-        return cardInstance;
-    }
-
     public (Vector3, Quaternion) getCardPositionAtIndex(int i) {
-        Debug.Log("Getting card position for index" + i + "; hand size:" + this.displayCards.Count);
-        int handSize = this.displayCards.Count;
-
-        // Consecutive cards should differ in rotation by 1.5 degrees
+        int handSize = displayCards.Count;
         float zRot = 1.5f;
 
         // For 5+ cards, make the x-offset such that they all fit on the screen
@@ -148,5 +194,22 @@ public class BattleUIManager : MonoBehaviour {
             new Vector3((Screen.width / 2) + xPos, yPos + 325, 0),
             Quaternion.Euler(0, 0, rotZ)
         );
+    }
+    
+    public void DisplayCardDescription(Card card) {
+        Debug.Log(popUpManager);
+        // Instantiate an inventory card prefab for the description
+        // GameObject cardDescription = Instantiate(cardDescriptionPrefab, GameObject.FindGameObjectWithTag("BattleCanvas").transform, false);
+        Transform cardDescription = cardDescriptionPanel.transform.GetChild(0);
+        
+        cardDescription.GetChild(1).gameObject.GetComponent<Image>().sprite = card.img;
+        cardDescription.GetChild(2).gameObject.GetComponent<TextMeshProUGUI>().text = card.stats;
+        popUpManager.openPopUp();
+        // CardRenderer renderer = enlargedCard.GetComponentInChildren<CardRenderer>();
+        // renderer.RenderCard(card);
+    }
+
+    public void CloseCardDescriptionPopUp() {
+        popUpManager.closePopUp();
     }
 }
