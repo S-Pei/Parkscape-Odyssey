@@ -85,17 +85,20 @@ public class NetworkManager : MonoBehaviour {
         };
         networkUtils.onReceive(callback);
 
+        // Check for disconnected players.
+        List<string> disconnectedPlayers = CountdownPlayersLoseConnectionTimer();
+
         if (baseSendTimer >= baseSendFreq) {
-            SendMessages();
+            SendMessages(disconnectedPlayers);
             baseSendTimer = 0;
         } else {
             baseSendTimer += baseFreq;
         }
 
-        CountdownPlayersLoseConnectionTimer();
     }
 
-    private void CountdownPlayersLoseConnectionTimer() {
+    private List<string> CountdownPlayersLoseConnectionTimer() {
+        List<string> disconnectedPlayers = new List<string>();
         foreach (string id in connectedPlayersTimer.Keys.ToList()) {
             connectedPlayersTimer[id] -= baseFreq;
             if (connectedPlayersTimer[id] <= 0) {
@@ -103,8 +106,10 @@ public class NetworkManager : MonoBehaviour {
                 connectedPlayersTimer.Remove(id);
                 connectedPlayers.Remove(id);
                 numConnectedPlayers -= 1;
+                disconnectedPlayers.Add(id);
             }
         }
+        return disconnectedPlayers;
     }
 
     // Handle incoming messages for all managers.
@@ -138,7 +143,7 @@ public class NetworkManager : MonoBehaviour {
     }
 
     // Handle sending messages for all managers.
-    private void SendMessages() {
+    private void SendMessages(List<string> disconnectedPlayers) {
         if (networkUtils == null)
             return;
 
@@ -157,7 +162,7 @@ public class NetworkManager : MonoBehaviour {
         }
         
         if (lobbyManager != null) {
-            lobbyManager.SendMessages(numConnectedPlayers, connectedPlayers);
+            lobbyManager.SendMessages(connectedPlayers, disconnectedPlayers);
         }
 
         if (encounterController != null) {

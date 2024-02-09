@@ -112,7 +112,7 @@ public class LobbyManager : MonoBehaviour {
     private bool sentInitialJoinMessage = false;
 
     // Send round of messages.
-    public void SendMessages(int numConnectedPlayers, Dictionary<string, string> connectedPlayers) {
+    public void SendMessages(Dictionary<string, string> connectedPlayers, List<string> disconnectedPlayerIDs) {
         if (!AcceptMessages) {
             // Debug.Log("Not accepting messages.");
             return;
@@ -136,11 +136,9 @@ public class LobbyManager : MonoBehaviour {
 
         if (isLeader) {
             // Leader check if any devices have disconnected.
-            // foreach (string id in localPlayerIDs) {
-            //     if (!connectedIDs.Contains(id) && !id.Equals(myID)) {
-            //         RemovePlayer(id);
-            //     }
-            // }
+            foreach (string id in disconnectedPlayerIDs) {
+                RemovePlayer(id);
+            }
             
             // // Check if game has started and broadcast the game state to everyone.
             // if (GameState.Instance.Initialized) {
