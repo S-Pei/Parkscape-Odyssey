@@ -115,11 +115,12 @@ public class LobbyManager : MonoBehaviour {
 
         // IDs of connected players.
         List<string> connectedIDs = new List<string>(connectedPlayers.Keys);
+        Dictionary<string, string> playersCopy = new(players);
 
 
         if (isLeader) {
             // Leader check if any devices have disconnected.
-            foreach (string id in players.Keys) {
+            foreach (string id in playersCopy.Keys) {
                 if (!connectedIDs.Contains(id) && !id.Equals(myID)) {
                     RemovePlayer(id);
                 }
@@ -132,7 +133,7 @@ public class LobbyManager : MonoBehaviour {
                 network.broadcast(gameStateMessage.toJson());
             } else {
                 // Otherwise, broadcast the list of players to everyone in the lobby (if any).
-                LobbyMessage lobbyMessage = new(isLeader, players, myID);
+                LobbyMessage lobbyMessage = new(isLeader, playersCopy, myID);
                 network.broadcast(lobbyMessage.toJson());
             }
         } else {
@@ -187,6 +188,7 @@ public class LobbyManager : MonoBehaviour {
         // Start discovering and advertising.
         network.setRoomCode(roomCode);
         network.startDiscovering();
+        network.startAdvertising();
 
         this.isLeader = isLeader;
         if (!isLeader) {
@@ -195,7 +197,7 @@ public class LobbyManager : MonoBehaviour {
                 throw new Exception("Room not found.");
         }
 
-        network.startAdvertising();
+        network.stopDiscovering();
 
         AcceptMessages = true;
 
@@ -217,20 +219,17 @@ public class LobbyManager : MonoBehaviour {
     }
 
     public CallbackStatus HandleMessage(Message message) {
-        Debug.Log("In lobby handling");
         LobbyMessage lobbyMessage = (LobbyMessage) message.messageInfo;
 
         if (lobbyMessage.SendTo != "" && lobbyMessage.SendTo != myID)
             return CallbackStatus.DORMANT;
 
-        Debug.Log("Accepting status: " + AcceptMessages);
+        // Debug.Log("Accepting status: " + AcceptMessages);
         
         // Ignore if no longer accepting messages.
         if (!AcceptMessages)
             return CallbackStatus.DORMANT;
         
-        Debug.Log("Lobby message is not dormanted, processing...");
-
         switch (lobbyMessage.Type) {
             case LobbyMessageType.MEMBER_I_AM_IN:
                 // Ignore if not leader.
@@ -255,8 +254,6 @@ public class LobbyManager : MonoBehaviour {
                 if (isLeader)
                     break;
                 
-                Debug.Log("Not leader, proceed");
-
                 // Learn my id and leader's id from this message
                 // myID = lobbyMessage.SendTo;
                 // leaderID = message.sentFrom;
@@ -265,6 +262,8 @@ public class LobbyManager : MonoBehaviour {
                 // AddPlayer(message.sentFrom, lobbyMessage.Message);
 
                 leaderID = lobbyMessage.SendFrom;
+
+                Dictionary<string, string> playersCopy = new(players);
 
                 // Add all players to the list of players.
                 foreach (KeyValuePair<string, string> player in lobbyMessage.Players) {
@@ -278,7 +277,7 @@ public class LobbyManager : MonoBehaviour {
                 }
 
                 // Remove all players that are not in the list of players.
-                foreach (KeyValuePair<string, string> player in players) {
+                foreach (KeyValuePair<string, string> player in playersCopy) {
                     if (!lobbyMessage.Players.ContainsKey(player.Key) 
                         && !player.Key.Equals(myID) && !player.Key.Equals(leaderID))
                         RemovePlayer(player.Key);

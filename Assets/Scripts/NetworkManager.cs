@@ -13,8 +13,8 @@ public class NetworkManager : MonoBehaviour {
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
 
-    private readonly float baseFreq = 0.1f; // per second
-    private readonly float baseSendFreq = 0.2f; // per second
+    private readonly float baseFreq = 0.5f; // per second
+    private readonly float baseSendFreq = 1f; // per second
     private float baseSendTimer = 0f; // per second
 
     private Dictionary<string, string> connectedPlayers = new ();
@@ -109,7 +109,6 @@ public class NetworkManager : MonoBehaviour {
 
     // Handle incoming messages for all managers.
     private CallbackStatus HandleMessage(Message message) {
-        Debug.Log("Got message");
         switch(message.messageInfo.messageType) {
             case MessageType.PINGMESSAGE:
                 // Received a ping message from someone else.
@@ -122,7 +121,6 @@ public class NetworkManager : MonoBehaviour {
                 return CallbackStatus.PROCESSED;
             case MessageType.LOBBYMESSAGE:
                 if (lobbyManager != null) {
-                    Debug.Log("Lobby type and lobby manager not null");
                     return lobbyManager.HandleMessage(message);
                 } else {
                     return CallbackStatus.DORMANT;
