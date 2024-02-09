@@ -14,11 +14,16 @@ public class BattleUIManager : MonoBehaviour {
     [SerializeField]
     private GameObject monsterDisplayPrefab;
     [SerializeField]
+    private GameObject playerStatPrefab;
+    [SerializeField]
     private List<GameObject> displayCards = new List<GameObject>();
     [SerializeField]
     private GameObject enemyPanel;
+    [SerializeField]
+    private GameObject otherPlayersPanel;
     private GameObject cardsManager;
     private CardsUIManager cardsUIManager;
+    private Dictionary<string, GameObject> playerStats = new Dictionary<string, GameObject>();
 
     void Awake () {
         // Find the BattleManager
@@ -34,6 +39,25 @@ public class BattleUIManager : MonoBehaviour {
 
         // Extract the CardsUIManager from the CardManager
         cardsUIManager = cardsManager.GetComponent<CardsUIManager>();
+    }
+
+    public List<GameObject> DisplayOtherPlayers(List<Player> otherPlayers) {
+        // Instantiate the playerStatPrefab for each player in otherPlayers
+        Debug.Log("number of players: " + otherPlayers.Count);
+        foreach (Player player in otherPlayers) {
+            GameObject playerStat = Instantiate(playerStatPrefab, otherPlayersPanel.transform, false);
+            playerStat.transform.GetChild(0).GetComponent<Image>().sprite = player.Icon;
+            playerStats.Add(player.Id, playerStat);
+        }
+        return new List<GameObject>(playerStats.Values);
+    }
+
+    public void arrangeOtherPlayersInOrder(List<string> sortedPlayerIds) {
+        // Rearrange the playerStats in the order of sortedPlayerIds
+        for (int i = 0; i < sortedPlayerIds.Count; i++) {
+            GameObject playerStat = playerStats[sortedPlayerIds[i]];
+            playerStat.transform.SetSiblingIndex(i);
+        }
     }
 
     public void DisplayHand(List<CardName> cards) {
@@ -104,12 +128,18 @@ public class BattleUIManager : MonoBehaviour {
     public (Vector3, Quaternion) getCardPositionAtIndex(int i) {
         Debug.Log("Getting card position for index" + i + "; hand size:" + this.displayCards.Count);
         int handSize = this.displayCards.Count;
+
+        // Consecutive cards should differ in rotation by 1.5 degrees
         float zRot = 1.5f;
+
+        // For 5+ cards, make the x-offset such that they all fit on the screen
+        // For fewer, fix the x-offset so they look nice in the middle
         float xOffset = handSize >= 5
             ? ((Screen.width / (1.5f * handSize)) - 80)
             : 100.0f;
         float yOffset = 5.0f;
 
+        // Calculate "how far in" the card is, and use that to interpolate
         float align = handSize > 1 ? (i / (handSize - 1.0f)) : 0.5f;
         float rotZ = Mathf.Lerp(handSize * zRot, handSize * -zRot, align);
         float xPos = Mathf.Lerp(handSize * -xOffset, handSize * xOffset, align);

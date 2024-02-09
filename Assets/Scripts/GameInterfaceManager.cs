@@ -6,10 +6,8 @@ using UnityEngine.UI;
 public class GameInterfaceManager : MonoBehaviour
 {
     private readonly GameState GameState = GameState.Instance;
-    private GameObject inventoryObject;
-
     [SerializeField]
-    private GameObject inventoryPrefab;
+    private GameObject inventoryObject;
     
     [SerializeField]
     private GameObject playerViewPrefab;
@@ -40,15 +38,12 @@ public class GameInterfaceManager : MonoBehaviour
     }
 
     // Open with actual inventory stored in GameManager
-    public void OpenInventory(List<CardName> cards) {
-        inventoryObject = Instantiate(inventoryPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-        InventoryController inventoryController = inventoryObject.GetComponent<InventoryController>();
-        inventoryController.inventoryCards = cards;
+    public void OpenInventory() {
+        inventoryObject.GetComponent<InventoryUIManager>().OpenInventory();
     }
 
     public void CloseInventory() {
-        InventoryUIManager inventoryUIManager = inventoryObject.GetComponent<InventoryUIManager>();
-        inventoryUIManager.DestroySelf();
+        inventoryObject.SetActive(false);
     }
 
     public void SetUpInterface() {

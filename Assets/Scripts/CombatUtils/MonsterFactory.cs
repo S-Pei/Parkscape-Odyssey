@@ -12,7 +12,7 @@ public sealed class MonsterFactory {
       return singleton;
   }
 
-  private readonly static SkillsController skillsController = new();
+  public readonly static SkillsController skillsController = new();
 
   private static int IntRandomizer(int min, int max) {
     System.Random random = new();
@@ -27,6 +27,10 @@ public sealed class MonsterFactory {
           MonsterName.DRAGON => CreateDragon(img),
           _ => null,
       };
+  }
+
+  public static Monster CreateMonsterWithValues(MonsterName name, Sprite img, int health, int defense, int defenseAmount, int baseDamage, List<Skill> skills, EnemyLevel level) {
+      return new Monster(name, img, health, defense, defenseAmount, baseDamage, skills, level);
   }
 
 

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.CompilerServices;
 using UnityEngine.UI;
+using TMPro;
 
 [assembly:InternalsVisibleTo("EditMode")]
 
@@ -20,6 +21,17 @@ public class InventoryUIManager : MonoBehaviour
     [SerializeField]
     private GameObject popUpPanel;
 
+    [SerializeField]
+    private GameObject nearbyPlayersGrid;
+
+    [SerializeField]
+    private GameObject nearbyPlayerPrefab;
+    private int updateCount = 0;
+    private const int updateCountMax = 100;
+
+    [SerializeField]
+    private TMP_Text tradeMessage;
+
     private GameObject cardsManager;
 
     CardsUIManager cardsUIManager;
@@ -31,6 +43,7 @@ public class InventoryUIManager : MonoBehaviour
     void Start()
     {
         closeCardTradePopUp();
+        closeInventory();
 
         if (GameObject.FindGameObjectsWithTag("CardsManager").Length <= 0) {
             cardsManager = Instantiate(cardsManagerPrefab);
@@ -40,8 +53,28 @@ public class InventoryUIManager : MonoBehaviour
         }
         cardsUIManager = cardsManager.GetComponent<CardsUIManager>();
         inventoryController = GetComponent<InventoryController>();
+        SetUpNearbyPlayers();
+    }
+
+    void Update() {
+        UpdateNearbyPlayers();
+    }
+
+    public void OpenInventory() {
+        closeCardTradePopUp();
+        List<CardName> cards = GameState.Instance.MyCards;
+        inventoryController.inventoryCards = cards;
+
+        // Clear all cards from the inventory.
+        foreach (GameObject card in cardsDisplaying) {
+            Destroy(card);
+        }
+        cardsDisplaying.Clear();
+
         displayAllCards();
         addListenerForCards();
+
+        gameObject.SetActive(true);
     }
 
     private void displayAllCards() {
@@ -96,16 +129,67 @@ public class InventoryUIManager : MonoBehaviour
     }
 
     public void closeCardTradePopUp() {
-        GameObject[] focusedcard = GameObject.FindGameObjectsWithTag("CardsInventoryFocusedCard");
-        if (focusedcard.Length != 0) {
-            Destroy(focusedcard[0]);
+        GameObject focusedCard = getFocusedCard();
+        if (focusedCard != null) {
+            Destroy(focusedCard);
         }
+
+        // Clear text from trade message.
+        tradeMessage.text = "";
 
         popUpPanel.SetActive(false);
     }
 
-    public void DestroySelf() {
-        Destroy(cardsManager);
-        Destroy(gameObject);
+    private GameObject getFocusedCard() {
+        GameObject[] focusedcard = GameObject.FindGameObjectsWithTag("CardsInventoryFocusedCard");
+        if (focusedcard.Length != 0) {
+            return focusedcard[0];
+        }
+        return null;
+    }
+
+    private void SetUpNearbyPlayers() {
+        foreach (Player p in GameState.Instance.OtherPlayers) {
+            GameObject playerButton = Instantiate(nearbyPlayerPrefab, nearbyPlayersGrid.transform);
+            playerButton.GetComponentInChildren<TMP_Text>().text = p.Name;
+            ((Image) playerButton.GetComponentInChildren(typeof(Image))).sprite = p.Icon;
+            playerButton.GetComponent<Button>().onClick.AddListener(() => {
+                GameObject focusedCard = getFocusedCard();
+                if (focusedCard == null)
+                    return;
+
+                Card cardDetails = focusedCard.GetComponent<CardRenderer>().getCardDetails();
+                TradeManager.selfReference.StartTrade(p, cardDetails);
+            });
+        }
+    }
+
+    // Update the nearby players list
+    private void UpdateNearbyPlayers() {
+        // Perform this if panel is open.
+        if (!gameObject.activeSelf) {
+            return;
+        }
+
+        // Perform this only every updateCountMax 
+        updateCount++;
+        if (updateCount < updateCountMax) {
+            return;
+        }
+        updateCount = 0;
+        
+        // Grey out the playuers that are not nearby
+        NetworkUtils network = NetworkManager.Instance.NetworkUtils;
+        foreach (Transform child in nearbyPlayersGrid.transform) {
+            if (network.getDiscoveredDevices().Contains(child.name)) {
+                child.GetComponent<Button>().interactable = true;
+            } else {
+                child.GetComponent<Button>().interactable = false;
+            }
+        }
+    }
+
+    public void closeInventory() {
+        gameObject.SetActive(false);
     }
 }

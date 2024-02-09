@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
+using System.Linq;
+
 
 public class NetworkManager : MonoBehaviour {
     private static NetworkManager instance;
@@ -9,8 +12,19 @@ public class NetworkManager : MonoBehaviour {
 
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
+    private TradeManager tradeManager;
 
     private readonly float baseFreq = 0.1f; // per second
+    private readonly float baseSendFreq = 0.6f; // per second
+    private float baseSendTimer = 0.6f; // per second
+
+    private Dictionary<string, string> connectedPlayers = new ();
+    private Dictionary<string, float> connectedPlayersTimer = new();
+    private int numConnectedPlayers = 0;
+
+    private readonly float pingFreq = 2f;
+    private float pingTimer = 0;
+    private float disconnectTimeout = 10f;
 
 
     public static NetworkManager Instance {
@@ -54,6 +68,10 @@ public class NetworkManager : MonoBehaviour {
         if (EncounterController.selfReference != null) {
             encounterController = EncounterController.selfReference;
         }
+
+        if (TradeManager.selfReference != null) {
+            tradeManager = TradeManager.selfReference;
+        }
     }
 
     public NetworkUtils NetworkUtils {
@@ -70,14 +88,44 @@ public class NetworkManager : MonoBehaviour {
         };
         networkUtils.onReceive(callback);
 
-        SendMessages();
+        if (baseSendTimer >= baseSendFreq) {
+            SendMessages();
+            baseSendTimer = 0;
+        } else {
+            baseSendTimer += baseFreq;
+        }
+
+        CountdownPlayersLoseConnectionTimer();
+    }
+
+    private void CountdownPlayersLoseConnectionTimer() {
+        foreach (string id in connectedPlayersTimer.Keys.ToList()) {
+            connectedPlayersTimer[id] -= baseFreq;
+            if (connectedPlayersTimer[id] <= 0) {
+                // Player has not pinged for more than disconnectTimeout, consider player disconnected.
+                connectedPlayersTimer.Remove(id);
+                connectedPlayers.Remove(id);
+                numConnectedPlayers -= 1;
+            }
+        }
     }
 
     // Handle incoming messages for all managers.
     private CallbackStatus HandleMessage(Message message) {
+        Debug.Log("Got message");
         switch(message.messageInfo.messageType) {
+            case MessageType.PINGMESSAGE:
+                // Received a ping message from someone else.
+                PingMessageInfo pingMessage = (PingMessageInfo)message.messageInfo;
+                if (!connectedPlayers.ContainsKey(pingMessage.playerId)) {
+                    connectedPlayers[pingMessage.playerId] = pingMessage.playerName;
+                    numConnectedPlayers += 1;
+                }
+                connectedPlayersTimer[pingMessage.playerId] = disconnectTimeout;
+                return CallbackStatus.PROCESSED;
             case MessageType.LOBBYMESSAGE:
                 if (lobbyManager != null) {
+                    Debug.Log("Lobby type and lobby manager not null");
                     return lobbyManager.HandleMessage(message);
                 } else {
                     return CallbackStatus.DORMANT;
@@ -85,6 +133,12 @@ public class NetworkManager : MonoBehaviour {
             case MessageType.ENCOUNTERMESSAGE:
                 if (encounterController != null) {
                     return encounterController.HandleMessage(message);
+                } else {
+                    return CallbackStatus.DORMANT;
+                }
+            case MessageType.TRADE:
+                if (tradeManager != null) {
+                    return tradeManager.HandleMessage(message);
                 } else {
                     return CallbackStatus.DORMANT;
                 }
@@ -96,13 +150,51 @@ public class NetworkManager : MonoBehaviour {
     private void SendMessages() {
         if (networkUtils == null)
             return;
+
+        // Send ping messages to all connected players every PingFreq.
+        // if (networkUtils.getConnectedDevices().Count > 0) {
+        //     if (pingTimer >= pingFreq) {
+        //         PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
+        //         networkUtils.broadcast(pingMessage.toJson());
+        //         pingTimer = 0;
+        //     } else {
+        //         pingTimer += baseFreq;
+        //     }
+        // }
         
         if (lobbyManager != null) {
-            lobbyManager.SendMessages();
+            lobbyManager.SendMessages(numConnectedPlayers, connectedPlayers);
         }
 
         if (encounterController != null) {
             encounterController.SendMessages();
         }
+
+        if (tradeManager != null) {
+            tradeManager.SendMessages();
+        }
     }
+}
+
+
+public class PingMessageInfo : MessageInfo {
+        public MessageType messageType { get; set; }
+        public string playerId { get; set; }
+        public string playerName { get; set; }
+
+
+        [JsonConstructor]
+        public PingMessageInfo(string playerName) {
+            this.messageType = MessageType.PINGMESSAGE;
+            this.playerId = SystemInfo.deviceUniqueIdentifier;
+            this.playerName = playerName;
+        }
+        
+        public string toJson() {
+            return JsonConvert.SerializeObject(this);
+        }
+
+        public string processMessageInfo() {
+            return "";
+        }
 }
