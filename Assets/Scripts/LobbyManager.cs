@@ -84,7 +84,7 @@ public class LobbyManager : MonoBehaviour {
         playerIDs = new(players.Keys);
 
         // Add myself as player
-        players.Add(myID, myName);
+        // players.Add(myID, myName);
 
         // Initialise the game state.
         GameState gameState = GameState.Instance;
@@ -98,6 +98,10 @@ public class LobbyManager : MonoBehaviour {
 
     // Send round of messages.
     public void SendMessages(int numConnectedPlayers, Dictionary<string, string> connectedPlayers) {
+        if (numConnectedPlayers <= 0) {
+            return;
+        }
+
         if (msgFreqCounter < msgFreq) {
             msgFreqCounter++;
             return;
@@ -126,13 +130,11 @@ public class LobbyManager : MonoBehaviour {
                 network.broadcast(gameStateMessage.toJson());
             } else {
                 // Otherwise, broadcast the list of players to everyone in the lobby (if any).
-                if (numConnectedPlayers > 0) {
-                    LobbyMessage lobbyMessage = new(isLeader, players, myName);
-                    network.broadcast(lobbyMessage.toJson());
-                }
+                LobbyMessage lobbyMessage = new(isLeader, players, myName);
+                network.broadcast(lobbyMessage.toJson());
             }
         } else {
-            Debug.Log("Connected Devices: " + network.getConnectedDevices().Count);
+            Debug.Log("Connected Players: " + numConnectedPlayers);
 
             // If I lost connection to the leader then I should exit the lobby after 10 seconds
             connectedDevices = network.getConnectedDevices();
@@ -180,6 +182,9 @@ public class LobbyManager : MonoBehaviour {
     public void SetUpLobby(string roomCode, bool isLeader) {
         this.roomCode = roomCode;
         myName = PlayerPrefs.GetString("name");
+
+        players.Add(myID, myName);
+
 
         // Start discovering and advertising.
         network.setRoomCode(roomCode);
@@ -254,11 +259,11 @@ public class LobbyManager : MonoBehaviour {
                     break;
 
                 // Learn my id and leader's id from this message
-                myID = lobbyMessage.SendTo;
-                leaderID = message.sentFrom;
+                // myID = lobbyMessage.SendTo;
+                // leaderID = message.sentFrom;
 
                 // Add leader to the list of players.
-                AddPlayer(message.sentFrom, lobbyMessage.Message);
+                // AddPlayer(message.sentFrom, lobbyMessage.Message);
 
                 // Add all players to the list of players.
                 foreach (KeyValuePair<string, string> player in lobbyMessage.Players) {
