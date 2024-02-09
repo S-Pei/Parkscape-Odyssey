@@ -26,7 +26,11 @@ public class NetworkJsonConverter : JsonConverter
         if (type.Equals(MessageType.TEST.ToString()))
         {
             return jsonObject.ToObject<TestMessageInfo>(serializer);
-        } 
+        }
+        else if (type.Equals(MessageType.PINGMESSAGE.ToString()))
+        {
+            return jsonObject.ToObject<PingMessageInfo>(serializer);
+        }
         else if (type.Equals(MessageType.LOBBYMESSAGE.ToString()))
         {
             return jsonObject.ToObject<LobbyMessage>(serializer);
