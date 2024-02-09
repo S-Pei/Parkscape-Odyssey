@@ -113,7 +113,7 @@ public class EncounterController : MonoBehaviour
 
         foreach (Monster monster in monsters) {
             List<SkillName> shuffledSkillNames = new List<SkillName>();
-            List<int> shuffledIndex = Shuffle(monster.skills.Count);
+            List<int> shuffledIndex = Shuffle(monster.skills.Count - 1);
             foreach (int index in shuffledIndex) {
                 shuffledSkillNames.Add(monster.skills[index].Name);
             }
