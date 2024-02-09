@@ -14,11 +14,16 @@ public class BattleUIManager : MonoBehaviour {
     [SerializeField]
     private GameObject monsterDisplayPrefab;
     [SerializeField]
+    private GameObject playerStatPrefab;
+    [SerializeField]
     private List<GameObject> displayCards = new List<GameObject>();
     [SerializeField]
     private GameObject enemyPanel;
+    [SerializeField]
+    private GameObject otherPlayersPanel;
     private GameObject cardsManager;
     private CardsUIManager cardsUIManager;
+    private Dictionary<string, GameObject> playerStats = new Dictionary<string, GameObject>();
 
     void Awake () {
         // Find the BattleManager
@@ -34,6 +39,25 @@ public class BattleUIManager : MonoBehaviour {
 
         // Extract the CardsUIManager from the CardManager
         cardsUIManager = cardsManager.GetComponent<CardsUIManager>();
+    }
+
+    public List<GameObject> DisplayOtherPlayers(List<Player> otherPlayers) {
+        // Instantiate the playerStatPrefab for each player in otherPlayers
+        Debug.Log("number of players: " + otherPlayers.Count);
+        foreach (Player player in otherPlayers) {
+            GameObject playerStat = Instantiate(playerStatPrefab, otherPlayersPanel.transform, false);
+            playerStat.transform.GetChild(0).GetComponent<Image>().sprite = player.Icon;
+            playerStats.Add(player.Id, playerStat);
+        }
+        return new List<GameObject>(playerStats.Values);
+    }
+
+    public void arrangeOtherPlayersInOrder(List<string> sortedPlayerIds) {
+        // Rearrange the playerStats in the order of sortedPlayerIds
+        for (int i = 0; i < sortedPlayerIds.Count; i++) {
+            GameObject playerStat = playerStats[sortedPlayerIds[i]];
+            playerStat.transform.SetSiblingIndex(i);
+        }
     }
 
     public void DisplayHand(List<CardName> cards) {

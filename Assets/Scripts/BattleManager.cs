@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -32,8 +33,7 @@ public class BattleManager : MonoBehaviour {
     [SerializeField]
     private GameObject playerDiscardPileNumber;
 
-    [SerializeField]
-    private List<GameObject> otherPlayerStat;
+    private List<GameObject> otherPlayerStat = new List<GameObject>();
 
 
     // p2p networking
@@ -51,6 +51,8 @@ public class BattleManager : MonoBehaviour {
     private Queue<CardName> drawPile;
 
     private Monster monster;
+
+    private List<string> playerOrderIds;
 
     void Awake() {
         gameManager = FindObjectOfType<GameManager>();
@@ -99,10 +101,15 @@ public class BattleManager : MonoBehaviour {
         // Initializes Player's card number
         UpdateCardNumber();
 
+        Debug.Log("BattleManager started.");
+        otherPlayerStat = battleUIManager.DisplayOtherPlayers(GameState.Instance.OtherPlayers);
+
         // Initializes Player's Stat
         InitializesPlayerStat();
 
         // StartCoroutine(UnloadTheScene());
+        UpdatePlayerOrder();
+
     }
 
     private void DrawCard() {
@@ -160,6 +167,21 @@ public class BattleManager : MonoBehaviour {
                                 .transform.GetChild(0)
                                 .GetComponent<TextMeshProUGUI>().text = otherPlayers[i].CurrentHealth.ToString();
         }
+    }
+
+    // Update the order of players based on their speed
+    private void UpdatePlayerOrder() {
+        List<Player> players = new List<Player>(GameState.Instance.OtherPlayers);
+        players.Add(GameState.Instance.MyPlayer);
+        players = players.OrderByDescending(player => player.Speed).ToList();
+        playerOrderIds = players.Select(player => player.Id).ToList();
+        Debug.Log("Player order: " + string.Join(", ", playerOrderIds));
+        Debug.Log("Player roles: " + string.Join(", ", players.Select(player => player.Role)));
+        Debug.Log("Player speeds: " + string.Join(", ", players.Select(player => player.Speed)));
+        
+        // rearrange the order of otherPlayerStats based on the playerOrderIds, exluding the current player
+        List<string> otherPlayerIds = playerOrderIds.Where(id => id != GameState.Instance.MyPlayer.Id).ToList();
+        battleUIManager.arrangeOtherPlayersInOrder(otherPlayerIds);
     }
 
     // Shuffle the list of cards from back to front 
