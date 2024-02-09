@@ -12,6 +12,7 @@ public class NetworkManager : MonoBehaviour {
 
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
+    private TradeManager tradeManager;
 
     private readonly float baseFreq = 0.1f; // per second
     private readonly float baseSendFreq = 0.6f; // per second
@@ -66,6 +67,10 @@ public class NetworkManager : MonoBehaviour {
 
         if (EncounterController.selfReference != null) {
             encounterController = EncounterController.selfReference;
+        }
+
+        if (TradeManager.selfReference != null) {
+            tradeManager = TradeManager.selfReference;
         }
     }
 
@@ -131,6 +136,12 @@ public class NetworkManager : MonoBehaviour {
                 } else {
                     return CallbackStatus.DORMANT;
                 }
+            case MessageType.TRADE:
+                if (tradeManager != null) {
+                    return tradeManager.HandleMessage(message);
+                } else {
+                    return CallbackStatus.DORMANT;
+                }
         }
         return CallbackStatus.NOT_PROCESSED;
     }
@@ -157,6 +168,10 @@ public class NetworkManager : MonoBehaviour {
 
         if (encounterController != null) {
             encounterController.SendMessages();
+        }
+
+        if (tradeManager != null) {
+            tradeManager.SendMessages();
         }
     }
 }

@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
     }
 
     public void OpenInventory() {
-        gameInterfaceManager.OpenInventory(GameState.Instance.MyCards);
+        gameInterfaceManager.OpenInventory();
     }
 
     public void CloseInventory() {
