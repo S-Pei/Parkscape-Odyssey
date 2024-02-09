@@ -127,6 +127,7 @@ public class GameState {
             string name = message.playerNames[id];
             string role = message.playerRoles[id];
             Player player = PlayerFactory.CreatePlayer(id, name, role);
+            PlayersDetails.Add(id, player);
             if (id == myID) {
                 MyPlayer = player;
             } else {
