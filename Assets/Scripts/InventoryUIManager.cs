@@ -158,7 +158,7 @@ public class InventoryUIManager : MonoBehaviour
                 if (focusedCard == null)
                     return;
 
-                Card cardDetails = focusedCard.GetComponent<CardRenderer>().getCardDetails();
+                Card cardDetails = focusedCard.GetComponent<CardRenderer>().GetCardDetails();
                 TradeManager.selfReference.StartTrade(p, cardDetails);
             });
         }

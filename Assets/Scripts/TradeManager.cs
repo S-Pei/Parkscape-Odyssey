@@ -165,7 +165,7 @@ public class TradeManager : MonoBehaviour {
 
             // Get the card to be displayed in the trade UI
             Card card = cardsManager.GetComponent<CardsUIManager>().findCardDetails(tradeMessage.cardName);
-            cardObject.GetComponent<CardRenderer>().renderCard(card);
+            cardObject.GetComponent<CardRenderer>().RenderCard(card);
 
             // Open trade UI
             gameObject.SetActive(true);
