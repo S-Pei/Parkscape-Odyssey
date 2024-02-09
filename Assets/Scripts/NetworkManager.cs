@@ -13,8 +13,8 @@ public class NetworkManager : MonoBehaviour {
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
 
-    private readonly float baseFreq = 0.8f; // per second
-    private readonly float baseSendFreq = 1.6f; // per second
+    private readonly float baseFreq = 0.5f; // per second
+    private readonly float baseSendFreq = 1.0f; // per second
     private float baseSendTimer = 0f; // per second
 
     private Dictionary<string, string> connectedPlayers = new ();
@@ -142,16 +142,19 @@ public class NetworkManager : MonoBehaviour {
         if (networkUtils == null)
             return;
 
+        Debug.Log("Connected devices: " + networkUtils.getConnectedDevices().Count);
+        Debug.Log("Connected players: " + connectedPlayers.Count);
+
         // Send ping messages to all connected players every PingFreq.
-        if (networkUtils.getConnectedDevices().Count > 0) {
-            if (pingTimer >= pingFreq) {
-                PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
-                networkUtils.broadcast(pingMessage.toJson());
-                pingTimer = 0;
-            } else {
-                pingTimer += baseFreq * (baseSendFreq / baseFreq);
-            }
-        }
+        // if (networkUtils.getConnectedDevices().Count > 0) {
+        // if (pingTimer >= pingFreq) {
+        //     PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
+        //     networkUtils.broadcast(pingMessage.toJson());
+        //     pingTimer = 0;
+        // } else {
+        //     pingTimer += baseFreq * (baseSendFreq / baseFreq);
+        // }
+        // }
         
         if (lobbyManager != null) {
             lobbyManager.SendMessages(numConnectedPlayers, connectedPlayers);

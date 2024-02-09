@@ -120,10 +120,10 @@ public class LobbyManager : MonoBehaviour {
 
         if (network.getConnectedDevices().Count <=  0) {
             Debug.Log("No connected DEVICES. not attempting to send messages...");
-            if (numConnectedPlayers <= 0) {
-                Debug.Log("No connected PLAYERS yet, pinging to get connected players...");
-                return;
-            }
+            // if (numConnectedPlayers <= 0) {
+            //     Debug.Log("No connected PLAYERS yet, pinging to get connected players...");
+            //     return;
+            // }
             return;
         }
 
@@ -131,11 +131,12 @@ public class LobbyManager : MonoBehaviour {
 
         // IDs of connected players.
         List<string> connectedIDs = new List<string>(connectedPlayers.Keys);
+        List<string> localPlayerIDs = new List<string>(players.Keys);
 
 
         if (isLeader) {
             // Leader check if any devices have disconnected.
-            foreach (string id in players.Keys) {
+            foreach (string id in localPlayerIDs) {
                 if (!connectedIDs.Contains(id) && !id.Equals(myID)) {
                     RemovePlayer(id);
                 }
@@ -191,6 +192,7 @@ public class LobbyManager : MonoBehaviour {
         if (players.ContainsKey(id))
             return;
         players.Add(id, name);
+        Debug.Log("Added player: " + id + "  " + name);
         lobbyUIManager.AddPlayer(name);
     }
 
@@ -241,7 +243,7 @@ public class LobbyManager : MonoBehaviour {
     }
 
     public CallbackStatus HandleMessage(Message message) {
-        Debug.Log("In lobby handling");
+        // Debug.Log("In lobby handling");
         LobbyMessage lobbyMessage = (LobbyMessage) message.messageInfo;
 
         if (lobbyMessage.SendTo != "" && lobbyMessage.SendTo != myID)
@@ -253,7 +255,7 @@ public class LobbyManager : MonoBehaviour {
         if (!AcceptMessages)
             return CallbackStatus.DORMANT;
         
-        Debug.Log("Lobby message is not dormanted, processing...");
+        // Debug.Log("Lobby message is not dormanted, processing...");
 
         switch (lobbyMessage.Type) {
             case LobbyMessageType.MEMBER_I_AM_IN:
@@ -276,6 +278,7 @@ public class LobbyManager : MonoBehaviour {
                 
                 // Send the new list of players to everyone in the lobby.
                 LobbyMessage newLobbyMessage = new(isLeader, players, myID);
+                network.broadcast(newLobbyMessage.toJson());
                 break;
             case LobbyMessageType.LEADER_PLAYERS:
                 if (isLeader)
@@ -290,7 +293,6 @@ public class LobbyManager : MonoBehaviour {
                         joinedLobby = true;
                         continue;
                     }
-                    Debug.Log("Adding player: " + player.Key + "  "+player.Value);
                     AddPlayer(player.Key, player.Value);
                 }
 
