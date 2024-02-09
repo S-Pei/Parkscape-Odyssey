@@ -69,7 +69,7 @@ public class GameInterfaceManager : MonoBehaviour
         playerView.SetActive(true);
     }
 
-    private Sprite GetIcon(string role) {
+    public Sprite GetIcon(string role) {
         if (!roleToIcon.ContainsKey(role)) {
             throw new Exception("Role Icon not found");
         }
