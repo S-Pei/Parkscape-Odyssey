@@ -94,6 +94,19 @@ public class GameState {
         return null;
     }
 
+    public Player GetPlayerByID(string id) {
+        CheckInitialised();
+        if (MyPlayer.Id == id) {
+            return MyPlayer;
+        }
+        foreach (Player player in OtherPlayers) {
+            if (player.Id == id) {
+                return player;
+            }
+        }
+        return null;
+    }
+
     public void AddCard(CardName card) {
         CheckInitialised();
         MyCards.Add(card);
