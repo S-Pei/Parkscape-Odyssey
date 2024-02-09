@@ -1635,7 +1635,7 @@ MonoBehaviour:
   playerIcon: {fileID: 1359757122}
   playerName: {fileID: 1359757121}
   cardObject: {fileID: 1807213944}
-  inventoryMessage: {fileID: 269280364}
+  inventoryMessage: {fileID: 162481959}
   tradeMessage: {fileID: 269280364}
   interfaceParent: {fileID: 634169180}
   cardsManagerPrefab: {fileID: 231616820920950792, guid: c27743db8f3e04769872cfd6469c3d5e,

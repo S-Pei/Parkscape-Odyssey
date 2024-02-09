@@ -138,6 +138,9 @@ public class InventoryUIManager : MonoBehaviour
         }
 
         popUpPanel.SetActive(false);
+
+        // Clear text from trade message.
+        tradeMessage.text = "";
     }
 
     private GameObject getFocusedCard() {
@@ -151,6 +154,7 @@ public class InventoryUIManager : MonoBehaviour
     private void SetUpNearbyPlayers() {
         foreach (Player p in GameState.Instance.OtherPlayers) {
             GameObject playerButton = Instantiate(nearbyPlayerPrefab, nearbyPlayersGrid.transform);
+            playerButton.name = p.Id;
             playerButton.GetComponentInChildren<TMP_Text>().text = p.Name;
             ((Image) playerButton.GetComponentInChildren(typeof(Image))).sprite = p.Icon;
             playerButton.GetComponent<Button>().onClick.AddListener(() => {
@@ -179,9 +183,8 @@ public class InventoryUIManager : MonoBehaviour
         updateCount = 0;
         
         // Grey out the playuers that are not nearby
-        NetworkUtils network = NetworkManager.Instance.NetworkUtils;
         foreach (Transform child in nearbyPlayersGrid.transform) {
-            if (network.getDiscoveredDevices().Contains(child.name)) {
+            if (NetworkManager.Instance.connectedPlayers.ContainsKey(child.name)) {
                 child.GetComponent<Button>().interactable = true;
             } else {
                 child.GetComponent<Button>().interactable = false;

@@ -21,7 +21,7 @@ public class TradeManager : MonoBehaviour {
     private TMP_Text inventoryMessage;
 
     [SerializeField]
-    private TMP_Text tradeMessage;
+    private TMP_Text tradeMessageObject;
 
     [SerializeField]
     private GameObject interfaceParent;
@@ -38,7 +38,7 @@ public class TradeManager : MonoBehaviour {
     private const string tradeIgnoredMessage = "The trade was ignored...";
 
     // Both player fields.
-    private bool tradeInProgress;
+    private bool tradeInProgress = false;
     private bool acceptTrades = true;
     private bool acceptTrade = false;
     private bool declineTrade = false;
@@ -81,9 +81,9 @@ public class TradeManager : MonoBehaviour {
 
     // Start the trade. 1st player sends a card to 2nd player.
     public void StartTrade(Player player, Card card) {
-        // Open trade UI
-        OpenInterface();
-
+        tradeInProgress = true;
+        tradeAccepted = false;
+        tradeDeclined = false;
         tradeTo = player;
 
         inventoryMessage.text = "";
@@ -117,12 +117,21 @@ public class TradeManager : MonoBehaviour {
         // Close trade UI
         gameObject.SetActive(false);
         tradeTo = null;
+        tradeInProgress = false;
+        tradeAccepted = false;
+        tradeDeclined = false;
+        tradeFromID = null;
+        acceptTrade = false;
+        declineTrade = false;
+        tradeFromID = "";
     }
 
     // For the second player to accept the trade with their card.
     public void AcceptTrade() {
         acceptTrade = true;
         declineTrade = false;
+
+        CloseInterface();
     }
 
     // For the second player to decline the trade. 
@@ -168,10 +177,13 @@ public class TradeManager : MonoBehaviour {
             cardObject.GetComponent<CardRenderer>().RenderCard(card);
 
             // Open trade UI
-            gameObject.SetActive(true);
             tradeFromID = tradeMessage.sentFrom;
             cardName = tradeMessage.cardName;
             tradeInProgress = true;
+            
+            tradeMessageObject.text = "";
+            OpenInterface();
+            gameObject.SetActive(true);
         } else if (tradeMessage.type == TradeMessageType.TRADE_ACCEPT) { // Sender
             tradeAccepted = true;
         } else if (tradeMessage.type == TradeMessageType.TRADE_DECLINE) { // Sender
@@ -195,14 +207,15 @@ public class TradeManager : MonoBehaviour {
 
         // Timeout occured, stop trade.
         if (msgCounter >= maxMsgCounter) {
-            tradeInProgress = false;
             msgCounter = 0;
 
             // Trigger lost card
             if (tradeInProgress) {
-                inventoryMessage.text = tradeLostMessage;
+                tradeMessageObject.text = tradeLostMessage;
                 CloseInterface();
             }
+
+            tradeInProgress = false;
         }
 
         return CallbackStatus.PROCESSED;

@@ -15,10 +15,10 @@ public class NetworkManager : MonoBehaviour {
     private TradeManager tradeManager;
 
     private readonly float baseFreq = 0.1f; // per second
-    private readonly float baseSendFreq = 0.2f; // per second
+    private readonly float baseSendFreq = 0.8f; // per second
     private float baseSendTimer = 0f; // per second
 
-    private Dictionary<string, string> connectedPlayers = new ();
+    public Dictionary<string, string> connectedPlayers = new ();
     private Dictionary<string, float> connectedPlayersTimer = new();
     private int numConnectedPlayers = 0;
 
