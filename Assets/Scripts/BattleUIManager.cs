@@ -74,8 +74,13 @@ public class BattleUIManager : MonoBehaviour {
                 // Disable the icon and health info for nonexistent players
                 // These playerStat prefabs do not belong to any player, so
                 // do not append them to the list that we return.
-                playerStat.transform.GetChild(0).gameObject.SetActive(false);
-                playerStat.transform.GetChild(1).gameObject.SetActive(false);
+
+                // make the player's sprite invisible but occupy the space
+                playerStat.transform.GetChild(0).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+
+                // make the player's health info invisible
+                playerStat.transform.GetChild(1).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+                playerStat.transform.GetChild(1).transform.GetChild(0).GetComponent<TextMeshProUGUI>().enabled = false;
             }
         }
         return new List<GameObject>(playerStats.Values);
