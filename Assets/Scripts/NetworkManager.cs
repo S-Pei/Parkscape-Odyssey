@@ -13,8 +13,8 @@ public class NetworkManager : MonoBehaviour {
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
 
-    private readonly float baseFreq = 0.1f; // per second
-    private readonly float baseSendFreq = 0.2f; // per second
+    private readonly float baseFreq = 0.8f; // per second
+    private readonly float baseSendFreq = 1.6f; // per second
     private float baseSendTimer = 0f; // per second
 
     private Dictionary<string, string> connectedPlayers = new ();
