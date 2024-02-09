@@ -97,7 +97,7 @@ public class LobbyManager : MonoBehaviour {
     }
 
     // Send round of messages.
-    public void SendMessages() {
+    public void SendMessages(int numConnectedPlayers, Dictionary<string, string> connectedPlayers) {
         if (msgFreqCounter < msgFreq) {
             msgFreqCounter++;
             return;
@@ -125,10 +125,10 @@ public class LobbyManager : MonoBehaviour {
                 LobbyMessage gameStateMessage = new(LobbyMessageType.LEADER_START, true, GameState.Instance.ToMessage().toJson());
                 network.broadcast(gameStateMessage.toJson());
             } else {
-                // Otherwise, broadcast the list of players to everyone in the lobby.
-                foreach (string id in connectedDevices) {
-                    LobbyMessage lobbyMessage = new(isLeader, players, myName, id);
-                    network.send(lobbyMessage.toJson(), id);
+                // Otherwise, broadcast the list of players to everyone in the lobby (if any).
+                if (numConnectedPlayers > 0) {
+                    LobbyMessage lobbyMessage = new(isLeader, players, myName);
+                    network.broadcast(lobbyMessage.toJson());
                 }
             }
         } else {
@@ -365,7 +365,7 @@ public class LobbyMessage : MessageInfo {
     }
 
     [JsonConstructor]
-    public LobbyMessage(LobbyMessageType type, bool isLeader, string message, Dictionary<string, string> players, string sendTo) {
+    public LobbyMessage(LobbyMessageType type, bool isLeader, string message, Dictionary<string, string> players) {
         messageType = MessageType.LOBBYMESSAGE;
         Type = type;
         IsLeader = isLeader;

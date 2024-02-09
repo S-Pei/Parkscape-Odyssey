@@ -140,7 +140,7 @@ public class NetworkManager : MonoBehaviour {
         }
         
         if (lobbyManager != null) {
-            lobbyManager.SendMessages();
+            lobbyManager.SendMessages(numConnectedPlayers, connectedPlayers);
         }
 
         if (encounterController != null) {
