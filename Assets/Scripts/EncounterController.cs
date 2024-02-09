@@ -36,8 +36,9 @@ public class EncounterController : MonoBehaviour
 
     // current encounter monster details
     private List<Monster> monsters;
-    private List<List<Skill>> skillSequences;
+    private List<List<SkillName>> skillSequences;
     private string encounterId;
+    private bool isLeader = false;
 
     // p2p network
     private NetworkUtils network;
@@ -75,7 +76,7 @@ public class EncounterController : MonoBehaviour
         List<Monster> monsters = GenerateEncounterMonsters();
 
         // Generates skill sequences for the monsters.
-        List<List<Skill>> skillSequences = GenerateMonsterSkillSequences(monsters);
+        List<List<SkillName>> skillSequences = GenerateMonsterSkillSequences(monsters);
 
         // Generate unique id for the encounter.
         string encounterId = Guid.NewGuid().ToString();
@@ -107,19 +108,23 @@ public class EncounterController : MonoBehaviour
         return monsters;
     }
 
-    private List<List<Skill>> GenerateMonsterSkillSequences(List<Monster> monsters) {
-        List<List<Skill>> skillSequences = new List<List<Skill>>();
+    private List<List<SkillName>> GenerateMonsterSkillSequences(List<Monster> monsters) {
+        List<List<SkillName>> skillNameSequences = new List<List<SkillName>>();
 
         foreach (Monster monster in monsters) {
-            List<Skill> sequence = monster.skills.OrderBy(i => Guid.NewGuid()).ToList();
-            skillSequences.Add(sequence);
+            List<SkillName> shuffledSkillNames = new List<SkillName>();
+            List<int> shuffledIndex = Shuffle(monster.skills.Count);
+            foreach (int index in shuffledIndex) {
+                shuffledSkillNames.Add(monster.skills[index].Name);
+            }
+            skillNameSequences.Add(shuffledSkillNames);
         }
 
-        return skillSequences;
+        return skillNameSequences;
     }
 
     // Shows encounter lobby on the UI
-    public void SpawnEncounterLobby(string encounterId, List<Monster> monsters, List<List<Skill>> skillSequences) {
+    public void SpawnEncounterLobby(string encounterId, List<Monster> monsters, List<List<SkillName>> skillSequences) {
         this.monsters = monsters;
         this.skillSequences = skillSequences;
         this.encounterId = encounterId;
@@ -130,10 +135,29 @@ public class EncounterController : MonoBehaviour
         encounterLobbyUIManager.LeaderEncounterLobbyInit(encounterId, monsters);
     }
 
+    // shuffle monster skill indexes
+    private List<int> Shuffle(int listSize) {  
+        List<int> indexes = Enumerable.Range(0, listSize + 1).ToList();
+
+        while (listSize > 1) {
+            // Select a random card from the front of the deck
+            // (up to the current position to shuffle) to swap
+            listSize--;
+            int k = UnityEngine.Random.Range(0, listSize + 1);  
+            
+            // Swap cards[n] with cards[k]
+            int toSwap = indexes[k];  
+            indexes[k] = indexes[listSize];  
+            indexes[listSize] = toSwap;  
+        }
+        return indexes;
+    }
+
     // Called from encounter spawn manager when leader initiates the encounter lobby
-    public void CreateEncounterLobby(string encounterId, List<Monster> monsters, List<List<Skill>> skillSequences) {
+    public void CreateEncounterLobby(string encounterId, List<Monster> monsters, List<List<SkillName>> skillSequences) {
         // AcceptMessages = true;
         SpawnEncounterLobby(encounterId, monsters, skillSequences);
+        isLeader = true;
         
         // Broadcast to all players that an encounter has been found.
         encounterStatus = EncounterStatus.START_LOBBY;
@@ -152,15 +176,19 @@ public class EncounterController : MonoBehaviour
                 ShowEncounterFoundPopup();
                 break;
             case EncounterMessageType.JOIN_ENCOUNTER:
-                // Leader adds player to the encounter lobby
-                string playerName = GameState.Instance.PlayersDetails[message.sentFrom].Name;
-                encounterLobbyUIManager.MemberJoinedParty(playerName);
-                // sends monster info to other players 
-                SendJoinedEncounterConfirmationMessage(message.sentFrom);
+                if (isLeader) {
+                    // Leader adds player to the encounter lobby
+                    string playerName = GameState.Instance.PlayersDetails[encounterMessage.playerId].Name;
+                    encounterLobbyUIManager.MemberJoinedParty(playerName);
+                    // sends monster info to other players 
+                    SendJoinedEncounterConfirmationMessage();
+                }
                 break;
             case EncounterMessageType.JOINED_ENCOUNTER_CONFIRMATION:
-                // Players stop sending join encounter messages to leader and processes monster info
-                StopSendingJoinEncounterMessagesAndShowLobby(encounterMessage);
+                if (!isLeader) {
+                    // Players stop sending join encounter messages to leader and processes monster info
+                    StopSendingJoinEncounterMessagesAndShowLobby(encounterMessage);
+                }
                 break;
         }
 
@@ -183,7 +211,7 @@ public class EncounterController : MonoBehaviour
         if (encounterStatus == EncounterStatus.JOINING_LOBBY) {
             EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.JOIN_ENCOUNTER);
             Debug.Log("Sending join encounter message to leader: " + leaderId);
-            network.send(encounterMessage.toJson(), leaderId);
+            network.broadcast(encounterMessage.toJson());
         }
     }
 
@@ -218,7 +246,7 @@ public class EncounterController : MonoBehaviour
     }
 
     // Sends confirmation to player for joining encounter lobby together with monster details
-    private void SendJoinedEncounterConfirmationMessage(string sendTo) {
+    private void SendJoinedEncounterConfirmationMessage() {
         List<MonsterName> monsterNames = new List<MonsterName>();
         List<int> health = new List<int>();
         List<int> defense = new List<int>();
@@ -236,7 +264,7 @@ public class EncounterController : MonoBehaviour
         EncounterMessage encounterMessage 
           = new EncounterMessage(EncounterMessageType.JOINED_ENCOUNTER_CONFIRMATION,
                                 monsterNames, health, defense, defenseAmount, baseDamage, skillSequences, levels, this.encounterId);
-        network.send(encounterMessage.toJson(), sendTo);
+        network.broadcast(encounterMessage.toJson());
     }
 
     private void StopSendingJoinEncounterMessagesAndShowLobby(EncounterMessage encounterMessage) {
@@ -255,13 +283,23 @@ public class EncounterController : MonoBehaviour
         List<int> baseDamage = encounterMessage.BaseDamage;
         List<EnemyLevel> levels = encounterMessage.level;
         for (int i = 0; i < monsterNames.Count; i++) {
+            List<Skill> skills = GetSkillsFromSkillNames(encounterMessage.skills[i]);
             Sprite img = monsterController.GetMonsterSprite(monsterNames[i]);
             Monster monster = MonsterFactory.CreateMonsterWithValues(
                 monsterNames[i], img, health[i], defense[i], defenseAmount[i], 
-                baseDamage[i], encounterMessage.skills[i], levels[i]);
+                baseDamage[i], skills, levels[i]);
             monsters.Add(monster);
         }
         return monsters;
+    }
+
+    // get corresponding skills from skillname list
+    private List<Skill> GetSkillsFromSkillNames(List<SkillName> skillNames) {
+        List<Skill> skills = new List<Skill>();
+        foreach (SkillName skillName in skillNames) {
+            skills.Add(MonsterFactory.skillsController.Get(skillName));
+        }
+        return skills;
     }
 }
 
@@ -285,6 +323,7 @@ public class EncounterMessage : MessageInfo
 {
     public MessageType messageType {get; set;}
     public EncounterMessageType Type {get; set;}
+    public string playerId {get; set;}
     public List<MonsterName> names;
 
     public List<int> Health { get; private set; } = new List<int>();
@@ -295,19 +334,20 @@ public class EncounterMessage : MessageInfo
 
     public List<int> BaseDamage { get; private set; } = new List<int>();
 
-    public List<List<Skill>> skills = new List<List<Skill>>();
+    public List<List<SkillName>> skills = new List<List<SkillName>>();
 
     public List<EnemyLevel> level = new List<EnemyLevel>();
     public string encounterId = "";
 
     public EncounterMessage(EncounterMessageType type) {
         messageType = MessageType.ENCOUNTERMESSAGE;
+        playerId = GameState.Instance.myID;
         Type = type;
     }
 
     [JsonConstructor]
     public EncounterMessage(EncounterMessageType type, List<MonsterName> names, List<int> health, List<int> defense, List<int> defenseAmount, 
-        List<int> baseDamage, List<List<Skill>> skills, List<EnemyLevel> level, string encounterId) {
+        List<int> baseDamage, List<List<SkillName>> skills, List<EnemyLevel> level, string encounterId) {
         messageType = MessageType.ENCOUNTERMESSAGE;
         Type = type;
         this.names = names;

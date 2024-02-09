@@ -12,7 +12,7 @@ public sealed class MonsterFactory {
       return singleton;
   }
 
-  private readonly static SkillsController skillsController = new();
+  public readonly static SkillsController skillsController = new();
 
   private static int IntRandomizer(int min, int max) {
     System.Random random = new();

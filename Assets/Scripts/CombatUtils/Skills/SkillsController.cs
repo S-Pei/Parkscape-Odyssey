@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-class SkillsController {
+public class SkillsController {
   public Dictionary<SkillName, Skill> skillsDB = new();
 
   public SkillsController() {
