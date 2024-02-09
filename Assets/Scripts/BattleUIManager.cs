@@ -68,11 +68,11 @@ public class BattleUIManager : MonoBehaviour {
         // The positions of the cards must be instantiated *after* displayCards is fully populated
         // This is because the card's index is used to calculate its position
         for (int i = 0; i < displayCards.Count; i++) {
-            GameObject cardInstance = displayCards[i];
-            (Vector3 cardPosition, Quaternion cardRotation) = getCardPositionAtIndex(i);
-            cardInstance.transform.localPosition = cardPosition;
-            cardInstance.transform.rotation = cardRotation;
-            // StartCoroutine(displayCards[i].GetComponentInChildren<BattleCardRenderer>().ResetCardPosition(0.1f));
+            // GameObject cardInstance = displayCards[i];
+            // (Vector3 cardPosition, Quaternion cardRotation) = getCardPositionAtIndex(i);
+            // cardInstance.transform.localPosition = cardPosition;
+            // cardInstance.transform.rotation = cardRotation;
+            StartCoroutine(displayCards[i].GetComponentInChildren<BattleCardRenderer>().ResetCardPosition(0.1f));
         }
     }
 
