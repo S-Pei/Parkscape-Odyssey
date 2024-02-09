@@ -5,13 +5,13 @@ using UnityEngine;
 public class EncounterSpawnManager : MonoBehaviour
 {
     private List<Monster> monsters;
-    private List<List<Skill>> skillSequences;
+    private List<List<SkillName>> skillSequences;
 
     private string encounterId;
 
     private GameObject encounterManager;
 
-    public void EncounterSpawnInit(string encounterId, List<Monster> monsters, List<List<Skill>> skillSequences) {
+    public void EncounterSpawnInit(string encounterId, List<Monster> monsters, List<List<SkillName>> skillSequences) {
         this.encounterId = encounterId;
         this.monsters = monsters;
         this.skillSequences = skillSequences;

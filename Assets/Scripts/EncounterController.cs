@@ -178,6 +178,7 @@ public class EncounterController : MonoBehaviour
             case EncounterMessageType.JOIN_ENCOUNTER:
                 if (isLeader) {
                     // Leader adds player to the encounter lobby
+                    Debug.Log("adding player to encounter lobby: " + encounterMessage.playerId);
                     string playerName = GameState.Instance.PlayersDetails[encounterMessage.playerId].Name;
                     encounterLobbyUIManager.MemberJoinedParty(playerName);
                     // sends monster info to other players 
