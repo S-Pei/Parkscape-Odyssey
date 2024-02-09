@@ -144,7 +144,6 @@ public class TradeManager : MonoBehaviour {
         interfaceParent.SetActive(true);
     }
 
-
     private int msgCounter = 0;
     private const int maxMsgCounter = 50;
 
@@ -184,6 +183,9 @@ public class TradeManager : MonoBehaviour {
 
             acceptTrade = false;
             tradeInProgress = false;
+
+            inventoryMessage.text = tradeCompleteMessage;
+            CloseInterface();
         }
 
         // Potential timeout for receiver when acceptTrade is true and have not received a TRADE_COMPLETE message.

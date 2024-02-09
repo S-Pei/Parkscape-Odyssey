@@ -65,6 +65,9 @@ public class InventoryUIManager : MonoBehaviour
         List<CardName> cards = GameState.Instance.MyCards;
         inventoryController.inventoryCards = cards;
 
+        // Clear text from trade message.
+        tradeMessage.text = "";
+
         // Clear all cards from the inventory.
         foreach (GameObject card in cardsDisplaying) {
             Destroy(card);
@@ -133,9 +136,6 @@ public class InventoryUIManager : MonoBehaviour
         if (focusedCard != null) {
             Destroy(focusedCard);
         }
-
-        // Clear text from trade message.
-        tradeMessage.text = "";
 
         popUpPanel.SetActive(false);
     }
