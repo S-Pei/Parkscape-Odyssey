@@ -40,8 +40,8 @@ public class LootUIManager : MonoBehaviour
     private void displayCard(Card card) {
         GameObject newCard = Instantiate(cardDisplayPrefab, cardsSelectionPanel.transform);
         CardRenderer cardRenderer = newCard.GetComponent<CardRenderer>();
-        cardRenderer.renderCard(card);
-        cardRenderer.scaleCardSize(5);
+        cardRenderer.RenderCard(card);
+        cardRenderer.ScaleCardSize(5);
         cardsDisplaying.Add(newCard);
     }
 
@@ -53,16 +53,16 @@ public class LootUIManager : MonoBehaviour
     }
 
     private void openCardConfirmationPopUp(GameObject card) { 
-        Card cardDetails = card.GetComponent<CardRenderer>().getCardDetails();
+        Card cardDetails = card.GetComponent<CardRenderer>().GetCardDetails();
 
         GameObject focusedCard = Instantiate(cardDisplayPrefab);
         CardRenderer cardRenderer = focusedCard.GetComponentInChildren<CardRenderer>();
-        cardRenderer.renderCard(cardDetails);
+        cardRenderer.RenderCard(cardDetails);
         
         GameObject popUpCardDisplayPanel = popUpPanel.transform.GetChild(1).gameObject;
         focusedCard.transform.parent = popUpCardDisplayPanel.transform;
         focusedCard.tag = "CardsLootFocusedCard";
-        cardRenderer.scaleCardSize(7.5f);
+        cardRenderer.ScaleCardSize(7.5f);
         focusedCard.GetComponent<RectTransform>().localPosition = new Vector3(0, 120, 0);
 
         popUpPanel.SetActive(true);

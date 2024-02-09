@@ -49,9 +49,11 @@ public class NetworkManager : MonoBehaviour {
         networkUtils = DebugNetwork.Instance;
 
         #if UNITY_ANDROID
+        Debug.Log("ANDROID");
         networkUtils = AndroidNetwork.Instance;
         #endif
         #if UNITY_IOS
+        Debug.Log("IOS");
         networkUtils = IOSNetwork.Instance;
         #endif
     }

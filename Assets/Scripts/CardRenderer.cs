@@ -21,7 +21,7 @@ public class CardRenderer : MonoBehaviour
 
     public int cardIndex;
 
-    public void renderCard(Sprite cardImg, string cardStat) {
+    public void RenderCard(Sprite cardImg, string cardStat) {
         // Render card image
         GameObject cardImgObj = transform.GetChild(1).gameObject;
         Image cardImgRenderer = cardImgObj.GetComponentInChildren<Image>();
@@ -36,7 +36,7 @@ public class CardRenderer : MonoBehaviour
         cardStats = cardStat;
     }
 
-    public void renderCard(Card card) {
+    public void RenderCard(Card card) {
         this.card = card;
 
         // Render card image
@@ -53,7 +53,7 @@ public class CardRenderer : MonoBehaviour
         cardStats = card.stats;
     }
 
-    public void scaleCardSize(float scale) {
+    public void ScaleCardSize(float scale) {
        GetComponent<RectTransform>().localScale = new Vector3(scale, scale, scale);
 
     //    GameObject cardImgObj = transform.GetChild(0).gameObject;
@@ -61,7 +61,7 @@ public class CardRenderer : MonoBehaviour
     //    cardImgObj.GetComponent<RectTransform>().sizeDelta = new Vector2(currImgSize.x * scale, currImgSize.y * scale);
     }
 
-    public void hardAdjustCardDetailsSize() {
+    public void HardAdjustCardDetailsSize() {
         float scale = enforcedWidth / FRAME_WIDTH;
 
         GameObject cardImgObj = transform.GetChild(1).gameObject;
@@ -73,11 +73,11 @@ public class CardRenderer : MonoBehaviour
         cardsStatsObj.GetComponent<RectTransform>().sizeDelta = new Vector2(131.5f, 58.15f);
     }
 
-    public (Sprite, string) getCardImgAndStats() {
+    public (Sprite, string) GetCardImgAndStats() {
         return (cardImage, cardStats);
     }
 
-    public Card getCardDetails() {
+    public Card GetCardDetails() {
         return card;
     }
 }
