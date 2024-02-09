@@ -11,6 +11,7 @@ TagManager:
   - CardsLootFocusedCard
   - GameManager
   - EncounterManager
+  - CardDescription
   layers:
   - Default
   - TransparentFX
