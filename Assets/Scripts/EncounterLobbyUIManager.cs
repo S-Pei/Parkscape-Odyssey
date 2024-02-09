@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class EncounterLobbyUIManager : MonoBehaviour
 {
@@ -41,5 +42,10 @@ public class EncounterLobbyUIManager : MonoBehaviour
     public void MemberJoinedParty(string member) {
         partyMembers.Add(member);
         partyMemberSlots[partyMembers.Count - 1].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = member;
+    }
+
+    public void StartEncounter() {
+        SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
+        Destroy(gameObject);
     }
 }

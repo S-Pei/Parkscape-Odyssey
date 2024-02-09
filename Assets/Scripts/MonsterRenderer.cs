@@ -40,16 +40,6 @@ public class MonsterRenderer : MonoBehaviour
         }
     }
 
-    void OnCollisionEnter2D(Collision2D other) {
-        Debug.Log("COLLISION DETECTED!");
-        if(other.gameObject.GetComponent<BattleCardRenderer>()) {
-            Debug.Log("WITH CARD TOO");
-            // Collision with card; highlight the sprite
-            monsterImgRenderer.color = new Color32(255, 0, 0, 255);
-        }
-    }
-
-
     public void renderMonster(Monster monster) {
         // Render card image
         

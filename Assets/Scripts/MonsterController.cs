@@ -13,7 +13,6 @@ public class MonsterController : MonoBehaviour
 
     private readonly Dictionary<MonsterName, Sprite> allMonsters = new();
 
-
     void Awake() {
         if (monsterNames.Count != monsterImgs.Count) {
             Debug.LogWarning("MonsterController: Monster Names and Monster Images provided do not have the same amount. Please check these fields.");
@@ -34,5 +33,10 @@ public class MonsterController : MonoBehaviour
     public MonsterName GetRandomMonster() {
         int index = UnityEngine.Random.Range(0, monsterNames.Count);
         return monsterNames[index];
+    }
+
+    // Gets monster sprite
+    public Sprite GetMonsterSprite(MonsterName name) {
+        return allMonsters[name];
     }
 }
