@@ -22,6 +22,10 @@ public class BattleUIManager : MonoBehaviour {
 
     [SerializeField]
     private GameObject playerStatPrefab;
+
+    [SerializeField]
+    private GameObject playerSpeedPrefab;
+
     [SerializeField]
     private List<GameObject> displayCards = new List<GameObject>();
 
@@ -33,9 +37,13 @@ public class BattleUIManager : MonoBehaviour {
     [SerializeField]
     private GameObject handPanel;
 
+    [SerializeField]
+    private GameObject speedPanel;
+
     private GameObject cardsManager;
     private CardsUIManager cardsUIManager;
     private Dictionary<string, GameObject> playerStats = new Dictionary<string, GameObject>();
+    private Dictionary<string, GameObject> playerSpeeds = new Dictionary<string, GameObject>();
 
     private PopUpManager popUpManager;
 
@@ -61,7 +69,6 @@ public class BattleUIManager : MonoBehaviour {
 
     public List<GameObject> DisplayOtherPlayers(List<Player> otherPlayers) {
         // Instantiate the playerStatPrefab for each player in otherPlayers
-        Debug.Log("number of players: " + otherPlayers.Count);
         for (int i = 0; i < GameState.Instance.maxPlayerCount - 1; i++) {
             // Initialise an empty playerStat prefab whether there will be a player there or not
             GameObject playerStat = Instantiate(playerStatPrefab, otherPlayersPanel.transform, false);
@@ -74,11 +81,25 @@ public class BattleUIManager : MonoBehaviour {
                 // Disable the icon and health info for nonexistent players
                 // These playerStat prefabs do not belong to any player, so
                 // do not append them to the list that we return.
-                playerStat.transform.GetChild(0).gameObject.SetActive(false);
-                playerStat.transform.GetChild(1).gameObject.SetActive(false);
+
+                // make the player's sprite invisible but occupy the space
+                playerStat.transform.GetChild(0).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+
+                // make the player's health info invisible
+                playerStat.transform.GetChild(1).GetComponent<Image>().color = new Color(0, 0, 0, 0);
+                playerStat.transform.GetChild(1).transform.GetChild(0).GetComponent<TextMeshProUGUI>().enabled = false;
             }
         }
         return new List<GameObject>(playerStats.Values);
+    }
+
+    public void DisplaySpeedPanel(List<Player> players) {
+        // Instantiate the playerStatPrefab for each player in players
+        for (int i = 0; i < players.Count; i++) {
+            GameObject playerSpeed = Instantiate(playerSpeedPrefab, speedPanel.transform, false);
+            playerSpeed.transform.GetComponent<Image>().sprite = players[i].Icon;
+            playerSpeeds.Add(players[i].Id, playerSpeed);
+        }
     }
 
     public void arrangeOtherPlayersInOrder(List<string> sortedPlayerIds) {
@@ -86,6 +107,14 @@ public class BattleUIManager : MonoBehaviour {
         for (int i = 0; i < sortedPlayerIds.Count; i++) {
             GameObject playerStat = playerStats[sortedPlayerIds[i]];
             playerStat.transform.SetSiblingIndex(i);
+        }
+    }
+
+    public void arrangeSpeedPanelInOrder(List<string> sortedPlayerIds) {
+        // Rearrange the speedPanel in the order of sortedPlayerIds
+        for (int i = 0; i < sortedPlayerIds.Count; i++) {
+            GameObject playerSpeed = playerSpeeds[sortedPlayerIds[i]];
+            playerSpeed.transform.SetSiblingIndex(i);
         }
     }
 

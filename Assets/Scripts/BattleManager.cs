@@ -101,8 +101,11 @@ public class BattleManager : MonoBehaviour {
         // Initializes Player's card number
         UpdateCardNumber();
 
-        Debug.Log("BattleManager started.");
+        // Initializes the Other Players panel and Speed panel
         otherPlayerStat = battleUIManager.DisplayOtherPlayers(GameState.Instance.OtherPlayers);
+        List<Player> allPlayers = new List<Player>(GameState.Instance.OtherPlayers);
+        allPlayers.Add(GameState.Instance.MyPlayer);
+        battleUIManager.DisplaySpeedPanel(allPlayers);
 
         Debug.Log("Length of otherPlayerStat: " + otherPlayerStat.Count);
 
@@ -207,13 +210,11 @@ public class BattleManager : MonoBehaviour {
         players.Add(GameState.Instance.MyPlayer);
         players = players.OrderByDescending(player => player.Speed).ToList();
         playerOrderIds = players.Select(player => player.Id).ToList();
-        Debug.Log("Player order: " + string.Join(", ", playerOrderIds));
-        Debug.Log("Player roles: " + string.Join(", ", players.Select(player => player.Role)));
-        Debug.Log("Player speeds: " + string.Join(", ", players.Select(player => player.Speed)));
         
         // rearrange the order of otherPlayerStats based on the playerOrderIds, exluding the current player
         List<string> otherPlayerIds = playerOrderIds.Where(id => id != GameState.Instance.MyPlayer.Id).ToList();
         battleUIManager.arrangeOtherPlayersInOrder(otherPlayerIds);
+        battleUIManager.arrangeSpeedPanelInOrder(playerOrderIds);
     }
 
     // Shuffle the list of cards from back to front 
