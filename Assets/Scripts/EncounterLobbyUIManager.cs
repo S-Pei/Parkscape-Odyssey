@@ -42,6 +42,7 @@ public class EncounterLobbyUIManager : MonoBehaviour
     public void MemberJoinedParty(string member) {
         partyMembers.Add(member);
         partyMemberSlots[partyMembers.Count - 1].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = member;
+        partyMemberSlots[partyMembers.Count - 1].GetComponent<Image>().enabled = true;
     }
 
     public void StartEncounter() {
