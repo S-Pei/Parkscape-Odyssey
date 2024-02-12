@@ -164,10 +164,6 @@ public class NetworkManager : MonoBehaviour {
         if (lobbyManager != null) {
             lobbyManager.SendMessages(connectedPlayers, disconnectedPlayers);
         }
-
-        if (encounterController != null) {
-            encounterController.SendMessages();
-        }
     }
 }
 

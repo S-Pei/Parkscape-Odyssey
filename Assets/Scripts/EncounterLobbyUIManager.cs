@@ -25,16 +25,18 @@ public class EncounterLobbyUIManager : MonoBehaviour
         }
     }
 
-    public void LeaderEncounterLobbyInit(string encounterId, List<Monster> monsters) {
+    public void EncounterLobbyInit(string encounterId, List<Monster> monsters, bool isLeader) {
         this.encounterId = encounterId;
         this.monsters = monsters;
 
         // Add self to party members
-        partyMembers.Add(GameState.Instance.MyPlayer.Name);
-        partyMemberSlots[0].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = GameState.Instance.MyPlayer.Name;
-        
+        if (isLeader) {
+            partyMembers.Add(GameState.Instance.MyPlayer.Name);
+            partyMemberSlots[0].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = GameState.Instance.MyPlayer.Name;
+        }
+
         // Set all other party member slots to inactive
-        for (int i = 1; i < partyMemberSlots.Count; i++) {
+        for (int i = partyMembers.Count; i < partyMemberSlots.Count; i++) {
             partyMemberSlots[i].GetComponent<Image>().enabled = false;
         }
     }
