@@ -30,7 +30,6 @@ public class LobbyManager : MonoBehaviour {
     private int msgFreqCounter = 0;
     private int roomFindingTimeout = 200;
     private bool joinedLobby = false;
-    private bool iAmIn = false;
     private int disconnectCount = 0;
     private List<string> playerIDs;
     
@@ -62,14 +61,12 @@ public class LobbyManager : MonoBehaviour {
         network.stopDiscovering();
 
         joinedLobby = false;
-        sentInitialJoinMessage = false;
 
         // Reset the lobby.
         players = new Dictionary<string, string>();
         myID = SystemInfo.deviceUniqueIdentifier;
         leaderID = "";
         connectedDevices = new List<string>();
-        iAmIn = false;
         joinedLobby = false;
         playerIDs = new();
         lobbyUIManager.ExitLobby();
@@ -86,9 +83,6 @@ public class LobbyManager : MonoBehaviour {
         // Create a list of all the players id
         playerIDs = new(players.Keys);
         playerIDs.Remove(myID);
-
-        // Add myself as player
-        // players.Add(myID, myName);
 
         // Initialise the game state.
         GameState gameState = GameState.Instance;
@@ -109,21 +103,14 @@ public class LobbyManager : MonoBehaviour {
         StartGame();
     }
 
-    private bool sentInitialJoinMessage = false;
 
     // Send round of messages.
     public void SendMessages(Dictionary<string, string> connectedPlayers, List<string> disconnectedPlayerIDs) {
         if (!AcceptMessages) {
-            // Debug.Log("Not accepting messages.");
             return;
         }
 
         if (network.getConnectedDevices().Count <=  0) {
-            // Debug.Log("No connected DEVICES. not attempting to send messages...");
-            // if (numConnectedPlayers <= 0) {
-            //     Debug.Log("No connected PLAYERS yet, pinging to get connected players...");
-            //     return;
-            // }
             return;
         }
 
@@ -131,28 +118,14 @@ public class LobbyManager : MonoBehaviour {
 
         // IDs of connected players.
         List<string> connectedIDs = new List<string>(connectedPlayers.Keys);
-        // List<string> localPlayerIDs = new List<string>(players.Keys);
-
 
         if (isLeader) {
             // Leader check if any devices have disconnected.
             foreach (string id in disconnectedPlayerIDs) {
                 RemovePlayer(id);
             }
-            
-            // // Check if game has started and broadcast the game state to everyone.
-            // if (GameState.Instance.Initialized) {
-            //     // If the game has started, broadcast the game state to everyone.
-            //     LobbyMessage gameStateMessage = new(LobbyMessageType.LEADER_START, true, GameState.Instance.ToMessage().toJson(), sendFrom: myID);
-            //     network.broadcast(gameStateMessage.toJson());
-            // } else {
-            //     // Otherwise, broadcast the list of players to everyone in the lobby (if any).
-            //     LobbyMessage lobbyMessage = new(isLeader, players, myID);
-            //     network.broadcast(lobbyMessage.toJson());
-            // }
         } else {
             // If I lost connection to the leader then I should exit the lobby after 10 seconds
-            // connectedDevices = network.getConnectedDevices();
             if (!leaderID.Equals("") && !connectedIDs.Contains(leaderID)) {
                 if (disconnectCount < 100) {
                     disconnectCount++;
@@ -167,15 +140,7 @@ public class LobbyManager : MonoBehaviour {
                 Debug.Log("Broadcast to leader I AM IN message");
                 LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, sendTo : leaderID, sendFrom: myID);
                 network.broadcast(amIInMessage.toJson());
-                // sentInitialJoinMessage = true;
             }
-
-            // // If I am in the lobby, send a message to the leader that I am in, don't stop until I am in the list.
-            // if (joinedLobby && !iAmIn) {
-            //     Debug.Log("Broadcasting I AM IN message");
-            //     LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, sendTo : leaderID, sendFrom: myID);
-            //     network.broadcast(amIInMessage.toJson());
-            // }
         }
     }
 
@@ -255,18 +220,12 @@ public class LobbyManager : MonoBehaviour {
         // Ignore if no longer accepting messages.
         if (!AcceptMessages)
             return CallbackStatus.DORMANT;
-        
-        // Debug.Log("Lobby message is not dormanted, processing...");
 
         switch (lobbyMessage.Type) {
             case LobbyMessageType.MEMBER_I_AM_IN:
                 // Ignore if not leader.
                 if (!isLeader)
                     break;
-
-                // Ignore if player already in list.
-                // if (players.ContainsKey(lobbyMessage.SendFrom))
-                //     break;
 
                 // Ignore if max player count reached.
                 if (players.Count >= maxPlayerCount)
@@ -325,11 +284,6 @@ public class LobbyManager : MonoBehaviour {
                     gameState.InitializeFromMessage(GameStateMessage.fromJson(lobbyMessage.Message), roomCode, myID);
                 }
                 StartGame();
-                // Debug.Log("Sending reply.");
-                // Send a message to the leader that I am ready to start the game.
-                // LobbyMessage memberStartMessage = new(LobbyMessageType.MEMBER_START, false, myName, sendTo : leaderID, sendFrom : myID);
-                // network.broadcast(memberStartMessage.toJson());
-                // Debug.Log("Sent reply.");
                 break;
             case LobbyMessageType.MEMBER_START:
                 if (!isLeader)
