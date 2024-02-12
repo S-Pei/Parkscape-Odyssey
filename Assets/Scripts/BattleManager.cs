@@ -54,6 +54,8 @@ public class BattleManager : MonoBehaviour {
 
     private List<string> playerOrderIds;
 
+    private List<CardName> cardsToPlay;
+
     void Awake() {
         gameManager = FindObjectOfType<GameManager>();
         gameInterfaceManager = (GameInterfaceManager) FindObjectOfType(typeof(GameInterfaceManager));
@@ -66,6 +68,9 @@ public class BattleManager : MonoBehaviour {
     }
 
     void Start() {
+        // Initialise the list of selected cards
+        cardsToPlay = new List<CardName>();
+        
         // Set the encounter to be the active scene
         // Cannot be run in Awake() as the scene is not loaded at that point
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Battle"));
@@ -80,16 +85,15 @@ public class BattleManager : MonoBehaviour {
         // Add the shuffled cards to a queue to draw from
         drawPile = new Queue<CardName>(this.allCards);
 
-        // Draw the initial hand
-        GenerateHand();
-        Debug.Log(string.Format("Initial hand: ({0}).", string.Join(", ", this.hand)));
-
         // Select a random monster to fight
         MonsterName monsterName = monsterController.GetRandomMonster();
         monster = monsterController.createMonster(monsterName);
 
         // Print which monster the player is fighting
         Debug.Log(string.Format("Fighting {0}.", monsterName));
+
+        // Start the turn
+        StartTurn();
 
         // Display the hand and monster
         battleUIManager.DisplayHand(hand); 
@@ -121,6 +125,7 @@ public class BattleManager : MonoBehaviour {
         // Play the card with the given index
         CardName card = hand[cardIndex];
         Debug.Log(string.Format("Playing card: {0}.", card));
+        cardsToPlay.Add(card);
 
         // Remove the card from the hand
         hand.RemoveAt(cardIndex);
@@ -140,11 +145,25 @@ public class BattleManager : MonoBehaviour {
         // Update the player order
         UpdatePlayerOrder();
 
-        // Draw 5 cards if the hand is empty
-        if (hand.Count == 0) {
-            for (int i = 0; i < HAND_SIZE; i++) {
-                DrawCard();
-            }
+        // // Draw 5 cards if the hand is empty
+        // if (hand.Count == 0) {
+        //     for (int i = 0; i < HAND_SIZE; i++) {
+        //         DrawCard();
+        //     }
+        // }
+    }
+
+    public void StartTurn() {
+        Debug.Log("Started turn");
+        GenerateHand();
+        Debug.Log(string.Format("Generated hand: ({0}).", string.Join(", ", this.hand)));
+    }
+
+    public void EndTurn() {
+        Debug.Log("Ended turn");
+        
+        foreach (CardName card in cardsToPlay) {
+            Debug.Log("Selected " + card);
         }
     }
 
@@ -235,15 +254,18 @@ public class BattleManager : MonoBehaviour {
 
     private void GenerateHand() {
         // Initialise the hand as an empty list if not already done
+        // If this has been done, just clear the list
         if (hand is null) {
             hand = new List<CardName>();
+        } else {
+            hand.Clear();
         }
 
         while (hand.Count < HAND_SIZE) {
             // Check whether the draw pile is empty, and reshuffle if so
             if (drawPile.Count == 0) {
                 Shuffle(allCards);
-                foreach (CardName card in allCards) {
+                foreach (CardName card in allCards.Except(hand).ToList()) {
                     drawPile.Enqueue(card);
                 }
             }
