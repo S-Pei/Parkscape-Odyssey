@@ -15,6 +15,7 @@ public class BattleManager : MonoBehaviour {
     private GameInterfaceManager gameInterfaceManager;
     private BattleUIManager battleUIManager;
     private MonsterController monsterController;
+    private CardsUIManager cardsUIManager;
     private List<CardName> allCards;
     private List<CardName> hand;
 
@@ -68,6 +69,9 @@ public class BattleManager : MonoBehaviour {
     }
 
     void Start() {
+        // Search for the CardsUIManager here because in Awake() it is not initialised yet
+        cardsUIManager = (CardsUIManager) FindObjectOfType(typeof(CardsUIManager));
+
         // Initialise the list of selected cards
         cardsToPlay = new List<CardName>();
         
@@ -122,8 +126,16 @@ public class BattleManager : MonoBehaviour {
 
     // TODO: Implement the logic for playing a card, including mana checking
     public void PlayCard(int cardIndex) {
-        // Play the card with the given index
         CardName card = hand[cardIndex];
+
+        // Play the card with the given index, if possible
+        if (GameState.Instance.MyPlayer.Mana < cardsUIManager.findCardDetails(card).cost) {
+            // The card is too expensive
+            Debug.Log("Too expensive");
+            battleUIManager.RepositionCards();
+            return;
+        }
+
         Debug.Log(string.Format("Playing card: {0}.", card));
         cardsToPlay.Add(card);
 
@@ -133,16 +145,19 @@ public class BattleManager : MonoBehaviour {
         // Update the hand on-screen
         battleUIManager.RemoveCardFromHand(cardIndex);
 
-        // Update the player's stats
+        // Reduce the player's mana by the card cost
+        GameState.Instance.MyPlayer.PlayCard(cardsUIManager.findCardDetails(card));
+
+        // Update the player's stats in the UI
         UpdatesPlayerStats();
 
-        // Update the player's card number
+        // Update the player's card number UI
         UpdateCardNumber();
 
-        // Update the other players' stats
+        // Update the other players' stats UI
         UpdateOtherPlayerStats();
 
-        // Update the player order
+        // Update the player order UI
         UpdatePlayerOrder();
 
         // // Draw 5 cards if the hand is empty
@@ -155,6 +170,11 @@ public class BattleManager : MonoBehaviour {
 
     public void StartTurn() {
         Debug.Log("Started turn");
+
+        Player myPlayer = GameState.Instance.MyPlayer;
+
+        myPlayer.ResetMana();
+    
         GenerateHand();
         Debug.Log(string.Format("Generated hand: ({0}).", string.Join(", ", this.hand)));
     }

@@ -118,8 +118,8 @@ public class BattleUIManager : MonoBehaviour {
         }
     }
 
-    public void RepositionCards(List<GameObject> cards) {
-        for (int i = 0; i < cards.Count; i++) {
+    public void RepositionCards() {
+        for (int i = 0; i < displayCards.Count; i++) {
             // GameObject cardInstance = displayCards[i];
             // (Vector3 cardPosition, Quaternion cardRotation) = getCardPositionAtIndex(i);
             // cardInstance.transform.localPosition = cardPosition;
@@ -140,7 +140,7 @@ public class BattleUIManager : MonoBehaviour {
 
         // The positions of the cards must be instantiated *after* displayCards is fully populated
         // This is because the card's index is used to calculate its position
-        RepositionCards(displayCards);
+        RepositionCards();
         
     }
 
@@ -151,7 +151,7 @@ public class BattleUIManager : MonoBehaviour {
         if (newCard != null) {
             displayCards.Add(newCard);
         }
-        RepositionCards(displayCards);
+        RepositionCards();
     }
 
     // This is called only when displaying the hand for the first time
