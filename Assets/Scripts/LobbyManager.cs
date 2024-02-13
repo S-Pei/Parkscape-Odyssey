@@ -188,9 +188,6 @@ public class LobbyManager : MonoBehaviour {
         
         network.stopDiscovering();
 
-        // network.stopDiscovering();
-
-
         AcceptMessages = true;
 
         lobbyUIManager.SetUpLobby(roomCode, isLeader);
