@@ -185,8 +185,10 @@ public class LobbyManager : MonoBehaviour {
         } else {
             network.startAdvertising();
         }
-
+        
         network.stopDiscovering();
+
+        // network.stopDiscovering();
 
 
         AcceptMessages = true;

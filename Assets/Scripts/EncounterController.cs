@@ -179,6 +179,15 @@ public class EncounterController : MonoBehaviour
         SendJoinEncounterMessage();
     }
 
+    public void LeaderStartEncounter() {
+        SendStartEncounterMessage();
+        // AcceptMessages = false;
+    }
+
+    private void MemberStartEncounter() {
+        GameObject.FindGameObjectWithTag("EncounterLobby").GetComponent<EncounterLobbyUIManager>().StartEncounter();
+    }
+
     // ------------------------------ P2P NETWORK ------------------------------
     public CallbackStatus HandleMessage(Message message) {
         // Ignore if no longer accepting messages.
@@ -206,6 +215,12 @@ public class EncounterController : MonoBehaviour
                 if (!isLeader) {
                     // Players stop sending join encounter messages to leader and processes monster info
                     StopSendingJoinEncounterMessagesAndShowLobby(encounterMessage);
+                }
+                break;
+            case EncounterMessageType.START_ENCOUNTER:
+                // member receives notification from encounter leader to start encounter
+                if (!isLeader) {
+                    MemberStartEncounter();
                 }
                 break;
         }
@@ -237,6 +252,11 @@ public class EncounterController : MonoBehaviour
         }
     }
 
+    private void SendStartEncounterMessage() {
+        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.START_ENCOUNTER);
+        network.broadcast(encounterMessage.toJson());
+    }
+
     // Sends confirmation to player for joining encounter lobby together with monster details
     private void SendJoinedEncounterConfirmationMessage() {
         List<MonsterName> monsterNames = new List<MonsterName>();
@@ -264,12 +284,10 @@ public class EncounterController : MonoBehaviour
         List<Monster> monsters = ProcessEncounterMessageWithMonsterInfo(encounterMessage);
         if (!inEncounterLobby) {
             SpawnEncounterLobby(encounterMessage.encounterId, monsters, encounterMessage.skills);
-            ListPartyMembers(encounterMessage.members);
             inEncounterLobby = true;
-        } else {
-            Dictionary<string, string> members = encounterMessage.members;
-            ListPartyMembers(members);
         }
+
+        ListPartyMembers(encounterMessage.members);
     }
 
     // Process List of monster info to make a list of monsters
@@ -317,6 +335,7 @@ public enum EncounterMessageType {
     FOUND_ENCOUNTER,
     JOIN_ENCOUNTER,
     JOINED_ENCOUNTER_CONFIRMATION,
+    START_ENCOUNTER,
 }
 
 enum EncounterStatus {

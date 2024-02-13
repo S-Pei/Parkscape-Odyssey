@@ -16,6 +16,8 @@ public class EncounterLobbyUIManager : MonoBehaviour
     private string encounterId;
     private List<Monster> monsters;
 
+    private EncounterController encounterController;
+
     public void ListPartyMembers(List<string> members) {
         for (int i = 0; i < partyMemberSlots.Count; i++) {
             if (i < members.Count)
@@ -28,6 +30,8 @@ public class EncounterLobbyUIManager : MonoBehaviour
     public void EncounterLobbyInit(string encounterId, List<Monster> monsters, bool isLeader) {
         this.encounterId = encounterId;
         this.monsters = monsters;
+
+        encounterController = GameObject.FindGameObjectWithTag("EncounterManager").GetComponent<EncounterController>();
 
         // Add self to party members
         if (isLeader) {
@@ -48,6 +52,7 @@ public class EncounterLobbyUIManager : MonoBehaviour
     }
 
     public void StartEncounter() {
+        encounterController.LeaderStartEncounter();
         SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
         Destroy(gameObject);
     }
