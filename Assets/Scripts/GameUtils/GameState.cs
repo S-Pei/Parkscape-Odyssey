@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Newtonsoft.Json;
 using UnityEngine.PlayerLoop;
 
@@ -43,8 +44,8 @@ public class GameState {
 
     // ENCOUNTER
     private bool isInEncounter = false;
-    private List<Monster> encounterMonsters;
-    private List<List<SkillName>> skillSequences;
+    public List<Monster> encounterMonsters;
+    public List<List<SkillName>> skillSequences;
 
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
@@ -181,9 +182,8 @@ public class GameState {
     // ------------------------------- ENCOUNTER -------------------------------
     public void StartEncounter(List<Monster> monsters, List<List<SkillName>> skillSequences) {
         CheckInitialised();
-        if (isInEncounter) {
-            throw new InvalidOperationException("Already in an encounter.");
-        }
+        if (isInEncounter)
+            return;
         encounterMonsters = monsters;
         this.skillSequences = skillSequences;
         isInEncounter = true;

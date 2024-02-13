@@ -36,6 +36,11 @@ public class BattleManager : MonoBehaviour {
 
     private List<GameObject> otherPlayerStat = new List<GameObject>();
 
+    // monster
+    private List<Monster> monsters;
+    private List<List<SkillName>> skillsSequences;
+
+
 
     // p2p networking
     private NetworkUtils network;
@@ -62,6 +67,9 @@ public class BattleManager : MonoBehaviour {
         gameInterfaceManager = (GameInterfaceManager) FindObjectOfType(typeof(GameInterfaceManager));
         battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
         monsterController = (MonsterController) GetComponent(typeof(MonsterController));
+
+        monsters = GameState.Instance.encounterMonsters;
+        skillsSequences = GameState.Instance.skillSequences;
 
         // Setup p2p network
         // network = NetworkManager.Instance.NetworkUtils;
@@ -90,10 +98,11 @@ public class BattleManager : MonoBehaviour {
         drawPile = new Queue<CardName>(this.allCards);
 
         // Select a random monster to fight
-        MonsterName monsterName = monsterController.GetRandomMonster();
-        monster = monsterController.createMonster(monsterName);
+        // MonsterName monsterName = monsterController.GetRandomMonster();
+        // monster = monsterController.createMonster(monsterName);
 
         // Print which monster the player is fighting
+        string monsterName = monsters[0].name.ToString();
         Debug.Log(string.Format("Fighting {0}.", monsterName));
 
         // Start the turn
@@ -101,7 +110,7 @@ public class BattleManager : MonoBehaviour {
 
         // Display the hand and monster
         battleUIManager.DisplayHand(hand); 
-        battleUIManager.DisplayMonster(monster);
+        battleUIManager.DisplayMonster(monsters[0]);
 
         // Initializes Player's health, current mana and max mana
         UpdatesPlayerStats();
