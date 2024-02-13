@@ -9,7 +9,7 @@ public class Player
     public int Speed { get; }
     public int MaxHealth { get; }
     public int CurrentHealth { get; private set; }
-    public int Mana { get; }
+    public int Mana { get; private set; }
     public int MaxMana { get; }
     public int Strength { get; }
     public string Description { get; }
@@ -37,6 +37,14 @@ public class Player
         AttackMultiplier = BASEMULTIPLIER;
         DefenceMultiplier = BASEMULTIPLIER;
         Description = description;
+    }
+
+    public void PlayCard(Card card) {
+        Mana -= card.cost;
+    }
+
+    public void ResetMana() {
+        Mana = MaxMana;
     }
 
 

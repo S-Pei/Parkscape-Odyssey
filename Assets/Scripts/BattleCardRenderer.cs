@@ -39,7 +39,6 @@ public class BattleCardRenderer : CardRenderer, IBeginDragHandler, IEndDragHandl
             return;
         } else {
             // Inform the battle manager that this card is to be played
-            Debug.Log("Playing card: " + this.GetCardDetails().name);
             battleManager.PlayCard(this.cardIndex);
         }
     }
