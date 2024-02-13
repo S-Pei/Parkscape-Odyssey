@@ -2614,3 +2614,5 @@ MonoBehaviour:
   - {fileID: 7763489121161244296}
   - {fileID: 7659842658412594159}
   partyMembers: []
+  enemyDetailsPanel: {fileID: 8391895882734957802}
+  startEncounterButton: {fileID: 4469753707995009245}
