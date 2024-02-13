@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using UnityEngine.PlayerLoop;
+using Firebase.Extensions;
+
 
 public class GameState {
     private static bool DEBUGMODE = true;
@@ -36,6 +38,10 @@ public class GameState {
     public bool IsInEncounter = false;
     public int Score = 0;
 
+    // Reference to the Firebase app
+    public Firebase.FirebaseApp App;
+    public bool FirebaseReady = false;
+
     private List<CardName> InitialCards = new List<CardName> { 
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
         CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
@@ -44,6 +50,10 @@ public class GameState {
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
         CheckNotInitialised();
+
+        StartFirebase();
+
+        UnityEngine.Debug.Log("Finished executing StartFirebase().");
 
         RoomCode = roomCode;
 
@@ -170,6 +180,24 @@ public class GameState {
         if (Initialized) {
             throw new InvalidOperationException("GameState already initialized.");
         }
+    }
+
+    private void StartFirebase() {
+        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task => {
+            var dependencyStatus = task.Result;
+            if (dependencyStatus == Firebase.DependencyStatus.Available) {
+                // Create and hold a reference to your FirebaseApp,
+                // where app is a Firebase.FirebaseApp property of your application class.
+                App = Firebase.FirebaseApp.DefaultInstance;
+                // Set a flag here to indicate whether Firebase is ready to use by your app.
+                FirebaseReady = true;
+                UnityEngine.Debug.Log("Firebase is ready to use.");
+            } else {
+                UnityEngine.Debug.LogError(System.String.Format(
+                "Could not resolve all Firebase dependencies: {0}", dependencyStatus));
+                // Firebase Unity SDK is not safe to use here.
+            }
+        });
     }
 }
 
