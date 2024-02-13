@@ -177,17 +177,17 @@ public class LobbyManager : MonoBehaviour {
         network.setRoomCode(roomCode);
         network.startDiscovering();
 
+
         this.isLeader = isLeader;
         if (!isLeader) {
             // Wait for room to be found.
             if (!FindRoom())
                 throw new Exception("Room not found.");
         } else {
-            network.startAdvertising();
+            // network.startAdvertising();
         }
-        
-        network.stopDiscovering();
 
+        network.startAdvertising();
         AcceptMessages = true;
 
         lobbyUIManager.SetUpLobby(roomCode, isLeader);

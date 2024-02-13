@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using UnityEngine.PlayerLoop;
 
 public class GameState {
-    private static bool DEBUGMODE = true;
+    private static bool DEBUGMODE = false;
     private static readonly Lazy<GameState> LazyGameState = new(() => new GameState());
 
     public static GameState Instance { get {
@@ -40,6 +40,11 @@ public class GameState {
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
         CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
     };
+
+    // ENCOUNTER
+    private bool isInEncounter = false;
+    private List<Monster> encounterMonsters;
+    private List<List<SkillName>> skillSequences;
 
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
@@ -170,6 +175,18 @@ public class GameState {
         if (Initialized) {
             throw new InvalidOperationException("GameState already initialized.");
         }
+    }
+
+
+    // ------------------------------- ENCOUNTER -------------------------------
+    public void StartEncounter(List<Monster> monsters, List<List<SkillName>> skillSequences) {
+        CheckInitialised();
+        if (isInEncounter) {
+            throw new InvalidOperationException("Already in an encounter.");
+        }
+        encounterMonsters = monsters;
+        this.skillSequences = skillSequences;
+        isInEncounter = true;
     }
 }
 

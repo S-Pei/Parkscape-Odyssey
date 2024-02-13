@@ -180,11 +180,15 @@ public class EncounterController : MonoBehaviour
     }
 
     public void LeaderStartEncounter() {
+        // Save monster details for entering encounter
+        GameState.Instance.StartEncounter(monsters, skillSequences);
+
         SendStartEncounterMessage();
         // AcceptMessages = false;
     }
 
     private void MemberStartEncounter() {
+        GameState.Instance.StartEncounter(monsters, skillSequences);
         GameObject.FindGameObjectWithTag("EncounterLobby").GetComponent<EncounterLobbyUIManager>().StartEncounter();
     }
 
