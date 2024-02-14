@@ -63,6 +63,7 @@ public class BattleManager : MonoBehaviour {
         private set {}
     }
     private Queue<CardName> drawPile;
+    private Queue<CardName> discardPile;
 
     private Monster monster;
 
@@ -115,6 +116,7 @@ public class BattleManager : MonoBehaviour {
 
         // Add the shuffled cards to a queue to draw from
         drawPile = new Queue<CardName>(this.allCards);
+        discardPile = new Queue<CardName>();
 
         // Select a random monster to fight
         // MonsterName monsterName = monsterController.GetRandomMonster();
@@ -174,6 +176,9 @@ public class BattleManager : MonoBehaviour {
 
         Debug.Log(string.Format("Playing card: {0}.", card));
         cardsToPlay.Add(card);
+
+        // Add the card to the discard pile
+        discardPile.Enqueue(hand[cardIndex]);
 
         // Remove the card from the hand
         hand.RemoveAt(cardIndex);
@@ -241,6 +246,7 @@ public class BattleManager : MonoBehaviour {
         if (notReceived == 0 ) {
             battleStatus = BattleStatus.RESOLVING_PLAYED_CARDS;
             EndOfTurnActions();
+            UpdateCardNumber();
         }
     }
 
@@ -248,7 +254,6 @@ public class BattleManager : MonoBehaviour {
     public void EndOfTurnActions() {
         ResolvePlayedCardsOrder();
         MonsterAttack();
-        DrawCard();
         if (GameEnded()) {
             Debug.Log("Game ended");
             // End the encounter
@@ -257,6 +262,7 @@ public class BattleManager : MonoBehaviour {
 
         } else {
             StartTurn();
+            battleUIManager.DisplayHand(hand);
         }
     }
 
@@ -355,7 +361,7 @@ public class BattleManager : MonoBehaviour {
 
     private void UpdateCardNumber() {
         playerDrawPileNumber.GetComponent<TextMeshProUGUI>().text = (drawPile.Count).ToString();
-        playerDiscardPileNumber.GetComponent<TextMeshProUGUI>().text = (allCards.Count - drawPile.Count - hand.Count).ToString();
+        playerDiscardPileNumber.GetComponent<TextMeshProUGUI>().text = (discardPile.Count).ToString();
     }
 
     // Initializes other Player's health and icon.
@@ -421,21 +427,34 @@ public class BattleManager : MonoBehaviour {
         if (hand is null) {
             hand = new List<CardName>();
         } else {
-            hand.Clear();
+            Debug.Log($"Hand count: {hand.Count}");
+            foreach (CardName card in hand) {
+                discardPile.Enqueue(card);
+            }
+            for (int i = 0; i < hand.Count; i++) {
+                battleUIManager.RemoveCardFromHand(0);
+            }
+            hand = new();
         }
+        Debug.Log($"Hand count after reset: {hand.Count}");
 
         while (hand.Count < HAND_SIZE) {
             // Check whether the draw pile is empty, and reshuffle if so
             if (drawPile.Count == 0) {
-                Shuffle(allCards);
-                foreach (CardName card in allCards.Except(hand).ToList()) {
+                List<CardName> discardPileLs = discardPile.ToList();
+                Shuffle(discardPileLs);
+                foreach (CardName card in discardPileLs) {
                     drawPile.Enqueue(card);
                 }
+                discardPile = new();
             }
 
             // Add a card to the hand
+            // DrawCard();
             hand.Add(drawPile.Dequeue());
+            Debug.Log($"Hand count after draw one: {hand.Count}");
         }
+        // battleUIManager.RepositionCards();
     }
 
     private void OnSceneUnloaded(Scene current) {
@@ -469,8 +488,6 @@ public class BattleManager : MonoBehaviour {
             return;
         }
         
-        Debug.Log($"State now: {battleStatus}");
-
         if (battleStatus == BattleStatus.TURN_ENDED) {
             //  Debug.Log("Sending Battle Messages.");
             List<string> sendTos = new();
