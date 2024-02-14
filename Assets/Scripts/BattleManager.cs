@@ -36,13 +36,18 @@ public class BattleManager : MonoBehaviour {
 
     [SerializeField]
     private GameObject playerDiscardPileNumber;
+    
+    [SerializeField]
+    private GameObject endTurnButton;
+
+    [SerializeField]
+    private GameObject lootOverlay;
 
     private List<GameObject> otherPlayerStat = new List<GameObject>();
 
     // monster
     private List<Monster> monsters;
     private List<List<SkillName>> skillsSequences;
-
 
 
     // p2p networking
@@ -67,7 +72,8 @@ public class BattleManager : MonoBehaviour {
 
     private Dictionary<string, List<CardName>> othersCardsToPlay = new();
     private Dictionary<string, string> partyMembers;
-    private bool turnEnded = false;
+    private BattleStatus battleStatus = BattleStatus.TURN_IN_PROGRESS;
+    private int monsterSkillIndex = 0;
 
     void Awake() {
         if (!selfReference) {
@@ -146,6 +152,14 @@ public class BattleManager : MonoBehaviour {
         UpdatePlayerOrder();
     }
 
+    void Update() {
+        if (battleStatus != BattleStatus.TURN_IN_PROGRESS) {
+            endTurnButton.SetActive(false);
+        } else {
+            endTurnButton.SetActive(true);
+        }
+    }
+
     // TODO: Implement the logic for playing a card, including mana checking
     public void PlayCard(int cardIndex) {
         CardName card = hand[cardIndex];
@@ -192,10 +206,12 @@ public class BattleManager : MonoBehaviour {
 
     public void StartTurn() {
         Debug.Log("Started turn");
+        battleStatus = BattleStatus.TURN_IN_PROGRESS;
 
         Player myPlayer = GameState.Instance.MyPlayer;
 
         myPlayer.ResetMana();
+        UpdatesPlayerStats();
     
         GenerateHand();
         Debug.Log(string.Format("Generated hand: ({0}).", string.Join(", ", this.hand)));
@@ -203,13 +219,59 @@ public class BattleManager : MonoBehaviour {
 
     public void EndTurn() {
         Debug.Log("Ended turn");
-        turnEnded = true;
+        battleStatus = BattleStatus.TURN_ENDED;
         
         foreach (CardName card in cardsToPlay) {
             Debug.Log("Selected " + card);
         }
 
         BroadcastCardsPlayed();
+
+        int notReceived = 0;
+        foreach (string id in partyMembers.Keys) {
+            Debug.Log("Processing ID: " + id);
+            if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
+                Debug.Log("Already received cards from " + id);
+                continue;
+            }
+            Debug.Log("Not received cards from " + id);
+            notReceived++;
+        }
+
+        if (notReceived == 0 ) {
+            battleStatus = BattleStatus.RESOLVING_PLAYED_CARDS;
+            EndOfTurnActions();
+        }
+    }
+
+    // Resolve end of turn actions
+    public void EndOfTurnActions() {
+        ResolvePlayedCardsOrder();
+        MonsterAttack();
+        DrawCard();
+        if (GameEnded()) {
+            Debug.Log("Game ended");
+            // End the encounter
+            SceneManager.UnloadSceneAsync("Battle");
+            Instantiate(lootOverlay);
+
+        } else {
+            StartTurn();
+        }
+    }
+
+    // Checks whether the game has ended
+    private bool GameEnded() {
+        if (monsters[0].Health <= 0) {
+            return true;
+        }
+        // Check if all players have died
+        foreach (string id in partyMembers.Keys) {
+            if (GameState.Instance.PlayersDetails[id].CurrentHealth > 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void DrawCard() {
@@ -225,6 +287,62 @@ public class BattleManager : MonoBehaviour {
         CardName drawnCard = drawPile.Dequeue();
         hand.Add(drawnCard);
         battleUIManager.AddToHand(drawnCard);
+    }
+
+    // Resolve played cards order based on player's speed stats
+    private void ResolvePlayedCardsOrder() {
+        Debug.Log("Resolving cards");
+        List<Player> players = new();
+        foreach (string id in partyMembers.Keys) {
+            players.Add(GameState.Instance.PlayersDetails[id]);
+        } 
+        // order players based on their speed stat
+        players = players.OrderByDescending(player => player.Speed).ToList();
+        playerOrderIds = players.Select(player => player.Id).ToList();
+        foreach (string id in playerOrderIds) {
+            List<CardName> cards  = new();
+            if (id == GameState.Instance.MyPlayer.Id) {
+                cards = cardsToPlay;
+            } else {
+                cards = othersCardsToPlay[id];
+            }
+            foreach (CardName card in cards) {
+                // Resolve Played card
+                Debug.Log("Resolving played card: " + card);
+                Card cardPlayed = cardsUIManager.findCardDetails(card);
+                cardPlayed.UseCard(players, monsters, id);
+                UpdatesPlayerStats();
+                UpdateOtherPlayerStats();
+                UpdateMonsterStats();
+            }
+        }
+
+
+        // Clear everyones card played
+        othersCardsToPlay.Clear();
+        cardsToPlay = new();
+    }
+
+    // Monster Attacks
+    public void MonsterAttack() {
+        SkillName skill = skillsSequences[0][monsterSkillIndex];
+
+        List<Player> players = new();
+        foreach (string id in partyMembers.Keys) {
+            players.Add(GameState.Instance.PlayersDetails[id]);
+        } 
+        
+        MonsterFactory.skillsController.Get(skill).Perform(monsters[0], players);
+        Debug.Log("Monster attacking with " + skill);
+        UpdatesPlayerStats();
+        UpdateOtherPlayerStats();
+        UpdateMonsterStats();
+        monsterSkillIndex++;
+    }
+
+    // Update monster stats based on played cards
+    private void UpdateMonsterStats() {
+        battleUIManager.UpdateMonsterStats(monsters);
     }
 
     // Updates Player's health, current mana and max mana
@@ -282,7 +400,7 @@ public class BattleManager : MonoBehaviour {
     }
 
     // Shuffle the list of cards from back to front 
-    private static void Shuffle(List<CardName> cards) {  
+    private static void Shuffle(List<CardName> cards) {
         int n = cards.Count;
         while (n > 1) {
             // Select a random card from the front of the deck
@@ -342,7 +460,7 @@ public class BattleManager : MonoBehaviour {
 
     // ------------------------------ P2P NETWORK ------------------------------
     public void SendMessages(Dictionary<string, string> connectedPlayers, List<string> disconnectedPlayers) {
-        Debug.Log("Attempting to send battle messages.");
+        // Debug.Log("Attempting to send battle messages.");
         if (network == null)
             return;
 
@@ -350,14 +468,13 @@ public class BattleManager : MonoBehaviour {
             Debug.Log("Not accepting messages.");
             return;
         }
+        
+        Debug.Log($"State now: {battleStatus}");
 
-        if (turnEnded) {
-             Debug.Log("Sending Battle Messages.");
+        if (battleStatus == BattleStatus.TURN_ENDED) {
+            //  Debug.Log("Sending Battle Messages.");
             List<string> sendTos = new();
 
-            if (partyMembers == null) {
-                Debug.Log("Haih");
-            }
             foreach (string id in partyMembers.Keys) {
                 if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
                     continue;
@@ -365,13 +482,17 @@ public class BattleManager : MonoBehaviour {
                 // Request played card from players that we have not received cards from
                 sendTos.Add(id);
             }
-            BattleMessage battleMessageRequest = new BattleMessage(BattleMessageType.REQUEST_PLAYED_CARDS, new(), sendTos: sendTos);
-            network.broadcast(battleMessageRequest.toJson());
+            if (sendTos.Count() > 0) {
+                BattleMessage battleMessageRequest = new BattleMessage(BattleMessageType.REQUEST_PLAYED_CARDS, new(), sendTos: sendTos);
+                network.broadcast(battleMessageRequest.toJson());
+                battleStatus = BattleStatus.SENT_PLAYED_CARDS; 
+            }
         }
+
     }
     
     public CallbackStatus HandleMessage(Message message) {
-        Debug.Log("Received battle message.");
+        // Debug.Log("Received battle message.");
     
         BattleMessage battleMessage = (BattleMessage) message.messageInfo;
 
@@ -380,7 +501,7 @@ public class BattleManager : MonoBehaviour {
             return CallbackStatus.DORMANT;
         }
         if (battleMessage.Type == BattleMessageType.REQUEST_PLAYED_CARDS) {
-            if (!turnEnded) {
+            if (battleStatus == BattleStatus.TURN_IN_PROGRESS) {
                 return CallbackStatus.DORMANT;
             }
             Debug.Log("Received request for my played cards.");
@@ -391,7 +512,47 @@ public class BattleManager : MonoBehaviour {
         } else if (battleMessage.Type == BattleMessageType.PLAYED_CARDS) {
             Debug.Log("Received other player played cards.");
             // Process played cards
-            othersCardsToPlay[battleMessage.SendFrom] = battleMessage.CardsPlayed;
+
+            // Print all cards played from battleMessage.CardsPlayed
+            foreach (CardName card in battleMessage.CardsPlayed) {
+                Debug.Log("Received card: " + card);
+            }
+
+            Debug.Log("Printing othersCardsToPlay");
+            foreach (KeyValuePair<string, List<CardName>> entry in othersCardsToPlay)
+            {
+                Debug.Log($"Key: {entry.Key}, Value: {entry.Value}");
+            }
+
+
+            if (!othersCardsToPlay.ContainsKey(battleMessage.SendFrom)) {
+                othersCardsToPlay.Add(battleMessage.SendFrom,  battleMessage.CardsPlayed);
+            }
+
+            Debug.Log("Printing othersCardsToPlay AFTER adding");
+            foreach (KeyValuePair<string, List<CardName>> entry in othersCardsToPlay)
+            {
+                Debug.Log($"Key: {entry.Key}, Value: {entry.Value}");
+            }
+
+            if (battleStatus != BattleStatus.TURN_IN_PROGRESS) {
+                int notReceived = 0;
+                foreach (string id in partyMembers.Keys) {
+                    Debug.Log("Processing ID: " + id);
+                    if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
+                        Debug.Log("Already received cards from " + id);
+                        continue;
+                    }
+                    Debug.Log("Not received cards from " + id);
+                    notReceived++;
+                }
+
+                if (notReceived == 0 ) {
+                    battleStatus = BattleStatus.RESOLVING_PLAYED_CARDS;
+                    EndOfTurnActions();
+                }
+            }
+
             return CallbackStatus.PROCESSED;
         }
         Debug.Log("Unhandled battle message type");
@@ -409,6 +570,13 @@ public enum BattleMessageType {
     PLAYED_CARDS,
 }
 
+public enum BattleStatus {
+    TURN_IN_PROGRESS,
+    TURN_ENDED,
+    RESOLVING_PLAYED_CARDS,
+    SENT_PLAYED_CARDS
+}
+
 public class BattleMessage : MessageInfo
 {
     public MessageType messageType {get; set;}
@@ -423,7 +591,7 @@ public class BattleMessage : MessageInfo
         Type = type;
         CardsPlayed = cardsPlayed == null ? new() : cardsPlayed;
         SendTos = sendTos == null ? new() : sendTos;
-        SendFrom = GameState.Instance.myID;
+        SendFrom = sendFrom == "" ? GameState.Instance.myID : sendFrom;
     }
 
     public string toJson() {

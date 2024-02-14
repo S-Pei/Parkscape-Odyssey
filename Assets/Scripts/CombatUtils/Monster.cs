@@ -42,4 +42,8 @@ public class Monster {
   public void Strengthen(int amount) {
     BaseDamage += amount;
   }
+
+  public void DecreaseStrength(int amount) {
+    BaseDamage -= amount;
+  }
 }

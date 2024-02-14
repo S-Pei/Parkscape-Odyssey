@@ -1109,6 +1109,9 @@ MonoBehaviour:
   playerMaxMana: {fileID: 725897994}
   playerDrawPileNumber: {fileID: 1423458663}
   playerDiscardPileNumber: {fileID: 1953897375}
+  endTurnButton: {fileID: 1649401424}
+  lootOverlay: {fileID: 1311935826215831389, guid: ee39a4eba04ce411997bf8bf891341c2,
+    type: 3}
 --- !u!114 &890020362
 MonoBehaviour:
   m_ObjectHideFlags: 0
