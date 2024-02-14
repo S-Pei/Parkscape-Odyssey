@@ -181,7 +181,7 @@ public class EncounterController : MonoBehaviour
 
     public void LeaderStartEncounter() {
         // Save monster details for entering encounter
-        GameState.Instance.StartEncounter(monsters, skillSequences);
+        GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
         Debug.Log("Leader Starting encounter");
 
         SendStartEncounterMessage();
@@ -189,7 +189,7 @@ public class EncounterController : MonoBehaviour
     }
 
     private void MemberStartEncounter() {
-        GameState.Instance.StartEncounter(monsters, skillSequences);
+        GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
         Debug.Log("Member Starting encounter");
         GameObject.FindGameObjectWithTag("EncounterLobby").GetComponent<EncounterLobbyUIManager>().StartEncounter();
     }
@@ -292,7 +292,6 @@ public class EncounterController : MonoBehaviour
             SpawnEncounterLobby(encounterMessage.encounterId, monsters, encounterMessage.skills);
             inEncounterLobby = true;
         }
-
         ListPartyMembers(encounterMessage.members);
     }
 

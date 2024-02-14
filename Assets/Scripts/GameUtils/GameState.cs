@@ -47,6 +47,8 @@ public class GameState {
     public List<Monster> encounterMonsters;
     public List<List<SkillName>> skillSequences;
 
+    public Dictionary<string, string> partyMembers;
+
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
         CheckNotInitialised();
@@ -180,12 +182,13 @@ public class GameState {
 
 
     // ------------------------------- ENCOUNTER -------------------------------
-    public void StartEncounter(List<Monster> monsters, List<List<SkillName>> skillSequences) {
+    public void StartEncounter(List<Monster> monsters, List<List<SkillName>> skillSequences, Dictionary<string, string>  partyMembers) {
         CheckInitialised();
         if (isInEncounter)
             return;
         encounterMonsters = monsters;
         this.skillSequences = skillSequences;
+        this.partyMembers = partyMembers;
         isInEncounter = true;
     }
 }

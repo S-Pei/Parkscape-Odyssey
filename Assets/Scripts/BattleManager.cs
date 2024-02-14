@@ -7,8 +7,11 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Newtonsoft.Json;
 using TMPro;
+using System.Data.Common;
 
 public class BattleManager : MonoBehaviour {
+    public static BattleManager selfReference;
+
     public const int HAND_SIZE = 5;
     
     private GameManager gameManager;
@@ -62,17 +65,27 @@ public class BattleManager : MonoBehaviour {
 
     private List<CardName> cardsToPlay;
 
-    void Awake() {
-        gameManager = FindObjectOfType<GameManager>();
-        gameInterfaceManager = (GameInterfaceManager) FindObjectOfType(typeof(GameInterfaceManager));
-        battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
-        monsterController = (MonsterController) GetComponent(typeof(MonsterController));
+    private Dictionary<string, List<CardName>> othersCardsToPlay = new();
+    private Dictionary<string, string> partyMembers;
+    private bool turnEnded = false;
 
+    void Awake() {
+        if (!selfReference) {
+            selfReference = this;
+            gameManager = FindObjectOfType<GameManager>();
+            gameInterfaceManager = (GameInterfaceManager) FindObjectOfType(typeof(GameInterfaceManager));
+            battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
+            monsterController = (MonsterController) GetComponent(typeof(MonsterController));
+        } else {
+            Destroy(gameObject);
+        }
+
+        AcceptMessages = true;
         monsters = GameState.Instance.encounterMonsters;
         skillsSequences = GameState.Instance.skillSequences;
-
+        partyMembers = GameState.Instance.partyMembers;
         // Setup p2p network
-        // network = NetworkManager.Instance.NetworkUtils;
+        network = NetworkManager.Instance.NetworkUtils;
         // InvokeRepeating("HandleMessages", 0.0f, msgHandlingFreq);
     }
 
@@ -190,10 +203,13 @@ public class BattleManager : MonoBehaviour {
 
     public void EndTurn() {
         Debug.Log("Ended turn");
+        turnEnded = true;
         
         foreach (CardName card in cardsToPlay) {
             Debug.Log("Selected " + card);
         }
+
+        BroadcastCardsPlayed();
     }
 
     private void DrawCard() {
@@ -325,22 +341,7 @@ public class BattleManager : MonoBehaviour {
 
 
     // ------------------------------ P2P NETWORK ------------------------------
-    private void HandleMessages() {
-        Func<Message, CallbackStatus> callback = (Message msg) => {
-            return HandleMessage(msg);
-        };
-        network.onReceive(callback);
-
-        // Every msgFreq seconds, send messages.
-        if (msgFreqCounter >= msgFreq) {
-            SendMessages();
-            msgFreqCounter = 0;
-        } else {
-            msgFreqCounter++;
-        }
-    }
-
-    private void SendMessages() {
+    public void SendMessages(Dictionary<string, string> connectedPlayers, List<string> disconnectedPlayers) {
         Debug.Log("Attempting to send battle messages.");
         if (network == null)
             return;
@@ -350,30 +351,79 @@ public class BattleManager : MonoBehaviour {
             return;
         }
 
-        Debug.Log("Sending Battle Messages.");
+        if (turnEnded) {
+             Debug.Log("Sending Battle Messages.");
+            List<string> sendTos = new();
 
-        // TDDO: Send messages to connected devices.
+            if (partyMembers == null) {
+                Debug.Log("Haih");
+            }
+            foreach (string id in partyMembers.Keys) {
+                if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
+                    continue;
+                }
+                // Request played card from players that we have not received cards from
+                sendTos.Add(id);
+            }
+            BattleMessage battleMessageRequest = new BattleMessage(BattleMessageType.REQUEST_PLAYED_CARDS, new(), sendTos: sendTos);
+            network.broadcast(battleMessageRequest.toJson());
+        }
     }
     
-    private CallbackStatus HandleMessage(Message message) {
-        // TODO
-        return CallbackStatus.NOT_PROCESSED;
+    public CallbackStatus HandleMessage(Message message) {
+        Debug.Log("Received battle message.");
+    
+        BattleMessage battleMessage = (BattleMessage) message.messageInfo;
+
+        List<string> sendTos = battleMessage.SendTos;
+        if (sendTos.Count() != 0 && !sendTos.Contains(GameState.Instance.myID)) {
+            return CallbackStatus.DORMANT;
+        }
+        if (battleMessage.Type == BattleMessageType.REQUEST_PLAYED_CARDS) {
+            if (!turnEnded) {
+                return CallbackStatus.DORMANT;
+            }
+            Debug.Log("Received request for my played cards.");
+            // Send played cards
+            BattleMessage playedCardsMessage = new BattleMessage(BattleMessageType.PLAYED_CARDS, cardsToPlay, sendTos : new(){battleMessage.SendFrom});
+            network.broadcast(playedCardsMessage.toJson());
+            return CallbackStatus.PROCESSED;
+        } else if (battleMessage.Type == BattleMessageType.PLAYED_CARDS) {
+            Debug.Log("Received other player played cards.");
+            // Process played cards
+            othersCardsToPlay[battleMessage.SendFrom] = battleMessage.CardsPlayed;
+            return CallbackStatus.PROCESSED;
+        }
+        Debug.Log("Unhandled battle message type");
+        return CallbackStatus.DORMANT;
+    }
+
+    private void BroadcastCardsPlayed() {
+        BattleMessage cardsPlayedMessage = new BattleMessage(BattleMessageType.PLAYED_CARDS, cardsToPlay, sendTos : new());
+        network.broadcast(cardsPlayedMessage.toJson());
     }
 }
 
 public enum BattleMessageType {
-
+    REQUEST_PLAYED_CARDS,
+    PLAYED_CARDS,
 }
 
 public class BattleMessage : MessageInfo
 {
     public MessageType messageType {get; set;}
     public BattleMessageType Type {get; set;}
+    public List<CardName> CardsPlayed {get; set;}
+    public string SendFrom {get; set;}
+    public List<string> SendTos {get; set;}
 
     [JsonConstructor]
-    public BattleMessage(BattleMessageType type) {
+    public BattleMessage(BattleMessageType type, List<CardName> cardsPlayed, List<string> sendTos, string sendFrom = "") {
         messageType = MessageType.BATTLEMESSAGE;
         Type = type;
+        CardsPlayed = cardsPlayed == null ? new() : cardsPlayed;
+        SendTos = sendTos == null ? new() : sendTos;
+        SendFrom = GameState.Instance.myID;
     }
 
     public string toJson() {

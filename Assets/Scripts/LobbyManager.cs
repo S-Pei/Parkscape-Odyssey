@@ -184,10 +184,11 @@ public class LobbyManager : MonoBehaviour {
             if (!FindRoom())
                 throw new Exception("Room not found.");
         } else {
-            // network.startAdvertising();
+            network.startAdvertising();
         }
 
-        network.startAdvertising();
+        // network.startAdvertising();
+        network.stopDiscovering();
         AcceptMessages = true;
 
         lobbyUIManager.SetUpLobby(roomCode, isLeader);

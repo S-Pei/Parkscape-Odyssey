@@ -12,9 +12,10 @@ public class NetworkManager : MonoBehaviour {
 
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
+    private BattleManager battleManager;
 
     private readonly float baseFreq = 0.5f; // per second
-    private readonly float baseSendFreq = 0.5f; // per second
+    private readonly float baseSendFreq = 1f; // per second
     private float baseSendTimer = 0f; // per second
 
     private Dictionary<string, string> connectedPlayers = new ();
@@ -68,6 +69,9 @@ public class NetworkManager : MonoBehaviour {
 
         if (EncounterController.selfReference != null) {
             encounterController = EncounterController.selfReference;
+        }
+        if  (BattleManager.selfReference != null) {
+            battleManager = BattleManager.selfReference;
         }
     }
 
@@ -138,6 +142,12 @@ public class NetworkManager : MonoBehaviour {
                 } else {
                     return CallbackStatus.DORMANT;
                 }
+            case MessageType.BATTLEMESSAGE:
+                if (battleManager != null) {
+                    return battleManager.HandleMessage(message);
+                } else {
+                    return CallbackStatus.DORMANT;
+                }
         }
         return CallbackStatus.NOT_PROCESSED;
     }
@@ -163,6 +173,9 @@ public class NetworkManager : MonoBehaviour {
         
         if (lobbyManager != null) {
             lobbyManager.SendMessages(connectedPlayers, disconnectedPlayers);
+        }
+        if (battleManager != null) {
+            battleManager.SendMessages(connectedPlayers, disconnectedPlayers);
         }
     }
 }
