@@ -12,6 +12,8 @@ TagManager:
   - GameManager
   - EncounterManager
   - CardDescription
+  - EncounterLobby
+  - MonsterManager
   layers:
   - Default
   - TransparentFX

@@ -177,6 +177,7 @@ public class LobbyManager : MonoBehaviour {
         network.setRoomCode(roomCode);
         network.startDiscovering();
 
+
         this.isLeader = isLeader;
         if (!isLeader) {
             // Wait for room to be found.
@@ -186,9 +187,8 @@ public class LobbyManager : MonoBehaviour {
             network.startAdvertising();
         }
 
+        // network.startAdvertising();
         network.stopDiscovering();
-
-
         AcceptMessages = true;
 
         lobbyUIManager.SetUpLobby(roomCode, isLeader);

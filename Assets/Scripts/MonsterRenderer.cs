@@ -58,4 +58,12 @@ public class MonsterRenderer : MonoBehaviour
     public Monster getMonsterDetails() {
         return monster;
     }
+
+    public void UpdateMonsterHealth(Monster monster) {
+        GameObject monsterHealthObj = transform.GetChild(1).gameObject;
+        GameObject monsterHealthValue = monsterHealthObj.transform.GetChild(2).gameObject;
+        TextMeshProUGUI textComp = monsterHealthValue.GetComponentInChildren<TextMeshProUGUI>();
+        textComp.text = monster.Health.ToString();
+        monsterHealth = monster.Health;
+    }
 }

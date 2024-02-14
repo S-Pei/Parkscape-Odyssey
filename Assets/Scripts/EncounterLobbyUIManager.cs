@@ -12,9 +12,17 @@ public class EncounterLobbyUIManager : MonoBehaviour
 
     [SerializeField]
     private List<string> partyMembers;
+
+    [SerializeField]
+    private GameObject enemyDetailsPanel;
+
+    [SerializeField]
+    private GameObject startEncounterButton;
     
     private string encounterId;
     private List<Monster> monsters;
+
+    private EncounterController encounterController;
 
     public void ListPartyMembers(List<string> members) {
         for (int i = 0; i < partyMemberSlots.Count; i++) {
@@ -25,18 +33,31 @@ public class EncounterLobbyUIManager : MonoBehaviour
         }
     }
 
-    public void LeaderEncounterLobbyInit(string encounterId, List<Monster> monsters) {
+    public void EncounterLobbyInit(string encounterId, List<Monster> monsters, bool isLeader) {
         this.encounterId = encounterId;
         this.monsters = monsters;
 
+        encounterController = GameObject.FindGameObjectWithTag("EncounterManager").GetComponent<EncounterController>();
+
+        DisplayMonsterDetails();
+
         // Add self to party members
-        partyMembers.Add(GameState.Instance.MyPlayer.Name);
-        partyMemberSlots[0].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = GameState.Instance.MyPlayer.Name;
-        
+        if (isLeader) {
+            partyMembers.Add(GameState.Instance.MyPlayer.Name);
+            partyMemberSlots[0].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = GameState.Instance.MyPlayer.Name;
+        } else {
+            startEncounterButton.SetActive(false);
+        }
+
         // Set all other party member slots to inactive
-        for (int i = 1; i < partyMemberSlots.Count; i++) {
+        for (int i = partyMembers.Count; i < partyMemberSlots.Count; i++) {
             partyMemberSlots[i].GetComponent<Image>().enabled = false;
         }
+    }
+
+    private void DisplayMonsterDetails() {
+        enemyDetailsPanel.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = $"Enemy Level: {monsters[0].level}";
+        enemyDetailsPanel.transform.GetChild(1).GetComponent<Image>().sprite = monsters[0].img;
     }
 
     public void MemberJoinedParty(string member) {
@@ -46,6 +67,7 @@ public class EncounterLobbyUIManager : MonoBehaviour
     }
 
     public void StartEncounter() {
+        encounterController.LeaderStartEncounter();
         SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
         Destroy(gameObject);
     }

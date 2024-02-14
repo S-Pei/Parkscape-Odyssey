@@ -39,18 +39,19 @@ public class GameManager : MonoBehaviour
         GameState.Instance.IsInEncounter = false;
     }
 
-    public void StartEncounter() {
-        GameState.Instance.IsInEncounter = true;
-        SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
-    }
+    // public void StartEncounter() {
+    //     GameState.Instance.IsInEncounter = true;
+    //     Debug.Log("Starting the encounter (wrong).");
+    //     SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
+    // }
 
-    IEnumerator EncounterMonsterRandomly() {
-        // float secondsToWait = Random.Range(5, 20);
-        float secondsToWait = 10;
-        yield return new WaitForSeconds(secondsToWait);
-        Debug.Log("Waited 10s to start battle.");
-        StartEncounter();
-    }
+    // IEnumerator EncounterMonsterRandomly() {
+    //     // float secondsToWait = Random.Range(5, 20);
+    //     float secondsToWait = 10;
+    //     yield return new WaitForSeconds(secondsToWait);
+    //     Debug.Log("Waited 10s to start battle.");
+    //     StartEncounter();
+    // }
 
     public void OpenPlayerView() {
         gameInterfaceManager.OpenPlayerView();
