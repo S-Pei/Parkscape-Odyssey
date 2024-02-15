@@ -179,10 +179,6 @@ public class NetworkManager : MonoBehaviour {
         if (encounterController != null) {
             encounterController.SendMessages();
         }
-
-        if (tradeManager != null) {
-            tradeManager.SendMessages();
-        }
     }
 }
 
