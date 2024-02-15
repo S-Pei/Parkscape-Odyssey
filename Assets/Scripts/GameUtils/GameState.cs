@@ -3,7 +3,13 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 
 public class GameState {
-    private static readonly bool DEBUGMODE = false;
+    private static readonly bool DEBUGMODE = 
+    #if UNITY_EDITOR 
+        true;
+    #else
+        false;
+    #endif
+
     private static readonly Lazy<GameState> LazyGameState = new(() => new GameState());
 
     public static GameState Instance { get {
