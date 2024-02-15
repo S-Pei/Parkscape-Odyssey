@@ -13,9 +13,10 @@ public class NetworkManager : MonoBehaviour {
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
     private TradeManager tradeManager;
+    private BattleManager battleManager;
 
     private readonly float baseFreq = 0.5f; // per second
-    private readonly float baseSendFreq = 0.5f; // per second
+    private readonly float baseSendFreq = 1f; // per second
     private float baseSendTimer = 0f; // per second
 
     public Dictionary<string, string> connectedPlayers = new ();
@@ -74,6 +75,10 @@ public class NetworkManager : MonoBehaviour {
         if (TradeManager.selfReference != null) {
             tradeManager = TradeManager.selfReference;
         }
+        
+        if  (BattleManager.selfReference != null) {
+            battleManager = BattleManager.selfReference;
+        }
     }
 
     public NetworkUtils NetworkUtils {
@@ -99,7 +104,6 @@ public class NetworkManager : MonoBehaviour {
         } else {
             baseSendTimer += baseFreq;
         }
-
     }
 
     private List<string> CountdownPlayersLoseConnectionTimer() {
@@ -149,6 +153,12 @@ public class NetworkManager : MonoBehaviour {
                 } else {
                     return CallbackStatus.DORMANT;
                 }
+            case MessageType.BATTLEMESSAGE:
+                if (battleManager != null) {
+                    return battleManager.HandleMessage(message);
+                } else {
+                    return CallbackStatus.DORMANT;
+                }
         }
         return CallbackStatus.NOT_PROCESSED;
     }
@@ -165,7 +175,7 @@ public class NetworkManager : MonoBehaviour {
         if (networkUtils.getConnectedDevices().Count > 0) {
         if (pingTimer >= pingFreq) {
             PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
-            networkUtils.broadcast(pingMessage.toJson());
+            // networkUtils.broadcast(pingMessage.toJson());
             pingTimer = 0;
         } else {
             pingTimer += baseFreq * (baseSendFreq / baseFreq);
@@ -175,9 +185,8 @@ public class NetworkManager : MonoBehaviour {
         if (lobbyManager != null) {
             lobbyManager.SendMessages(connectedPlayers, disconnectedPlayers);
         }
-
-        if (encounterController != null) {
-            encounterController.SendMessages();
+        if (battleManager != null) {
+            battleManager.SendMessages(connectedPlayers, disconnectedPlayers);
         }
     }
 }

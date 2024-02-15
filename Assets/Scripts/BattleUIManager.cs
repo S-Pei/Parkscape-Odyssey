@@ -241,4 +241,11 @@ public class BattleUIManager : MonoBehaviour {
     public void CloseCardDescriptionPopUp() {
         popUpManager.closePopUp();
     }
+
+    public void UpdateMonsterStats(List<Monster> mosnters) {
+        Monster monsterToUpdate = mosnters[0];
+        GameObject enemyToUpdate = enemyPanel.transform.GetChild(0).gameObject;
+        MonsterRenderer monsterRenderer = enemyToUpdate.GetComponentInChildren<MonsterRenderer>();
+        monsterRenderer.UpdateMonsterHealth(monsterToUpdate);
+    }
 }

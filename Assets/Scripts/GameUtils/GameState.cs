@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Newtonsoft.Json;
 using UnityEngine.PlayerLoop;
 
@@ -40,6 +41,13 @@ public class GameState {
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
         CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
     };
+
+    // ENCOUNTER
+    private bool isInEncounter = false;
+    public List<Monster> encounterMonsters;
+    public List<List<SkillName>> skillSequences;
+
+    public Dictionary<string, string> partyMembers;
 
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
@@ -183,6 +191,18 @@ public class GameState {
         if (Initialized) {
             throw new InvalidOperationException("GameState already initialized.");
         }
+    }
+
+
+    // ------------------------------- ENCOUNTER -------------------------------
+    public void StartEncounter(List<Monster> monsters, List<List<SkillName>> skillSequences, Dictionary<string, string>  partyMembers) {
+        CheckInitialised();
+        if (isInEncounter)
+            return;
+        encounterMonsters = monsters;
+        this.skillSequences = skillSequences;
+        this.partyMembers = partyMembers;
+        isInEncounter = true;
     }
 }
 

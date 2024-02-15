@@ -42,7 +42,7 @@ public class LootController : MonoBehaviour
         destroyer = GetComponent<Destroyer>();
 
         // Generate cards loot and display on screen
-        Card[] cardsLoot = generateCardsLoot(EnemyLevel.BOSS);
+        Card[] cardsLoot = generateCardsLoot(GameState.Instance.encounterMonsters[0].level);
         lootUIManager.displayCardsLoot(cardsLoot);
     }
 

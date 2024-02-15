@@ -48,6 +48,9 @@ public class EncounterController : MonoBehaviour
     private int msgFreqCounter = 0;
 
     private bool receivedEncounter = false;
+    private bool inEncounterLobby = false;
+
+    private readonly Dictionary<string, string> partyMembers = new();
 
     public static EncounterController selfReference;
 
@@ -68,7 +71,6 @@ public class EncounterController : MonoBehaviour
         monsterController = monsterManager.GetComponent<MonsterController>();
 
         CreateMonsterSpawn(); // TEMPORARY
-
     }
 
     private void CreateMonsterSpawn() {
@@ -132,7 +134,7 @@ public class EncounterController : MonoBehaviour
         GameObject encounterLobby = Instantiate(encounterLobbyOverlay);
         
         encounterLobbyUIManager = encounterLobby.GetComponent<EncounterLobbyUIManager>();
-        encounterLobbyUIManager.LeaderEncounterLobbyInit(encounterId, monsters);
+        encounterLobbyUIManager.EncounterLobbyInit(encounterId, monsters, isLeader);
     }
 
     // shuffle monster skill indexes
@@ -155,12 +157,41 @@ public class EncounterController : MonoBehaviour
 
     // Called from encounter spawn manager when leader initiates the encounter lobby
     public void CreateEncounterLobby(string encounterId, List<Monster> monsters, List<List<SkillName>> skillSequences) {
-        // AcceptMessages = true;
-        SpawnEncounterLobby(encounterId, monsters, skillSequences);
         isLeader = true;
+        SpawnEncounterLobby(encounterId, monsters, skillSequences);
+
+        // Add self as a member of the party in the encounter lobby
+        partyMembers.Add(GameState.Instance.myID, GameState.Instance.PlayersDetails[GameState.Instance.myID].Name);
         
         // Broadcast to all players that an encounter has been found.
         encounterStatus = EncounterStatus.START_LOBBY;
+        BroadcastFoundEncounterMessage();
+    }
+
+
+    // Member accept join encounter
+    public void AcceptJoinEncounter() {
+        // AcceptMessages = true;
+        Debug.Log("Accepting join encounter");
+
+        // Send a message to the leader to request to join encounter.
+        encounterStatus = EncounterStatus.JOINING_LOBBY;
+        SendJoinEncounterMessage();
+    }
+
+    public void LeaderStartEncounter() {
+        // Save monster details for entering encounter
+        GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
+        Debug.Log("Leader Starting encounter");
+
+        SendStartEncounterMessage();
+        // AcceptMessages = false;
+    }
+
+    private void MemberStartEncounter() {
+        GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
+        Debug.Log("Member Starting encounter");
+        GameObject.FindGameObjectWithTag("EncounterLobby").GetComponent<EncounterLobbyUIManager>().StartEncounter();
     }
 
     // ------------------------------ P2P NETWORK ------------------------------
@@ -180,6 +211,7 @@ public class EncounterController : MonoBehaviour
                     // Leader adds player to the encounter lobby
                     Debug.Log("adding player to encounter lobby: " + encounterMessage.playerId);
                     string playerName = GameState.Instance.PlayersDetails[encounterMessage.playerId].Name;
+                    partyMembers.Add(encounterMessage.playerId, playerName);
                     encounterLobbyUIManager.MemberJoinedParty(playerName);
                     // sends monster info to other players 
                     SendJoinedEncounterConfirmationMessage();
@@ -191,29 +223,15 @@ public class EncounterController : MonoBehaviour
                     StopSendingJoinEncounterMessagesAndShowLobby(encounterMessage);
                 }
                 break;
+            case EncounterMessageType.START_ENCOUNTER:
+                // member receives notification from encounter leader to start encounter
+                if (!isLeader) {
+                    MemberStartEncounter();
+                }
+                break;
         }
 
         return CallbackStatus.PROCESSED;
-    }
-
-    public void SendMessages() {
-        if (network == null)
-            return;
-
-        if (!AcceptMessages) {
-            return;
-        }
-
-        if (encounterStatus == EncounterStatus.START_LOBBY) {
-            EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.FOUND_ENCOUNTER);
-            network.broadcast(encounterMessage.toJson());
-        }
-
-        if (encounterStatus == EncounterStatus.JOINING_LOBBY) {
-            EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.JOIN_ENCOUNTER);
-            Debug.Log("Sending join encounter message to leader: " + leaderId);
-            network.broadcast(encounterMessage.toJson());
-        }
     }
 
     private void BroadcastFoundEncounterMessage() {
@@ -221,16 +239,10 @@ public class EncounterController : MonoBehaviour
         network.broadcast(encounterMessage.toJson());
     }
 
-    public void AcceptJoinEncounter() {
-        // AcceptMessages = true;
-        Debug.Log("Accepting join encounter");
-
-        // Send a message to the leader to request to join encounter.
-        SendJoinEncounterMessage();
-    }
-
     public void SendJoinEncounterMessage() {
-        encounterStatus = EncounterStatus.JOINING_LOBBY;
+        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.JOIN_ENCOUNTER, sendTo:leaderId);
+        Debug.Log("Sending join encounter message to leader: " + leaderId);
+        network.broadcast(encounterMessage.toJson());
     }
 
     private void ShowEncounterFoundPopup() {
@@ -244,6 +256,11 @@ public class EncounterController : MonoBehaviour
                 child.GetComponent<Button>().onClick.AddListener(AcceptJoinEncounter);
             }
         }
+    }
+
+    private void SendStartEncounterMessage() {
+        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.START_ENCOUNTER);
+        network.broadcast(encounterMessage.toJson());
     }
 
     // Sends confirmation to player for joining encounter lobby together with monster details
@@ -263,7 +280,7 @@ public class EncounterController : MonoBehaviour
             levels.Add(monster.level);
         }
         EncounterMessage encounterMessage 
-          = new EncounterMessage(EncounterMessageType.JOINED_ENCOUNTER_CONFIRMATION,
+          = new EncounterMessage(EncounterMessageType.JOINED_ENCOUNTER_CONFIRMATION, partyMembers,
                                 monsterNames, health, defense, defenseAmount, baseDamage, skillSequences, levels, this.encounterId);
         network.broadcast(encounterMessage.toJson());
     }
@@ -271,7 +288,11 @@ public class EncounterController : MonoBehaviour
     private void StopSendingJoinEncounterMessagesAndShowLobby(EncounterMessage encounterMessage) {
         encounterStatus = EncounterStatus.JOINED_LOBBY;
         List<Monster> monsters = ProcessEncounterMessageWithMonsterInfo(encounterMessage);
-        SpawnEncounterLobby(encounterMessage.encounterId, monsters, encounterMessage.skills);
+        if (!inEncounterLobby) {
+            SpawnEncounterLobby(encounterMessage.encounterId, monsters, encounterMessage.skills);
+            inEncounterLobby = true;
+        }
+        ListPartyMembers(encounterMessage.members);
     }
 
     // Process List of monster info to make a list of monsters
@@ -302,6 +323,16 @@ public class EncounterController : MonoBehaviour
         }
         return skills;
     }
+
+    private void ListPartyMembers(Dictionary<string, string> members) {
+        foreach (string id in members.Keys) {
+            if (partyMembers.ContainsKey(id))
+                continue;
+            partyMembers.Add(id, members[id]);
+            string playerName = GameState.Instance.PlayersDetails[id].Name;
+            encounterLobbyUIManager.MemberJoinedParty(playerName);
+        }
+    }
 }
 
 
@@ -309,6 +340,7 @@ public enum EncounterMessageType {
     FOUND_ENCOUNTER,
     JOIN_ENCOUNTER,
     JOINED_ENCOUNTER_CONFIRMATION,
+    START_ENCOUNTER,
 }
 
 enum EncounterStatus {
@@ -324,6 +356,7 @@ public class EncounterMessage : MessageInfo
 {
     public MessageType messageType {get; set;}
     public EncounterMessageType Type {get; set;}
+    public Dictionary<string, string> members;
     public string playerId {get; set;}
     public List<MonsterName> names;
 
@@ -340,17 +373,22 @@ public class EncounterMessage : MessageInfo
     public List<EnemyLevel> level = new List<EnemyLevel>();
     public string encounterId = "";
 
-    public EncounterMessage(EncounterMessageType type) {
+    public string sendTo {get; set;}
+    public string sendFrom {get; set;}
+
+    public EncounterMessage(EncounterMessageType type, string sendTo = "") {
         messageType = MessageType.ENCOUNTERMESSAGE;
         playerId = GameState.Instance.myID;
         Type = type;
+        this.sendTo = sendTo;
     }
 
     [JsonConstructor]
-    public EncounterMessage(EncounterMessageType type, List<MonsterName> names, List<int> health, List<int> defense, List<int> defenseAmount, 
-        List<int> baseDamage, List<List<SkillName>> skills, List<EnemyLevel> level, string encounterId) {
+    public EncounterMessage(EncounterMessageType type, Dictionary<string, string> members, List<MonsterName> names, List<int> health, List<int> defense, List<int> defenseAmount, 
+        List<int> baseDamage, List<List<SkillName>> skills, List<EnemyLevel> level, string encounterId, string sendTo = "", string sendFrom = "") {
         messageType = MessageType.ENCOUNTERMESSAGE;
         Type = type;
+        this.members = members;
         this.names = names;
         Health = health;
         Defense = defense;
@@ -359,6 +397,8 @@ public class EncounterMessage : MessageInfo
         this.skills = skills;
         this.level = level;
         this.encounterId = encounterId;
+        this.sendTo = sendTo;
+        this.sendFrom = GameState.Instance.myID;
     }
 
     public string toJson() {
