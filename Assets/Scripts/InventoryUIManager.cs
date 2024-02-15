@@ -61,7 +61,6 @@ public class InventoryUIManager : MonoBehaviour
     }
 
     public void OpenInventory() {
-        closeCardTradePopUp();
         List<CardName> cards = GameState.Instance.MyCards;
         inventoryController.inventoryCards = cards;
 
@@ -77,6 +76,7 @@ public class InventoryUIManager : MonoBehaviour
         displayAllCards();
         addListenerForCards();
 
+        closeCardTradePopUp();
         gameObject.SetActive(true);
     }
 
