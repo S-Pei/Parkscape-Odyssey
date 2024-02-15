@@ -280,6 +280,9 @@ public class BattleManager : MonoBehaviour {
                 return false;
             }
         }
+
+        GameState.Instance.IsInEncounter = false;
+
         return true;
     }
 
