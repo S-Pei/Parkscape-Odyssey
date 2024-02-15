@@ -258,7 +258,7 @@ public class EncounterController : MonoBehaviour
                 ShowEncounterFoundPopup(encounterMessage.encounterId);
                 break;
             case EncounterMessageType.JOIN_ENCOUNTER:
-                if (isLeader) {
+                if (isLeader && encounterId == encounterMessage.encounterId) {
                     // Leader adds player to the encounter lobby
                     Debug.Log("adding player to encounter lobby: " + encounterMessage.playerId);
                     string playerName = GameState.Instance.PlayersDetails[encounterMessage.playerId].Name;
@@ -269,14 +269,14 @@ public class EncounterController : MonoBehaviour
                 }
                 break;
             case EncounterMessageType.JOINED_ENCOUNTER_CONFIRMATION:
-                if (!isLeader) {
+                if (!isLeader && encounterId == encounterMessage.encounterId) {
                     // Players stop sending join encounter messages to leader and processes monster info
                     StopSendingJoinEncounterMessagesAndShowLobby(encounterMessage);
                 }
                 break;
             case EncounterMessageType.START_ENCOUNTER:
                 // member receives notification from encounter leader to start encounter
-                if (!isLeader) {
+                if (!isLeader && encounterId == encounterMessage.encounterId) {
                     MemberStartEncounter();
                 }
                 break;
