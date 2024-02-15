@@ -175,7 +175,7 @@ public class NetworkManager : MonoBehaviour {
         if (networkUtils.getConnectedDevices().Count > 0) {
         if (pingTimer >= pingFreq) {
             PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
-            // networkUtils.broadcast(pingMessage.toJson());
+            networkUtils.broadcast(pingMessage.toJson());
             pingTimer = 0;
         } else {
             pingTimer += baseFreq * (baseSendFreq / baseFreq);
