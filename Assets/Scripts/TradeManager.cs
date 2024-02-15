@@ -29,33 +29,26 @@ public class TradeManager : MonoBehaviour {
     [SerializeField]
     private GameObject cardsManagerPrefab;
     private GameObject cardsManager;
-    private GameObject cardDisplay;
 
     private const string tradeDeclinedMessage = "Card was declined...";
     private const string tradeAcceptedMessage = "Card was accepted!";
     private const string tradeLostMessage = "The card was lost on the way...";
     private const string tradeCompleteMessage = "You received the card!";
-    private const string tradeIgnoredMessage = "The trade was ignored...";
 
     // Both player fields.
     private bool tradeInProgress = false;
     private bool acceptTrades = true;
     private bool acceptTrade = false;
-    private bool declineTrade = false;
 
     private NetworkUtils network;
 
     // Sender fields.
     private Player tradeTo;
-    private bool tradeAccepted = false;
-    private bool tradeDeclined = false;
+    private int cardID = -1;
 
     // Receiver fields.
-    private string tradeFromID;
+    private string tradeFromID = "";
     private CardName cardName;
-
-    private const int timeoutCount = 100; // 10 * 100ms = 1s
-    private const int msgFreq = 100; // 100ms
     
     // Start is called before the first frame update
     void Awake() {
@@ -79,70 +72,79 @@ public class TradeManager : MonoBehaviour {
         acceptTrades = true;
     }
 
+    public void CancelTrade() {
+        if (tradeInProgress) {
+            TradeMessage completeMessage = TradeMessage.CompleteMessage(cardName, GameState.Instance.MyPlayer.Id, tradeTo.Id);
+            network.broadcast(completeMessage.toJson());
+        }
+    }
+
     // Start the trade. 1st player sends a card to 2nd player.
-    public void StartTrade(Player player, Card card) {
-        tradeInProgress = true;
-        tradeAccepted = false;
-        tradeDeclined = false;
+    public void StartTrade(Player player, int cardID) {
+        // Can't start trade if cardID is invalid.
+        if (!GameState.Instance.HasCard(cardID)) {
+            inventoryMessage.text = "You don't have this card anymore!";
+            return;
+        }
+
+        // Can't start trade if one is already in progress.
+        if (tradeInProgress) {
+            inventoryMessage.text = "Trade with "+ player.Name +" in progress!";
+            return;
+        }
+
         tradeTo = player;
-
         inventoryMessage.text = "";
-        // Send message on a loop until reponse.
-        TradeMessage message = TradeMessage.SendMessage(card.name, GameState.Instance.MyPlayer.Id, player.Id);
-        int counter = 0;
-        while (counter < timeoutCount && !tradeAccepted && !tradeDeclined) {
-            network.broadcast(message.toJson());
-            counter++;
-            System.Threading.Thread.Sleep(msgFreq);
-        }
-
-        if (tradeAccepted) {
-            inventoryMessage.text = tradeAcceptedMessage;
-        } else if (tradeDeclined) {
-            inventoryMessage.text = tradeDeclinedMessage;
-            return;
-        } else {
-            inventoryMessage.text = tradeIgnoredMessage;
-            return;
-        }
-
-        // Trade was accepted, remove card from inventory.
-        GameState.Instance.RemoveCard(card.name);
-
-        // MessageHandler will handle the rest of the trade.
+        this.cardID = cardID; 
+        cardName = GameState.Instance.GetCard(cardID);
+        TradeMessage message = TradeMessage.SendMessage(cardName, GameState.Instance.MyPlayer.Id, player.Id);
+        network.broadcast(message.toJson());
+        tradeInProgress = true;
     }
 
     // Happens at end of trade or when trade is cancelled.
     public void CloseTrade() {
+        // Decline if trade was not accepted.
+        if (!acceptTrade && tradeInProgress)
+            DeclineTrade();
+        else
+            Reset();
+    }
+
+    public void Reset() {
+        // Don't reset if player is receiving a trade.
+        if (tradeFromID != "" && tradeInProgress)
+            return;
+
+        CancelTrade();
         // Close trade UI
         gameObject.SetActive(false);
         tradeTo = null;
-        tradeInProgress = false;
-        tradeAccepted = false;
-        tradeDeclined = false;
         tradeFromID = null;
         acceptTrade = false;
-        declineTrade = false;
+        tradeInProgress = false;
         tradeFromID = "";
+        cardID = -1;
     }
 
     // For the second player to accept the trade with their card.
     public void AcceptTrade() {
         acceptTrade = true;
-        declineTrade = false;
+
+        TradeMessage acceptMessage = TradeMessage.AcceptMessage(cardName, GameState.Instance.MyPlayer.Id, tradeFromID);
+        network.broadcast(acceptMessage.toJson());
 
         CloseInterface();
     }
 
     // For the second player to decline the trade. 
     public void DeclineTrade() {
-        declineTrade = true;
         acceptTrade = false;
 
-        if (!tradeInProgress) {
-            declineTrade = false;
-        }
-        CloseTrade();
+        TradeMessage declineMessage = TradeMessage.DeclineMessage(cardName, GameState.Instance.MyPlayer.Id, tradeFromID);
+        network.broadcast(declineMessage.toJson());
+
+        Reset();
     }
 
     public void CloseInterface() {
@@ -152,9 +154,6 @@ public class TradeManager : MonoBehaviour {
     public void OpenInterface() {
         interfaceParent.SetActive(true);
     }
-
-    private int msgCounter = 0;
-    private const int maxMsgCounter = 50;
 
     public CallbackStatus HandleMessage(Message message) {
         if (message.messageInfo.messageType != MessageType.TRADE) {
@@ -166,87 +165,86 @@ public class TradeManager : MonoBehaviour {
         }
 
         TradeMessage tradeMessage = (TradeMessage) message.messageInfo;
-        if (tradeMessage.type == TradeMessageType.TRADE_SEND) { // Receiver
-            // Set up trade UI
-            Player sender = GameState.Instance.GetPlayerByID(tradeMessage.sentFrom);
-            playerName.text = sender.Name;
-            ((Image) playerIcon.GetComponentInChildren(typeof(Image))).sprite = sender.Icon;
 
-            // Get the card to be displayed in the trade UI
-            Card card = cardsManager.GetComponent<CardsUIManager>().findCardDetails(tradeMessage.cardName);
-            cardObject.GetComponent<CardRenderer>().RenderCard(card);
-
-            // Open trade UI
-            tradeFromID = tradeMessage.sentFrom;
-            cardName = tradeMessage.cardName;
-            tradeInProgress = true;
-            
-            tradeMessageObject.text = "";
-            OpenInterface();
-            gameObject.SetActive(true);
-        } else if (tradeMessage.type == TradeMessageType.TRADE_ACCEPT) { // Sender
-            tradeAccepted = true;
-        } else if (tradeMessage.type == TradeMessageType.TRADE_DECLINE) { // Sender
-            tradeDeclined = true;
-            tradeInProgress = false;
-        } else if (tradeMessage.type == TradeMessageType.TRADE_COMPLETE) { // Receiver
-            // Add card to inventory
-            GameState.Instance.AddCard(tradeMessage.cardName);
-
-            acceptTrade = false;
-            tradeInProgress = false;
-
-            inventoryMessage.text = tradeCompleteMessage;
-            CloseInterface();
+        // If the message is not for the current player, ignore it. 
+        if (tradeMessage.sendTo != GameState.Instance.MyPlayer.Id) {
+            Debug.Log("Trade message not for me:" + tradeMessage.toJson());
+            Debug.Log("My ID: " + GameState.Instance.MyPlayer.Id);
+            return CallbackStatus.PROCESSED;
         }
 
-        // Potential timeout for receiver when acceptTrade is true and have not received a TRADE_COMPLETE message.
-        if (acceptTrade && tradeInProgress) {
-            msgCounter++;
-        }
-
-        // Timeout occured, stop trade.
-        if (msgCounter >= maxMsgCounter) {
-            msgCounter = 0;
-
-            // Trigger lost card
-            if (tradeInProgress) {
-                tradeMessageObject.text = tradeLostMessage;
-                CloseInterface();
-            }
-
-            tradeInProgress = false;
-        }
-
-        return CallbackStatus.PROCESSED;
-    }
-
-    private int msgFreqCounter = 0;
-
-    public void SendMessages() {
-        if (msgFreqCounter < msgFreq * 0.1) {
-            msgFreqCounter++;
-            return;
-        }
-
-        msgFreqCounter = 0;
-
-        // Perform for the next 10 interations, otherwise stop
-        string myID = GameState.Instance.MyPlayer.Id;
+        // If a trade is in progress ignore other trade requests, post-TRADE_SEND message.
         if (tradeInProgress) {
-            // Send message to the sender
-            if (acceptTrade) {
-                TradeMessage message = TradeMessage.AcceptMessage(cardName, myID, tradeFromID);
-                network.broadcast(message.toJson());
-            } else if (declineTrade) {
-                TradeMessage message = TradeMessage.DeclineMessage(cardName, myID, tradeFromID);
-                network.broadcast(message.toJson());
-            } else if (tradeAccepted) {
-                // Send message to the receiver
-                TradeMessage message = TradeMessage.CompleteMessage(cardName, myID, tradeTo.Id);
-                network.broadcast(message.toJson());
-            } 
+            // If I am sender but message not from my chosen player.
+            if (tradeTo != null && tradeMessage.sentFrom != tradeTo.Id) {
+                Debug.Log("Completely shouldn't have gotten this message:" + tradeMessage.toJson());
+                return CallbackStatus.PROCESSED;
+            } else if (tradeFromID != "" && tradeMessage.sentFrom != tradeFromID) {
+                // If I am receiver but message not from the original sender.
+                // Send a decline message.
+                TradeMessage declineMessage = TradeMessage.DeclineMessage(tradeMessage.cardName, tradeMessage.sentFrom, GameState.Instance.MyPlayer.Id);
+                network.broadcast(declineMessage.toJson());
+                return CallbackStatus.PROCESSED;
+            }
         }
+
+        switch (tradeMessage.type) {
+            case TradeMessageType.TRADE_SEND:
+                // Set up trade UI
+                Player sender = GameState.Instance.GetPlayerByID(tradeMessage.sentFrom);
+                playerName.text = sender.Name;
+                ((Image) playerIcon.GetComponentInChildren(typeof(Image))).sprite = sender.Icon;
+
+                // Get the card to be displayed in the trade UI
+                Card card = cardsManager.GetComponent<CardsUIManager>().findCardDetails(tradeMessage.cardName);
+                cardObject.GetComponent<CardRenderer>().RenderCard(card);
+
+                // Open trade UI
+                tradeFromID = tradeMessage.sentFrom;
+                cardName = tradeMessage.cardName;
+                
+                tradeMessageObject.text = "";
+                OpenInterface();
+                gameObject.SetActive(true);
+
+                tradeInProgress = true;
+                break;
+            case TradeMessageType.TRADE_ACCEPT:
+                if (tradeMessage.cardName != cardName) {
+                    Debug.Log("Trade message card name does not match:" + tradeMessage.toJson());
+                    return CallbackStatus.PROCESSED;
+                }
+
+                Debug.Log("Got trade response message:" + tradeMessage.toJson());
+                Debug.Log("Trade to ID:" + tradeTo.Id);
+
+                inventoryMessage.text = tradeAcceptedMessage;
+                GameState.Instance.RemoveCard(cardID);
+
+                TradeMessage completeMessage = TradeMessage.CompleteMessage(tradeMessage.cardName, GameState.Instance.MyPlayer.Id, tradeTo.Id);
+                network.broadcast(completeMessage.toJson());
+                tradeInProgress = false;
+                break;
+            case TradeMessageType.TRADE_DECLINE:
+                inventoryMessage.text = tradeDeclinedMessage;
+                tradeInProgress = false;
+                break;
+            case TradeMessageType.TRADE_COMPLETE:
+                // Add card to inventory
+                if (acceptTrade && tradeMessage.sendTo == GameState.Instance.MyPlayer.Id) {
+                    GameState.Instance.AddCard(tradeMessage.cardName);
+                    tradeMessageObject.text = tradeCompleteMessage;
+                } else {
+                    tradeMessageObject.text = tradeLostMessage;
+                }
+
+                tradeInProgress = false;
+                CloseInterface();
+                break;
+            default:
+                break;
+        }
+        return CallbackStatus.PROCESSED;
     }
 }
 

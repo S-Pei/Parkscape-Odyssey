@@ -61,7 +61,7 @@ public class InventoryUIManager : MonoBehaviour
     }
 
     public void OpenInventory() {
-        List<CardName> cards = GameState.Instance.MyCards;
+        List<CardName> cards = GameState.Instance.GetCards();
         inventoryController.inventoryCards = cards;
 
         // Clear text from trade message.
@@ -81,10 +81,10 @@ public class InventoryUIManager : MonoBehaviour
     }
 
     private void displayAllCards() {
-        List<CardName> cardsNames = inventoryController.inventoryCards;
         int i = 0;
-        foreach (CardName cardName in cardsNames) {
-            GameObject newCard = displayCardAndApplyIndex(cardName, i);
+        foreach (int cardID in GameState.Instance.GetCardIDs()) {
+            GameObject newCard = displayCardAndApplyIndex(GameState.Instance.GetCard(cardID), i);
+            newCard.name = cardID.ToString();
             if (newCard != null) {
                 cardsDisplaying.Add(newCard);
                 i ++;
@@ -125,6 +125,7 @@ public class InventoryUIManager : MonoBehaviour
         CardRenderer cardRenderer = focusedCard.GetComponentInChildren<CardRenderer>();
         cardRenderer.RenderCard(cardDetails);
         
+        focusedCard.name = card.name;
         focusedCard.tag = "CardsInventoryFocusedCard";
         cardRenderer.ScaleCardSize(10f);
 
@@ -162,8 +163,8 @@ public class InventoryUIManager : MonoBehaviour
                 if (focusedCard == null)
                     return;
 
-                Card cardDetails = focusedCard.GetComponent<CardRenderer>().GetCardDetails();
-                TradeManager.selfReference.StartTrade(p, cardDetails);
+                string cardObjectName = focusedCard.name;
+                TradeManager.selfReference.StartTrade(p, int.Parse(cardObjectName));
             });
         }
     }
