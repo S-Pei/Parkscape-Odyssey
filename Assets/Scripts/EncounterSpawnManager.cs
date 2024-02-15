@@ -23,4 +23,8 @@ public class EncounterSpawnManager : MonoBehaviour
         encounterManager.GetComponent<EncounterController>()
             .CreateEncounterLobby(encounterId, monsters, skillSequences);
     }
+
+    public string GetEncounterId() {
+        return encounterId;
+    }
 }

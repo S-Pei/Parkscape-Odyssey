@@ -235,6 +235,9 @@ public class EncounterController : MonoBehaviour
         GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
         Debug.Log("Leader Starting encounter");
 
+        // Close the encounter spawn
+        CloseEncounterSpawn();
+
         SendStartEncounterMessage();
         // AcceptMessages = false;
     }
@@ -243,6 +246,13 @@ public class EncounterController : MonoBehaviour
         GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
         Debug.Log("Member Starting encounter");
         GameObject.FindGameObjectWithTag("EncounterLobby").GetComponent<EncounterLobbyUIManager>().StartEncounter();
+    }
+
+    private void CloseEncounterSpawn() {
+        GameObject encounter = encountersSpawned.Find((spawn) => spawn.GetComponent<EncounterSpawnManager>().GetEncounterId() == encounterId);
+        if (encounter != null) {
+            Destroy(encounter);
+        }
     }
 
     // ------------------------------ P2P NETWORK ------------------------------
