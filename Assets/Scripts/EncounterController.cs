@@ -54,6 +54,8 @@ public class EncounterController : MonoBehaviour
 
     public static EncounterController selfReference;
 
+    private GameObject encounterFoundPopupInstance;
+
     void Awake() {
         if (!selfReference) {
 			selfReference = this;
@@ -172,6 +174,7 @@ public class EncounterController : MonoBehaviour
     public void AcceptJoinEncounter() {
         // AcceptMessages = true;
         Debug.Log("Accepting join encounter");
+        Destroy(encounterFoundPopupInstance);
 
         // Send a message to the leader to request to join encounter.
         SendJoinEncounterMessage();
@@ -250,6 +253,7 @@ public class EncounterController : MonoBehaviour
                 child.GetComponent<Button>().onClick.AddListener(AcceptJoinEncounter);
             }
         }
+        encounterFoundPopupInstance = popup;
     }
 
     private void SendStartEncounterMessage() {
