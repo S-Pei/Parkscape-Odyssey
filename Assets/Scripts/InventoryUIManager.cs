@@ -27,7 +27,7 @@ public class InventoryUIManager : MonoBehaviour
     [SerializeField]
     private GameObject nearbyPlayerPrefab;
     private int updateCount = 0;
-    private const int updateCountMax = 100;
+    private const int updateCountMax = 50;
 
     [SerializeField]
     private TMP_Text tradeMessage;
@@ -182,7 +182,7 @@ public class InventoryUIManager : MonoBehaviour
         }
         updateCount = 0;
         
-        // Grey out the playuers that are not nearby
+        // Grey out the players that are not nearby
         foreach (Transform child in nearbyPlayersGrid.transform) {
             if (NetworkManager.Instance.connectedPlayers.ContainsKey(child.name)) {
                 child.GetComponent<Button>().interactable = true;
