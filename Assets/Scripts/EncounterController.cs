@@ -164,7 +164,6 @@ public class EncounterController : MonoBehaviour
         partyMembers.Add(GameState.Instance.myID, GameState.Instance.PlayersDetails[GameState.Instance.myID].Name);
         
         // Broadcast to all players that an encounter has been found.
-        encounterStatus = EncounterStatus.START_LOBBY;
         BroadcastFoundEncounterMessage();
     }
 
@@ -175,7 +174,6 @@ public class EncounterController : MonoBehaviour
         Debug.Log("Accepting join encounter");
 
         // Send a message to the leader to request to join encounter.
-        encounterStatus = EncounterStatus.JOINING_LOBBY;
         SendJoinEncounterMessage();
     }
 
@@ -246,10 +244,6 @@ public class EncounterController : MonoBehaviour
     }
 
     private void ShowEncounterFoundPopup() {
-        if (encounterStatus == EncounterStatus.JOINING_LOBBY || encounterStatus == EncounterStatus.RECEIVED_ENCOUNTER_POPUP) {
-            return;
-        }
-        encounterStatus = EncounterStatus.RECEIVED_ENCOUNTER_POPUP;
         GameObject popup = Instantiate(encounterFoundPopup, gameplayCanvas.transform);
         foreach (Transform child in popup.transform) {
             if (child.name == "YesButton") {
@@ -286,7 +280,6 @@ public class EncounterController : MonoBehaviour
     }
 
     private void StopSendingJoinEncounterMessagesAndShowLobby(EncounterMessage encounterMessage) {
-        encounterStatus = EncounterStatus.JOINED_LOBBY;
         List<Monster> monsters = ProcessEncounterMessageWithMonsterInfo(encounterMessage);
         if (!inEncounterLobby) {
             SpawnEncounterLobby(encounterMessage.encounterId, monsters, encounterMessage.skills);
