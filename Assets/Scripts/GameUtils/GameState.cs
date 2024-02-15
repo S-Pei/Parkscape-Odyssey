@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Newtonsoft.Json;
-using UnityEngine.PlayerLoop;
 
 public class GameState {
-    private static bool DEBUGMODE = false;
+    private static readonly bool DEBUGMODE = false;
     private static readonly Lazy<GameState> LazyGameState = new(() => new GameState());
 
     public static GameState Instance { get {
@@ -30,17 +28,16 @@ public class GameState {
     public List<Player> OtherPlayers = new();
 
     public Dictionary<string, Player> PlayersDetails = new();
-    public List<CardName> MyCards = new() {
-        CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
-        CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
-    };
+    private Dictionary<int, CardName> MyCards = new();
     public bool IsInEncounter = false;
     public int Score = 0;
 
-    private List<CardName> InitialCards = new List<CardName> { 
+    private readonly List<CardName> InitialCards = new() { 
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
         CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
     };
+
+    private int cardID = 0;
 
     // ENCOUNTER
     private bool isInEncounter = false;
@@ -71,10 +68,9 @@ public class GameState {
             }
         }
 
-        // Set initial cards.
-        MyCards = InitialCards;
         this.myID = myID;
         Initialized = true;
+        InitialiseCards();
     }
 
     // Method to specify the initial state of the game.
@@ -83,8 +79,9 @@ public class GameState {
         RoomCode = roomCode;
         MyPlayer = myPlayer;
         OtherPlayers = otherPlayers;
-        MyCards = initialCards;
+
         Initialized = true;
+        InitialiseCards();
     }
 
     // This method returns a reference to a player with the given name.
@@ -117,12 +114,41 @@ public class GameState {
 
     public void AddCard(CardName card) {
         CheckInitialised();
-        MyCards.Add(card);
+        cardID++;
+        MyCards.Add(cardID, card);
     }
 
-    public void RemoveCard(CardName card) {
+    public void RemoveCard(int cardID) {
         CheckInitialised();
-        MyCards.Remove(card);
+        MyCards.Remove(cardID);
+    }
+
+    public List<CardName> GetCards() {
+        CheckInitialised();
+        return new List<CardName>(MyCards.Values);
+    }
+
+    public bool HasCard(int cardID) {
+        CheckInitialised();
+        return MyCards.ContainsKey(cardID);
+    }
+
+    public CardName GetCard(int cardID) {
+        CheckInitialised();
+        return MyCards[cardID];
+    }
+
+    public List<int> GetCardIDs() {
+        CheckInitialised();
+        return new List<int>(MyCards.Keys);
+    }
+
+    public void InitialiseCards() {
+        MyCards = new();
+        cardID = 0;
+        foreach (CardName card in InitialCards) {
+            AddCard(card);
+        }
     }
 
     public GameStateMessage ToMessage() {
@@ -160,9 +186,9 @@ public class GameState {
         // Initialise other fields
         RoomCode = roomCode;
         this.myID = myID;
-        MyCards = InitialCards;
-
+        
         Initialized = true;
+        InitialiseCards();
     }
 
     public void UpdateFromMessage(GameStateMessage message) {
@@ -175,9 +201,9 @@ public class GameState {
         MyPlayer = null;
         OtherPlayers = new();
         PlayersDetails = new();
-        MyCards = InitialCards;
         IsInEncounter = false;
         Score = 0;
+        InitialiseCards();
         Initialized = false;
     }
 

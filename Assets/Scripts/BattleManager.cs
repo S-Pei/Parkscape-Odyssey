@@ -111,7 +111,7 @@ public class BattleManager : MonoBehaviour {
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         // Shuffle the player's cards
-        allCards = new List<CardName>(GameState.Instance.MyCards);
+        allCards = new List<CardName>(GameState.Instance.GetCards());
         Shuffle(this.allCards);
 
         // Add the shuffled cards to a queue to draw from
