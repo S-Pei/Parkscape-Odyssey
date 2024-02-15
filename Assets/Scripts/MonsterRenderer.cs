@@ -14,6 +14,9 @@ public class MonsterRenderer : MonoBehaviour
     private GameObject monsterImgObj;
     private Image monsterImgRenderer;
 
+    private float healthBarWidth = 0.0f;
+    private float monsterMaxHealth = 0;
+
     void Awake() {
         monsterImgObj = transform.GetChild(0).gameObject;
         monsterImgRenderer = monsterImgObj.GetComponentInChildren<Image>();
@@ -53,6 +56,12 @@ public class MonsterRenderer : MonoBehaviour
         TextMeshProUGUI textComp = monsterHealthValue.GetComponentInChildren<TextMeshProUGUI>();
         textComp.text = monster.Health.ToString();
         monsterHealth = monster.Health;
+
+        // Save monster max health
+        monsterMaxHealth = monster.Health;
+
+        // Save monster health bar width
+        healthBarWidth = monsterHealthObj.transform.GetChild(0).gameObject.GetComponent<RectTransform>().rect.width;
     }
 
     public Monster getMonsterDetails() {
@@ -65,5 +74,12 @@ public class MonsterRenderer : MonoBehaviour
         TextMeshProUGUI textComp = monsterHealthValue.GetComponentInChildren<TextMeshProUGUI>();
         textComp.text = monster.Health.ToString();
         monsterHealth = monster.Health;
+
+        // Update health bar width
+        GameObject healthBar = monsterHealthObj.transform.GetChild(0).gameObject;
+        RectTransform healthBarRect = healthBar.GetComponent<RectTransform>();
+        float height = healthBarRect.rect.height;
+        float newWidth = monster.Health / monsterMaxHealth * healthBarWidth;
+        healthBarRect.sizeDelta = new Vector2(newWidth, height);
     }
 }

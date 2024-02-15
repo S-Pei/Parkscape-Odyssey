@@ -344,6 +344,7 @@ public class BattleManager : MonoBehaviour {
         UpdateOtherPlayerStats();
         UpdateMonsterStats();
         monsterSkillIndex++;
+        monsterSkillIndex %= skillsSequences[0].Count;
     }
 
     // Update monster stats based on played cards
