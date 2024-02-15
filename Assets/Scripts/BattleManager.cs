@@ -77,6 +77,7 @@ public class BattleManager : MonoBehaviour {
     private int monsterSkillIndex = 0;
 
     void Awake() {
+        Debug.Log("BattleManager Awake");
         if (!selfReference) {
             selfReference = this;
             gameManager = FindObjectOfType<GameManager>();
@@ -97,6 +98,8 @@ public class BattleManager : MonoBehaviour {
     }
 
     void Start() {
+        Debug.Log("BattleManager Start");
+
         // Search for the CardsUIManager here because in Awake() it is not initialised yet
         cardsUIManager = (CardsUIManager) FindObjectOfType(typeof(CardsUIManager));
 
