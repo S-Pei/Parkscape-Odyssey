@@ -37,7 +37,7 @@ public class EncounterController : MonoBehaviour
     // current encounter monster details
     private List<Monster> monsters;
     private List<List<SkillName>> skillSequences;
-    private string encounterId;
+    private string encounterId = "";
     private bool isLeader = false;
 
     // p2p network
@@ -56,6 +56,12 @@ public class EncounterController : MonoBehaviour
 
     private GameObject encounterFoundPopupInstance;
 
+    private List<GameObject> encountersSpawned = new List<GameObject>();
+    private Queue<string> encountersFoundQueue = new Queue<string>();
+
+    private float MAX_SPAWN_AREA_X = 350f;
+    private float MAX_SPAWN_AREA_Y = 700f;
+
     void Awake() {
         if (!selfReference) {
 			selfReference = this;
@@ -72,6 +78,7 @@ public class EncounterController : MonoBehaviour
         encounterUIManager = GetComponent<EncounterUIManager>();
         monsterController = monsterManager.GetComponent<MonsterController>();
 
+        CreateMonsterSpawn(); // TEMPORARY
         CreateMonsterSpawn(); // TEMPORARY
     }
 
@@ -91,7 +98,13 @@ public class EncounterController : MonoBehaviour
         encounterSpawnManager.EncounterSpawnInit(encounterId, monsters, skillSequences);
 
         // TODO: Set the position of the monster to predetermined position with an algorithm.
-        monsterSpawn.transform.localPosition = new Vector3(0, 0, 0);
+        Vector3 randomPos = new Vector3(
+            UnityEngine.Random.Range(-MAX_SPAWN_AREA_X, MAX_SPAWN_AREA_X), 
+            UnityEngine.Random.Range(-MAX_SPAWN_AREA_Y, MAX_SPAWN_AREA_Y),
+            0);
+        monsterSpawn.transform.localPosition = randomPos;
+        encountersSpawned.Add(monsterSpawn);
+        Debug.Log($"Created encounter spawn: {encounterId}");
     }
 
     private List<Monster> GenerateEncounterMonsters() {
@@ -167,17 +180,54 @@ public class EncounterController : MonoBehaviour
         
         // Broadcast to all players that an encounter has been found.
         BroadcastFoundEncounterMessage();
-    }
 
+        inEncounterLobby = true;
+    }
 
     // Member accept join encounter
     public void AcceptJoinEncounter() {
         // AcceptMessages = true;
         Debug.Log("Accepting join encounter");
-        Destroy(encounterFoundPopupInstance);
+        CloseEncounterFoundPopup(accept:true);
 
         // Send a message to the leader to request to join encounter.
         SendJoinEncounterMessage();
+    }
+
+    IEnumerator DelayShowEncounterFoundPopup(string encounterId) {
+        yield return new WaitForSeconds(1);
+        ShowEncounterFoundPopup(encounterId);
+    }
+
+    // Show encounter found popup
+    private void ShowEncounterFoundPopup(string encounterId) {
+        if (encounterFoundPopupInstance != null) {
+            encountersFoundQueue.Enqueue(encounterId);
+            return;
+        }
+        this.encounterId = encounterId;
+        GameObject popup = Instantiate(encounterFoundPopup, gameplayCanvas.transform);
+        foreach (Transform child in popup.transform) {
+            if (child.name == "YesButton") {
+                child.GetComponent<Button>().onClick.AddListener(AcceptJoinEncounter);
+            }
+        }
+        encounterFoundPopupInstance = popup;
+    }
+
+    // Close encounter found popup
+    public void CloseEncounterFoundPopup(bool accept = false) {
+        GameObject popUpInstance = encounterFoundPopupInstance;
+        Destroy(popUpInstance);
+        encounterFoundPopupInstance = null;
+        if (!accept) {
+            if (encountersFoundQueue.Count > 0) {
+                string encounterId = encountersFoundQueue.Dequeue();
+                StartCoroutine(DelayShowEncounterFoundPopup(encounterId));
+            } else {
+                encounterId = "";
+            }
+        }
     }
 
     public void LeaderStartEncounter() {
@@ -204,8 +254,8 @@ public class EncounterController : MonoBehaviour
         EncounterMessage encounterMessage = (EncounterMessage) message.messageInfo;
         switch (encounterMessage.Type) {
             case EncounterMessageType.FOUND_ENCOUNTER:
-                // Leader broadcast to all players that an encounter has been found.
-                ShowEncounterFoundPopup();
+                // Encounter found by another player, show encounter found pop up.
+                ShowEncounterFoundPopup(encounterMessage.encounterId);
                 break;
             case EncounterMessageType.JOIN_ENCOUNTER:
                 if (isLeader) {
@@ -236,24 +286,14 @@ public class EncounterController : MonoBehaviour
     }
 
     private void BroadcastFoundEncounterMessage() {
-        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.FOUND_ENCOUNTER);
+        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.FOUND_ENCOUNTER, encounterId : encounterId);
         network.broadcast(encounterMessage.toJson());
     }
 
     public void SendJoinEncounterMessage() {
-        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.JOIN_ENCOUNTER, sendTo:leaderId);
+        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.JOIN_ENCOUNTER, encounterId : encounterId, sendTo:leaderId);
         Debug.Log("Sending join encounter message to leader: " + leaderId);
         network.broadcast(encounterMessage.toJson());
-    }
-
-    private void ShowEncounterFoundPopup() {
-        GameObject popup = Instantiate(encounterFoundPopup, gameplayCanvas.transform);
-        foreach (Transform child in popup.transform) {
-            if (child.name == "YesButton") {
-                child.GetComponent<Button>().onClick.AddListener(AcceptJoinEncounter);
-            }
-        }
-        encounterFoundPopupInstance = popup;
     }
 
     private void SendStartEncounterMessage() {
@@ -279,7 +319,7 @@ public class EncounterController : MonoBehaviour
         }
         EncounterMessage encounterMessage 
           = new EncounterMessage(EncounterMessageType.JOINED_ENCOUNTER_CONFIRMATION, partyMembers,
-                                monsterNames, health, defense, defenseAmount, baseDamage, skillSequences, levels, this.encounterId);
+                                monsterNames, health, defense, defenseAmount, baseDamage, skillSequences, levels, encounterId : encounterId);
         network.broadcast(encounterMessage.toJson());
     }
 
@@ -373,16 +413,17 @@ public class EncounterMessage : MessageInfo
     public string sendTo {get; set;}
     public string sendFrom {get; set;}
 
-    public EncounterMessage(EncounterMessageType type, string sendTo = "") {
+    public EncounterMessage(EncounterMessageType type, string encounterId = "", string sendTo = "") {
         messageType = MessageType.ENCOUNTERMESSAGE;
         playerId = GameState.Instance.myID;
         Type = type;
+        this.encounterId = encounterId;
         this.sendTo = sendTo;
     }
 
     [JsonConstructor]
     public EncounterMessage(EncounterMessageType type, Dictionary<string, string> members, List<MonsterName> names, List<int> health, List<int> defense, List<int> defenseAmount, 
-        List<int> baseDamage, List<List<SkillName>> skills, List<EnemyLevel> level, string encounterId, string sendTo = "", string sendFrom = "") {
+        List<int> baseDamage, List<List<SkillName>> skills, List<EnemyLevel> level, string encounterId = "", string sendTo = "", string sendFrom = "") {
         messageType = MessageType.ENCOUNTERMESSAGE;
         Type = type;
         this.members = members;
