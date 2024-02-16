@@ -35,6 +35,7 @@ public class GameState {
 
     public Dictionary<string, Player> PlayersDetails = new();
     private Dictionary<int, CardName> MyCards = new();
+    public bool isLeader = false;
     public bool IsInEncounter = false;
     public int Score = 0;
 
