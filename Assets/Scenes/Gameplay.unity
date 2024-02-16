@@ -3151,7 +3151,6 @@ GameObject:
   - component: {fileID: 1920711991}
   - component: {fileID: 1920711990}
   - component: {fileID: 1920711989}
-  - component: {fileID: 1920711988}
   - component: {fileID: 1920711987}
   - component: {fileID: 1920711986}
   - component: {fileID: 1920711985}
@@ -3211,7 +3210,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16b1021f9cb8215439219e0216e34c1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _camera: {fileID: 0}
+  _camera: {fileID: 2047468666}
 --- !u!114 &1920711986
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3254,18 +3253,6 @@ MonoBehaviour:
   _font: {fileID: 12800000, guid: 9d4315a4e086e41c3bea703a2a065b76, type: 3}
   _textColor: {r: 0, g: 0, b: 0, a: 0.42}
   _mapCopyrightAlignment: 0
---- !u!114 &1920711988
-MonoBehaviour:
-  m_ObjectHideFlags: 2
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1920711982}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 243684798, guid: f58183a31672bf641bbeeaef3d4759c0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1920711989
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -3282,7 +3269,7 @@ MonoBehaviour:
   _imageryType: 0
   _areRoadsEnabled: 1
   _areLabelsEnabled: 0
-  _isHillShadingEnabled: 1
+  _isHillShadingEnabled: 0
   _imageryStyle: 5
 --- !u!114 &1920711990
 MonoBehaviour:
@@ -3300,15 +3287,15 @@ MonoBehaviour:
   _mapSession: {fileID: 1920711991}
   _mapEdgeColor: {r: 0.62352943, g: 0.64705884, b: 0.69411767, a: 1}
   _mapEdgeColorFadeDistance: 0.02
-  _detailOffset: 0
+  _detailOffset: 1
   _numElevationTileFallbackLods: 2
   _requestTilesAroundView: 1
   _center:
     _latitude: 51.5084634752551
     _longitude: -0.166803282632287
-  _zoomLevel: 15.7
-  _minimumZoomLevel: 12.49
-  _maximumZoomLevel: 16.95
+  _zoomLevel: 17.77
+  _minimumZoomLevel: 15.19
+  _maximumZoomLevel: 17.77
   _mapTerrainType: 2
   _mapShape: 0
   _localMapDimension: {x: 0.8, y: 1.6}
@@ -3319,7 +3306,7 @@ MonoBehaviour:
   _receiveShadows: 1
   _enableMrtkMaterialIntegration: 1
   _terrainMaterial: {fileID: 2100000, guid: f7a08581c9b1f814e89eaa71445f0b29, type: 2}
-  _isClippingVolumeWallEnabled: 1
+  _isClippingVolumeWallEnabled: 0
   _clippingVolumeMaterial: {fileID: 2100000, guid: d35f8f2bbaf569a418c0ddbcaa384840,
     type: 2}
   _clippingVolumeDistanceTextureResolution: 2
@@ -3328,8 +3315,7 @@ MonoBehaviour:
     _list:
     - {fileID: 1920711989}
   _elevationTileLayers:
-    _list:
-    - {fileID: 1920711988}
+    _list: []
   _hideTileLayerComponents: 1
   _mapColliderType: 1
   _mapCollider: {fileID: 1920711984}
