@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -17,20 +16,21 @@ public class LobbyUIManager : MonoBehaviour
     private PopUpManager lobbyPopUpManager;
     private PopUpManager startGameButtonPopUpManager;
 
-    private List<string> playerNames = new List<string>();
+    private List<string> playerNames = new();
     private int updateCounter = 0;
     private float spinCounter = 0;
     private int spinDuration = 1;
 
     void Start() {
         // Ensure pop up is closed at start.
-        lobbyPopUpManager = (PopUpManager) GetComponent(typeof(PopUpManager));
+        lobbyPopUpManager = GetComponent<PopUpManager>();
         lobbyPopUpManager.closePopUp();
         startGameButtonPopUpManager = (PopUpManager) startGameButton.GetComponent(typeof(PopUpManager));
     } 
 
     // Called when code is submitted in the room selection pop up
     public void SetUpLobby(string roomCode, bool isLeader) {
+        Debug.Log("Setting up lobby with room code " + roomCode);
         this.roomCode = roomCode;
         this.isLeader = isLeader;
         roomCodeText.text = roomCode;
@@ -51,7 +51,11 @@ public class LobbyUIManager : MonoBehaviour
 
     public void AddPlayer(string name) {
         playerNames.Add(name);
-        updateCounter++;
+        foreach (string player in playerNames) {
+            Debug.Log(player);
+        }
+        DisplayPlayerList();
+        // updateCounter++;
     }
 
     public void RemovePlayer(string name) {
@@ -74,6 +78,7 @@ public class LobbyUIManager : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
+        // Debug.Log("LobbyUIManager Update");
         if (!inLobby || updateCounter == 0)
             return;
         

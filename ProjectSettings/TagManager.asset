@@ -7,6 +7,13 @@ TagManager:
   - CardsManager
   - CardsInventoryContent
   - CardsInventoryFocusedCard
+  - BattleCanvas
+  - CardsLootFocusedCard
+  - GameManager
+  - EncounterManager
+  - CardDescription
+  - EncounterLobby
+  - MonsterManager
   layers:
   - Default
   - TransparentFX
