@@ -73,6 +73,7 @@ public class BattleManager : MonoBehaviour {
 
     private Dictionary<string, List<CardName>> othersCardsToPlay = new();
     private Dictionary<string, string> partyMembers;
+    private Dictionary<string, Player> partyMembersInfo = new();
     private BattleStatus battleStatus = BattleStatus.TURN_IN_PROGRESS;
     private int monsterSkillIndex = 0;
 
@@ -84,21 +85,26 @@ public class BattleManager : MonoBehaviour {
             gameInterfaceManager = (GameInterfaceManager) FindObjectOfType(typeof(GameInterfaceManager));
             battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
             monsterController = (MonsterController) GetComponent(typeof(MonsterController));
+            network = NetworkManager.Instance.NetworkUtils;
         } else {
             Destroy(gameObject);
         }
 
-        AcceptMessages = true;
-        monsters = GameState.Instance.encounterMonsters;
-        skillsSequences = GameState.Instance.skillSequences;
-        partyMembers = GameState.Instance.partyMembers;
         // Setup p2p network
-        network = NetworkManager.Instance.NetworkUtils;
         // InvokeRepeating("HandleMessages", 0.0f, msgHandlingFreq);
     }
 
     void Start() {
         Debug.Log("BattleManager Start");
+
+        AcceptMessages = true;
+
+        // Get party members and monsters info
+        Debug.Log(GameState.Instance.encounterMonsters[0].name);
+        Debug.Log(GameState.Instance.encounterMonsters[0].Health);
+        monsters = GameState.Instance.encounterMonsters;
+        skillsSequences = GameState.Instance.skillSequences;
+        partyMembers = GameState.Instance.partyMembers;
 
         // Search for the CardsUIManager here because in Awake() it is not initialised yet
         cardsUIManager = (CardsUIManager) FindObjectOfType(typeof(CardsUIManager));
@@ -143,8 +149,9 @@ public class BattleManager : MonoBehaviour {
         UpdateCardNumber();
 
         // Initializes the Other Players panel and Speed panel
-        otherPlayerStat = battleUIManager.DisplayOtherPlayers(GameState.Instance.OtherPlayers);
-        List<Player> allPlayers = new List<Player>(GameState.Instance.OtherPlayers);
+        GetAllOtherPartyMembersInfo();
+        otherPlayerStat = battleUIManager.DisplayOtherPlayers(partyMembersInfo.Values.ToList());
+        List<Player> allPlayers = new List<Player>(partyMembersInfo.Values.ToList());
         allPlayers.Add(GameState.Instance.MyPlayer);
         battleUIManager.DisplaySpeedPanel(allPlayers);
 
@@ -162,6 +169,15 @@ public class BattleManager : MonoBehaviour {
             endTurnButton.SetActive(false);
         } else {
             endTurnButton.SetActive(true);
+        }
+    }
+
+    private void GetAllOtherPartyMembersInfo() {
+        foreach (string id in partyMembers.Keys) {
+            if (id == GameState.Instance.myID)
+                continue;
+            Player player = GameState.Instance.OtherPlayers.Find((player) => player.Id == id);
+            partyMembersInfo.Add(id, player);
         }
     }
 
@@ -222,7 +238,7 @@ public class BattleManager : MonoBehaviour {
         UpdatesPlayerStats();
     
         GenerateHand();
-        Debug.Log(string.Format("Generated hand: ({0}).", string.Join(", ", this.hand)));
+        // Debug.Log(string.Format("Generated hand: ({0}).", string.Join(", ", this.hand)));
     }
 
     public void EndTurn() {
@@ -257,33 +273,49 @@ public class BattleManager : MonoBehaviour {
     public void EndOfTurnActions() {
         ResolvePlayedCardsOrder();
         MonsterAttack();
-        if (GameEnded()) {
-            Debug.Log("Game ended");
-            // End the encounter
-            SceneManager.UnloadSceneAsync("Battle");
-            Instantiate(lootOverlay);
-
-        } else {
+        int battleStatus = BattleEnded();
+        if (battleStatus == -1) {
             StartTurn();
             battleUIManager.DisplayHand(hand);
+        } else {
+            Debug.Log("Game ended");
+            // End the encounter
+            ResetAllPartyMemberStats();
+            GameObject.FindGameObjectWithTag("EncounterManager").GetComponent<EncounterController>().OnFinishEncounter();
+
+            GameState.Instance.ExitEncounter();
+            SceneManager.UnloadSceneAsync("Battle");
+            if (battleStatus == 0) {
+                Instantiate(lootOverlay);
+            }
         }
     }
 
-    // Checks whether the game has ended
-    private bool GameEnded() {
+    // Checks whether the game has ended and returns the status of battle
+    // -1 : Game hasn't ended
+    //  0 : Players won
+    //  1 : Players lost
+    private int BattleEnded() {
         if (monsters[0].Health <= 0) {
-            return true;
+            return 0;
         }
         // Check if all players have died
         foreach (string id in partyMembers.Keys) {
             if (GameState.Instance.PlayersDetails[id].CurrentHealth > 0) {
-                return false;
+                return -1;
             }
         }
+        return 1;
+    }
 
-        GameState.Instance.IsInEncounter = false;
+    private void ResetAllPartyMemberStats() {
+        // Reset own mana
+        GameState.Instance.MyPlayer.ResetMana();
 
-        return true;
+        // Reset other players mana
+        foreach (Player player in partyMembersInfo.Values) {
+            player.ResetMana();
+        }
     }
 
     private void DrawCard() {
@@ -373,7 +405,7 @@ public class BattleManager : MonoBehaviour {
 
     // Initializes other Player's health and icon.
     private void InitializesPlayerStat() {
-        List<Player> otherPlayers = GameState.Instance.OtherPlayers;
+        List<Player> otherPlayers = partyMembersInfo.Values.ToList();
         Debug.Log(otherPlayers);
         for (int i = 0; i < GameState.Instance.maxPlayerCount - 1; i++) {
             if (i < otherPlayers.Count) {
@@ -391,7 +423,7 @@ public class BattleManager : MonoBehaviour {
 
     // Updates other Player's health.
     private void UpdateOtherPlayerStats() {
-        List<Player> otherPlayers = GameState.Instance.OtherPlayers;
+        List<Player> otherPlayers = partyMembersInfo.Values.ToList();
         for (int i = 0; i < otherPlayers.Count; i++) {
             otherPlayerStat[i].transform.GetChild(1)
                                 .transform.GetChild(0)
@@ -401,7 +433,7 @@ public class BattleManager : MonoBehaviour {
 
     // Update the order of players based on their speed
     private void UpdatePlayerOrder() {
-        List<Player> players = new List<Player>(GameState.Instance.OtherPlayers);
+        List<Player> players = new List<Player>(partyMembersInfo.Values.ToList());
         players.Add(GameState.Instance.MyPlayer);
         players = players.OrderByDescending(player => player.Speed).ToList();
         playerOrderIds = players.Select(player => player.Id).ToList();
@@ -459,7 +491,7 @@ public class BattleManager : MonoBehaviour {
             // Add a card to the hand
             // DrawCard();
             hand.Add(drawPile.Dequeue());
-            Debug.Log($"Hand count after draw one: {hand.Count}");
+            // Debug.Log($"Hand count after draw one: {hand.Count}");
         }
         // battleUIManager.RepositionCards();
     }

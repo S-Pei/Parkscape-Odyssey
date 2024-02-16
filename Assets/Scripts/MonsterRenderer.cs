@@ -57,6 +57,8 @@ public class MonsterRenderer : MonoBehaviour
         textComp.text = monster.Health.ToString();
         monsterHealth = monster.Health;
 
+        Debug.Log(monster.Health);
+
         // Save monster max health
         monsterMaxHealth = monster.Health;
     }

@@ -16,6 +16,7 @@ public class EncounterSpawnManager : MonoBehaviour
         this.monsters = monsters;
         this.skillSequences = skillSequences;
         encounterManager = GameObject.FindGameObjectWithTag("EncounterManager");
+        Debug.Log($"EncounterId {encounterId}");
     }
 
     public void CreateEncounterLobby() {

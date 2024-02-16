@@ -173,6 +173,7 @@ public class EncounterController : MonoBehaviour
     // Called from encounter spawn manager when leader initiates the encounter lobby
     public void CreateEncounterLobby(string encounterId, List<Monster> monsters, List<List<SkillName>> skillSequences) {
         isLeader = true;
+        Debug.Log($"Spawning encounter lobby: {monsters[0].Health}");
         SpawnEncounterLobby(encounterId, monsters, skillSequences);
 
         // Add self as a member of the party in the encounter lobby
@@ -232,8 +233,10 @@ public class EncounterController : MonoBehaviour
 
     public void LeaderStartEncounter() {
         // Save monster details for entering encounter
+
+        Debug.Log($"isInEncounter: {GameState.Instance.IsInEncounter}");
         GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
-        Debug.Log("Leader Starting encounter");
+        Debug.Log("Leader Starting encounter with monsters: " + monsters[0].name + " " + monsters[0].Health);
 
         // Close the encounter spawn
         CloseEncounterSpawn();
@@ -251,8 +254,19 @@ public class EncounterController : MonoBehaviour
     private void CloseEncounterSpawn() {
         GameObject encounter = encountersSpawned.Find((spawn) => spawn.GetComponent<EncounterSpawnManager>().GetEncounterId() == encounterId);
         if (encounter != null) {
+            encountersSpawned.Remove(encounter);
             Destroy(encounter);
         }
+    }
+
+    public void ExitEncounterLobby() {
+        inEncounterLobby = false;
+        encounterId = "";
+        partyMembers.Clear();
+    }
+
+    public void OnFinishEncounter() {
+        partyMembers.Clear();
     }
 
     // ------------------------------ P2P NETWORK ------------------------------

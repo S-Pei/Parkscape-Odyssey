@@ -856,9 +856,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8530333091116376915}
-        m_TargetAssemblyTypeName: Destroyer, NewAssembly
-        m_MethodName: DestroySelf
+      - m_Target: {fileID: 1083578784825972182}
+        m_TargetAssemblyTypeName: EncounterLobbyUIManager, NewAssembly
+        m_MethodName: ExitEncounterLobby
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
