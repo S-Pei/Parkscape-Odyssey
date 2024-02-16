@@ -54,6 +54,7 @@ public class BattleManager : MonoBehaviour {
     private NetworkUtils network;
     private bool isLeader = false;
     private bool AcceptMessages = false;
+    private int turn = 0;
     
 
     public List<CardName> Hand {
@@ -93,6 +94,7 @@ public class BattleManager : MonoBehaviour {
 
     void Start() {
         AcceptMessages = true;
+        turn = 1;
 
         // Get party members and monsters info
         Debug.Log(GameState.Instance.encounterMonsters[0].name);
@@ -236,31 +238,18 @@ public class BattleManager : MonoBehaviour {
         // Debug.Log(string.Format("Generated hand: ({0}).", string.Join(", ", this.hand)));
     }
 
-    public void EndTurn() {
-        Debug.Log("Ended turn");
+
+    // Turn end
+    public void EndTurn() {        
         battleStatus = BattleStatus.TURN_ENDED;
         
-        foreach (CardName card in cardsToPlay) {
-            Debug.Log("Selected " + card);
-        }
 
-        BroadcastCardsPlayed();
-
-        int notReceived = 0;
-        foreach (string id in partyMembers.Keys) {
-            Debug.Log("Processing ID: " + id);
-            if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
-                Debug.Log("Already received cards from " + id);
-                continue;
-            }
-            Debug.Log("Not received cards from " + id);
-            notReceived++;
-        }
-
-        if (notReceived == 0 ) {
-            battleStatus = BattleStatus.RESOLVING_PLAYED_CARDS;
-            EndOfTurnActions();
-            UpdateCardNumber();
+        if (!isLeader) {
+            // Send my played cards to leader if I'm not the leader
+            BroadcastCardsPlayed();
+        } else {
+            BroadcastAllPlayersCardsPlayed();
+            CheckProceedToResolve();
         }
     }
 
@@ -271,6 +260,7 @@ public class BattleManager : MonoBehaviour {
         int battleStatus = BattleEnded();
         if (battleStatus == -1) {
             StartTurn();
+            UpdateCardNumber();
             battleUIManager.DisplayHand(hand);
         } else {
             Debug.Log("Game ended");
@@ -358,6 +348,7 @@ public class BattleManager : MonoBehaviour {
 
 
         // Clear everyones card played
+        turn ++;
         othersCardsToPlay.Clear();
         cardsToPlay = new();
     }
@@ -491,6 +482,23 @@ public class BattleManager : MonoBehaviour {
         // battleUIManager.RepositionCards();
     }
 
+    private void CheckProceedToResolve() {
+        int notReceived = 0;
+        foreach (string id in partyMembers.Keys) {
+            if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
+                Debug.Log("Already received cards from " + id);
+                continue;
+            }
+            Debug.Log("Not received cards from " + id);
+            notReceived++;
+        }
+
+        if (notReceived == 0) {
+            battleStatus = BattleStatus.RESOLVING_PLAYED_CARDS;
+            EndOfTurnActions();
+        }
+    }
+
     private void OnSceneUnloaded(Scene current) {
         Debug.Log("Battle scene unloaded.");
 
@@ -513,7 +521,6 @@ public class BattleManager : MonoBehaviour {
 
     // ------------------------------ P2P NETWORK ------------------------------
     public void SendMessages(Dictionary<string, string> connectedPlayers, List<string> disconnectedPlayers) {
-        // Debug.Log("Attempting to send battle messages.");
         if (network == null)
             return;
 
@@ -522,29 +529,14 @@ public class BattleManager : MonoBehaviour {
             return;
         }
         
-        if (battleStatus == BattleStatus.TURN_ENDED) {
-            //  Debug.Log("Sending Battle Messages.");
-            List<string> sendTos = new();
-
-            foreach (string id in partyMembers.Keys) {
-                if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
-                    continue;
-                }
-                // Request played card from players that we have not received cards from
-                sendTos.Add(id);
-            }
-            if (sendTos.Count() > 0) {
-                BattleMessage battleMessageRequest = new BattleMessage(BattleMessageType.REQUEST_PLAYED_CARDS, new(), sendTos: sendTos);
-                network.broadcast(battleMessageRequest.toJson());
-                battleStatus = BattleStatus.SENT_PLAYED_CARDS; 
-            }
+        if (battleStatus == BattleStatus.TURN_ENDED && isLeader) {
+            // Request played card from players that we have not received cards from
+            SendRequestForCardsPlayed();
         }
 
     }
     
-    public CallbackStatus HandleMessage(Message message) {
-        // Debug.Log("Received battle message.");
-    
+    public CallbackStatus HandleMessage(Message message) {    
         BattleMessage battleMessage = (BattleMessage) message.messageInfo;
 
         List<string> sendTos = battleMessage.SendTos;
@@ -552,95 +544,168 @@ public class BattleManager : MonoBehaviour {
             return CallbackStatus.DORMANT;
         }
         if (battleMessage.Type == BattleMessageType.REQUEST_PLAYED_CARDS) {
+            // If I am still playing the turn, ignore request
             if (battleStatus == BattleStatus.TURN_IN_PROGRESS) {
                 return CallbackStatus.DORMANT;
             }
+
+            // Ignore message if its not the correct turn
+            if (battleMessage.Turn != turn) {
+                return CallbackStatus.DORMANT;
+            }
+
             Debug.Log("Received request for my played cards.");
-            // Send played cards
-            BattleMessage playedCardsMessage = new BattleMessage(BattleMessageType.PLAYED_CARDS, cardsToPlay, sendTos : new(){battleMessage.SendFrom});
-            network.broadcast(playedCardsMessage.toJson());
+
+            // Send my played cards
+            BroadcastCardsPlayed();
             return CallbackStatus.PROCESSED;
         } else if (battleMessage.Type == BattleMessageType.PLAYED_CARDS) {
             Debug.Log("Received other player played cards.");
+            // Ignore message if I am not the leader
+            if (!isLeader) {
+                return CallbackStatus.DORMANT;
+            }
+
+            // Ignore message if its not the correct turn
+            if (battleMessage.Turn != turn) {
+                return CallbackStatus.DORMANT;
+            }
+
             // Process played cards
-
-            // Print all cards played from battleMessage.CardsPlayed
-            foreach (CardName card in battleMessage.CardsPlayed) {
-                Debug.Log("Received card: " + card);
-            }
-
-            Debug.Log("Printing othersCardsToPlay");
-            foreach (KeyValuePair<string, List<CardName>> entry in othersCardsToPlay)
-            {
-                Debug.Log($"Key: {entry.Key}, Value: {entry.Value}");
-            }
-
-
             if (!othersCardsToPlay.ContainsKey(battleMessage.SendFrom)) {
                 othersCardsToPlay.Add(battleMessage.SendFrom,  battleMessage.CardsPlayed);
             }
 
-            Debug.Log("Printing othersCardsToPlay AFTER adding");
-            foreach (KeyValuePair<string, List<CardName>> entry in othersCardsToPlay)
-            {
-                Debug.Log($"Key: {entry.Key}, Value: {entry.Value}");
-            }
 
             if (battleStatus != BattleStatus.TURN_IN_PROGRESS) {
-                int notReceived = 0;
-                foreach (string id in partyMembers.Keys) {
-                    Debug.Log("Processing ID: " + id);
-                    if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
-                        Debug.Log("Already received cards from " + id);
-                        continue;
-                    }
-                    Debug.Log("Not received cards from " + id);
-                    notReceived++;
-                }
-
-                if (notReceived == 0 ) {
-                    battleStatus = BattleStatus.RESOLVING_PLAYED_CARDS;
-                    EndOfTurnActions();
-                }
+                // My turn has ended, checking if I can proceed to resolve phase
+                BroadcastAllPlayersCardsPlayed();
+                CheckProceedToResolve();
+            }
+            return CallbackStatus.PROCESSED;
+        } else if (battleMessage.Type == BattleMessageType.ALL_PLAYED_CARDS) {
+            // Ignore message if I am leader
+            if (isLeader) {
+                return CallbackStatus.DORMANT;
             }
 
-            return CallbackStatus.PROCESSED;
+            // Ignore message if its not the correct turn
+            if (battleMessage.Turn != turn) {
+                return CallbackStatus.DORMANT;
+            }
+
+            // Ignore message if already in resolving cards phase
+            if (battleStatus == BattleStatus.RESOLVING_PLAYED_CARDS || battleStatus == BattleStatus.TURN_IN_PROGRESS) {
+                return CallbackStatus.DORMANT;
+            }
+
+            // Process all players played cards
+            foreach (string id in battleMessage.AllCardsPlayed.Keys) {
+                // Ignore own cards played and processed players cards played
+                if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
+                    continue;
+                }
+                othersCardsToPlay.Add(id,  battleMessage.AllCardsPlayed[id]);
+            }
+
+            if (battleStatus != BattleStatus.TURN_IN_PROGRESS) { 
+                // My turn has ended, checking if I can proceed to resolve phase
+                CheckProceedToResolve();
+            }
         }
         Debug.Log("Unhandled battle message type");
         return CallbackStatus.DORMANT;
     }
 
     private void BroadcastCardsPlayed() {
-        BattleMessage cardsPlayedMessage = new BattleMessage(BattleMessageType.PLAYED_CARDS, cardsToPlay, sendTos : new());
+        BattleMessage cardsPlayedMessage = new(BattleMessageType.PLAYED_CARDS, turn, cardsToPlay, sendTos : new());
         network.broadcast(cardsPlayedMessage.toJson());
+    }
+
+    private void BroadcastAllPlayersCardsPlayed() {
+        Dictionary<string, List<CardName>> toSendLs = new(othersCardsToPlay)
+        {
+            { GameState.Instance.myID, cardsToPlay }
+        };
+
+        BattleMessage allPlayersCardsPlayedMessage = new(BattleMessageType.ALL_PLAYED_CARDS, turn, toSendLs, sendTos : new());
+        network.broadcast(allPlayersCardsPlayedMessage.toJson());
+    }
+
+    private void SendRequestForCardsPlayed() {
+        List<string> sendTos = new();
+        foreach (string id in partyMembers.Keys) {
+            if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
+                continue;
+            }
+            sendTos.Add(id);
+        }
+        if (sendTos.Count() > 0) {
+            BattleMessage battleMessageRequest = new(BattleMessageType.REQUEST_PLAYED_CARDS, turn, sendTos: sendTos);
+            network.broadcast(battleMessageRequest.toJson());
+        }
     }
 }
 
 public enum BattleMessageType {
     REQUEST_PLAYED_CARDS,
     PLAYED_CARDS,
+    ALL_PLAYED_CARDS,
 }
 
 public enum BattleStatus {
     TURN_IN_PROGRESS,
     TURN_ENDED,
-    RESOLVING_PLAYED_CARDS,
-    SENT_PLAYED_CARDS
+    RESOLVING_PLAYED_CARDS
 }
 
 public class BattleMessage : MessageInfo
 {
     public MessageType messageType {get; set;}
     public BattleMessageType Type {get; set;}
+    public int Turn;
     public List<CardName> CardsPlayed {get; set;}
+    public Dictionary<string, List<CardName>> AllCardsPlayed {get; set;}
     public string SendFrom {get; set;}
     public List<string> SendTos {get; set;}
 
-    [JsonConstructor]
-    public BattleMessage(BattleMessageType type, List<CardName> cardsPlayed, List<string> sendTos, string sendFrom = "") {
+    public BattleMessage(BattleMessageType type, int turn, List<string> sendTos, string sendFrom = "") {
         messageType = MessageType.BATTLEMESSAGE;
         Type = type;
+        Turn = turn;
+        CardsPlayed = new();
+        AllCardsPlayed = new();
+        SendTos = sendTos == null ? new() : sendTos;
+        SendFrom = sendFrom == "" ? GameState.Instance.myID : sendFrom;
+    }
+
+    public BattleMessage(BattleMessageType type, int turn, List<CardName> cardsPlayed, List<string> sendTos, string sendFrom = "") {
+        messageType = MessageType.BATTLEMESSAGE;
+        Type = type;
+        Turn = turn;
         CardsPlayed = cardsPlayed == null ? new() : cardsPlayed;
+        AllCardsPlayed = new();
+        SendTos = sendTos == null ? new() : sendTos;
+        SendFrom = sendFrom == "" ? GameState.Instance.myID : sendFrom;
+    }
+
+    public BattleMessage(BattleMessageType type, int turn, Dictionary<string, List<CardName>> allCardsPlayed, List<string> sendTos, string sendFrom = "") {
+        messageType = MessageType.BATTLEMESSAGE;
+        Type = type;
+        Turn = turn;
+        CardsPlayed = new();
+        AllCardsPlayed = allCardsPlayed == null ? new() : allCardsPlayed;
+        SendTos = sendTos == null ? new() : sendTos;
+        SendFrom = sendFrom == "" ? GameState.Instance.myID : sendFrom;
+    }
+
+    [JsonConstructor]
+    public BattleMessage(BattleMessageType type, int turn, List<CardName> cardsPlayed, Dictionary<string, List<CardName>> allCardsPlayed, List<string> sendTos, string sendFrom = "") {
+        messageType = MessageType.BATTLEMESSAGE;
+        Type = type;
+        Turn = turn;
+        CardsPlayed = cardsPlayed == null ? new() : cardsPlayed;
+        AllCardsPlayed = allCardsPlayed == null ? new() : allCardsPlayed;
         SendTos = sendTos == null ? new() : sendTos;
         SendFrom = sendFrom == "" ? GameState.Instance.myID : sendFrom;
     }
