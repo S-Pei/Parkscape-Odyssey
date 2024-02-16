@@ -57,11 +57,10 @@ public class MonsterRenderer : MonoBehaviour
         textComp.text = monster.Health.ToString();
         monsterHealth = monster.Health;
 
+        Debug.Log(monster.Health);
+
         // Save monster max health
         monsterMaxHealth = monster.Health;
-
-        // Save monster health bar width
-        healthBarWidth = monsterHealthObj.transform.GetChild(0).gameObject.GetComponent<RectTransform>().rect.width;
     }
 
     public Monster getMonsterDetails() {
@@ -76,10 +75,7 @@ public class MonsterRenderer : MonoBehaviour
         monsterHealth = monster.Health;
 
         // Update health bar width
-        GameObject healthBar = monsterHealthObj.transform.GetChild(0).gameObject;
-        RectTransform healthBarRect = healthBar.GetComponent<RectTransform>();
-        float height = healthBarRect.rect.height;
-        float newWidth = monster.Health / monsterMaxHealth * healthBarWidth;
-        healthBarRect.sizeDelta = new Vector2(newWidth, height);
+        GameObject monsterHealthBar = monsterHealthObj.transform.GetChild(1).gameObject;
+        monsterHealthBar.GetComponent<Slider>().value = monster.Health / monsterMaxHealth;
     }
 }

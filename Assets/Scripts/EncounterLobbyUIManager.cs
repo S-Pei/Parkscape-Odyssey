@@ -71,4 +71,9 @@ public class EncounterLobbyUIManager : MonoBehaviour
         SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
         Destroy(gameObject);
     }
+
+    public void ExitEncounterLobby() {
+        encounterController.ExitEncounterLobby();
+        Destroy(gameObject);
+    }
 }
