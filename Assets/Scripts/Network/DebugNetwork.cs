@@ -16,7 +16,8 @@ public class DebugNetwork : NetworkUtils
         }
     }
 
-    private bool DEBUGLOG = false;
+    private readonly bool DEBUGLOG = true;
+    private readonly bool DEBUGLOGONRECEIVE = false;
 
     public override void broadcast(string message)
     {   
@@ -32,7 +33,7 @@ public class DebugNetwork : NetworkUtils
 
     public override List<string> getDiscoveredDevices()
     {
-        return new();
+        return new List<string> {"2", "3"};
     }
 
     public override string getMessageReceived()
@@ -52,7 +53,7 @@ public class DebugNetwork : NetworkUtils
 
     public override void onReceive(Func<Message, CallbackStatus> callback)
     {
-        if (!DEBUGLOG)
+        if (!DEBUGLOG && !DEBUGLOGONRECEIVE)
             return;
         Debug.Log("On receive.");
     }
@@ -62,7 +63,6 @@ public class DebugNetwork : NetworkUtils
         if (!DEBUGLOG)
             return;
         Debug.Log("Send message: " + message);
-
     }
 
     public override void setRoomCode(string roomCode)

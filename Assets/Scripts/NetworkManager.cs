@@ -12,13 +12,14 @@ public class NetworkManager : MonoBehaviour {
 
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
+    private TradeManager tradeManager;
     private BattleManager battleManager;
 
     private readonly float baseFreq = 0.5f; // per second
     private readonly float baseSendFreq = 1f; // per second
     private float baseSendTimer = 0f; // per second
 
-    private Dictionary<string, string> connectedPlayers = new ();
+    public Dictionary<string, string> connectedPlayers = new ();
     private Dictionary<string, float> connectedPlayersTimer = new();
     private int numConnectedPlayers = 0;
 
@@ -70,6 +71,11 @@ public class NetworkManager : MonoBehaviour {
         if (EncounterController.selfReference != null) {
             encounterController = EncounterController.selfReference;
         }
+
+        if (TradeManager.selfReference != null) {
+            tradeManager = TradeManager.selfReference;
+        }
+        
         if  (BattleManager.selfReference != null) {
             battleManager = BattleManager.selfReference;
         }
@@ -98,7 +104,6 @@ public class NetworkManager : MonoBehaviour {
         } else {
             baseSendTimer += baseFreq;
         }
-
     }
 
     private List<string> CountdownPlayersLoseConnectionTimer() {
@@ -142,6 +147,12 @@ public class NetworkManager : MonoBehaviour {
                 } else {
                     return CallbackStatus.DORMANT;
                 }
+            case MessageType.TRADE:
+                if (tradeManager != null) {
+                    return tradeManager.HandleMessage(message);
+                } else {
+                    return CallbackStatus.DORMANT;
+                }
             case MessageType.BATTLEMESSAGE:
                 if (battleManager != null) {
                     return battleManager.HandleMessage(message);
@@ -164,7 +175,7 @@ public class NetworkManager : MonoBehaviour {
         if (networkUtils.getConnectedDevices().Count > 0) {
         if (pingTimer >= pingFreq) {
             PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
-            // networkUtils.broadcast(pingMessage.toJson());
+            networkUtils.broadcast(pingMessage.toJson());
             pingTimer = 0;
         } else {
             pingTimer += baseFreq * (baseSendFreq / baseFreq);
