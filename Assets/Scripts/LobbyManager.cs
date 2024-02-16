@@ -32,6 +32,9 @@ public class LobbyManager : MonoBehaviour {
     private bool joinedLobby = false;
     private int disconnectCount = 0;
     private List<string> playerIDs;
+
+    // Map
+    private MapManager location;
     
     // Initialisation
 	void Awake () {
@@ -41,6 +44,7 @@ public class LobbyManager : MonoBehaviour {
             myID = SystemInfo.deviceUniqueIdentifier;
             msgFreq = maxPlayerCount;
             network = NetworkManager.Instance.NetworkUtils;
+            location = MapManager.Instance;
 			DontDestroyOnLoad(gameObject);
 		}else 
             Destroy(gameObject);

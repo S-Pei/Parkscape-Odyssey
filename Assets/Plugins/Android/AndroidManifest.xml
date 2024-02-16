@@ -3,6 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.p2pnetwork"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-feature android:name="android.hardware.location.gps" />
     <application>
         <activity android:name="com.example.p2pnetwork.ManualConnect"
                   android:theme="@style/UnityThemeSelector">
