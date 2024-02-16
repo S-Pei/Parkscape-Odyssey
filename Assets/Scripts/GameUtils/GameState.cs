@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using UnityEngine.PlayerLoop;
 
 public class GameState {
-    private static bool DEBUGMODE = false;
+    private static bool DEBUGMODE = true;
     private static readonly Lazy<GameState> LazyGameState = new(() => new GameState());
 
     public static GameState Instance { get {
