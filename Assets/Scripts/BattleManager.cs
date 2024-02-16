@@ -52,9 +52,7 @@ public class BattleManager : MonoBehaviour {
 
     // p2p networking
     private NetworkUtils network;
-    private readonly float msgHandlingFreq = 0.1f;
-    private readonly int msgFreq = 0;
-    private int msgFreqCounter = 0;
+    private bool isLeader = false;
     private bool AcceptMessages = false;
     
 
@@ -78,7 +76,6 @@ public class BattleManager : MonoBehaviour {
     private int monsterSkillIndex = 0;
 
     void Awake() {
-        Debug.Log("BattleManager Awake");
         if (!selfReference) {
             selfReference = this;
             gameManager = FindObjectOfType<GameManager>();
@@ -91,12 +88,10 @@ public class BattleManager : MonoBehaviour {
         }
 
         // Setup p2p network
-        // InvokeRepeating("HandleMessages", 0.0f, msgHandlingFreq);
+        isLeader = GameState.Instance.isLeader;
     }
 
     void Start() {
-        Debug.Log("BattleManager Start");
-
         AcceptMessages = true;
 
         // Get party members and monsters info

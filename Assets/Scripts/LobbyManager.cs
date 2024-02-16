@@ -147,6 +147,7 @@ public class LobbyManager : MonoBehaviour {
     // Common method to start the game for both leader and non-leader.
     private void StartGame() {
         AcceptMessages = false;
+        GameState.Instance.isLeader = isLeader;
         // Load the game scene.
         SceneManager.LoadScene("Gameplay");
     }

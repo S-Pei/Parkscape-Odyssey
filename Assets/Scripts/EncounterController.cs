@@ -242,13 +242,16 @@ public class EncounterController : MonoBehaviour
         CloseEncounterSpawn();
 
         SendStartEncounterMessage();
-        // AcceptMessages = false;
+        inEncounterLobby = false;
+        AcceptMessages = false;
     }
 
     private void MemberStartEncounter() {
         GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
         Debug.Log("Member Starting encounter");
         GameObject.FindGameObjectWithTag("EncounterLobby").GetComponent<EncounterLobbyUIManager>().StartEncounter();
+        inEncounterLobby = false;
+        AcceptMessages = false;
     }
 
     private void CloseEncounterSpawn() {
@@ -267,6 +270,8 @@ public class EncounterController : MonoBehaviour
 
     public void OnFinishEncounter() {
         partyMembers.Clear();
+        encounterId = "";
+        AcceptMessages = true;
     }
 
     // ------------------------------ P2P NETWORK ------------------------------
@@ -279,7 +284,9 @@ public class EncounterController : MonoBehaviour
         switch (encounterMessage.Type) {
             case EncounterMessageType.FOUND_ENCOUNTER:
                 // Encounter found by another player, show encounter found pop up.
-                ShowEncounterFoundPopup(encounterMessage.encounterId);
+                if (!isLeader) {
+                    ShowEncounterFoundPopup(encounterMessage.encounterId);
+                }
                 break;
             case EncounterMessageType.JOIN_ENCOUNTER:
                 if (isLeader && encounterId == encounterMessage.encounterId) {
@@ -348,8 +355,8 @@ public class EncounterController : MonoBehaviour
     }
 
     private void StopSendingJoinEncounterMessagesAndShowLobby(EncounterMessage encounterMessage) {
-        List<Monster> monsters = ProcessEncounterMessageWithMonsterInfo(encounterMessage);
         if (!inEncounterLobby) {
+            List<Monster> monsters = ProcessEncounterMessageWithMonsterInfo(encounterMessage);
             SpawnEncounterLobby(encounterMessage.encounterId, monsters, encounterMessage.skills);
             inEncounterLobby = true;
         }
