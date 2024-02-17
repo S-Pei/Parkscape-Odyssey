@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Microsoft.Maps.Unity;
 
 public class MapManager : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class MapManager : MonoBehaviour
     private LocationInfo location;
     private LocationServiceStatus locationServiceStatus;
     private bool permissionGranted = false;
+    public GameObject map;
 
     public static MapManager Instance {
         get {
@@ -25,6 +27,7 @@ public class MapManager : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        map = gameObject;
         StartCoroutine(GPSLoc());
     }
 
@@ -131,6 +134,7 @@ public class MapManager : MonoBehaviour
         }
         locationServiceStatus = Input.location.status;
         Debug.Log("Location Service Status: " + locationServiceStatus);
+        map.GetComponent<MapRenderer>().Center = new Microsoft.Geospatial.LatLon(location.latitude, location.longitude);
     }
 
     private void OnDestroy()

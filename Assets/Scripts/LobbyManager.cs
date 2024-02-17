@@ -44,7 +44,6 @@ public class LobbyManager : MonoBehaviour {
             myID = SystemInfo.deviceUniqueIdentifier;
             msgFreq = maxPlayerCount;
             network = NetworkManager.Instance.NetworkUtils;
-            location = MapManager.Instance;
 			DontDestroyOnLoad(gameObject);
 		}else 
             Destroy(gameObject);
