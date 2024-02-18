@@ -28,6 +28,9 @@ public class TradeManager : MonoBehaviour {
     
     [SerializeField]
     private GameObject cardsManagerPrefab;
+
+    [SerializeField]
+    private GameObject mapBlocker;
     private GameObject cardsManager;
 
     private const string tradeDeclinedMessage = "Card was declined...";
@@ -57,6 +60,7 @@ public class TradeManager : MonoBehaviour {
             network = NetworkManager.Instance.NetworkUtils;
             cardsManager = Instantiate(cardsManagerPrefab);
             gameObject.SetActive(false);
+            mapBlocker.SetActive(false);
         } else {
             Destroy(gameObject);
         }
@@ -119,6 +123,7 @@ public class TradeManager : MonoBehaviour {
         CancelTrade();
         // Close trade UI
         gameObject.SetActive(false);
+        mapBlocker.SetActive(false);
         tradeTo = null;
         tradeFromID = null;
         acceptTrade = false;
@@ -206,6 +211,7 @@ public class TradeManager : MonoBehaviour {
                 tradeMessageObject.text = "";
                 OpenInterface();
                 gameObject.SetActive(true);
+                mapBlocker.SetActive(true);
 
                 tradeInProgress = true;
                 break;
