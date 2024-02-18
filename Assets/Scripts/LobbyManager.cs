@@ -32,6 +32,9 @@ public class LobbyManager : MonoBehaviour {
     private bool joinedLobby = false;
     private int disconnectCount = 0;
     private List<string> playerIDs;
+
+    // Map
+    private MapManager location;
     
     // Initialisation
 	void Awake () {
