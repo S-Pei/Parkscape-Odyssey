@@ -14,6 +14,14 @@ public class MapManager : MonoBehaviour
     private bool permissionGranted = false;
     public GameObject map;
 
+    // Map Blocker
+    [SerializeField]
+    private GameObject mapBlocker;
+
+    // Map Components
+    private MapRenderer mapRenderer;
+    private MapTouchInteractionHandler mapTouchInteractionHandler;
+
     // Map Constants
     private const int earthRadius = 6371000;
     private const float granularity = 0.1f;
@@ -27,10 +35,7 @@ public class MapManager : MonoBehaviour
     public static MapManager Instance {
         get {
             if (instance == null) {
-                // To make sure that script is persistent across scenes
-                GameObject go = new GameObject("MapManager");
-                instance = go.AddComponent<MapManager>();
-                DontDestroyOnLoad(go);
+                throw new Exception("MapManager has not been initialised.");
             }
             return instance;
         }
@@ -39,11 +44,21 @@ public class MapManager : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        // Initialisation
         map = gameObject;
+        instance = GetComponent<MapManager>();
+        DontDestroyOnLoad(map);
+
+        // Disable full blocker
+        mapBlocker.SetActive(false);
+
+        // Get Components
+        mapRenderer = GetComponent<MapRenderer>();
+        mapTouchInteractionHandler = GetComponent<MapTouchInteractionHandler>();
 
         // Set the map's zoom level
-        map.GetComponent<MapRenderer>().MinimumZoomLevel = minZoomLevel;
-        map.GetComponent<MapRenderer>().MaximumZoomLevel = maxZoomLevel;
+        mapRenderer.MinimumZoomLevel = minZoomLevel;
+        mapRenderer.MaximumZoomLevel = maxZoomLevel;
 
         // Start GPS location service
         StartCoroutine(GPSLoc());
@@ -152,7 +167,7 @@ public class MapManager : MonoBehaviour
         }
         locationServiceStatus = Input.location.status;
         Debug.Log("Location Service Status: " + locationServiceStatus);
-        map.GetComponent<MapRenderer>().Center = new Microsoft.Geospatial.LatLon(location.latitude, location.longitude);
+        mapRenderer.Center = new LatLon(location.latitude, location.longitude);
     }
 
     private void OnDestroy()
@@ -230,5 +245,16 @@ public class MapManager : MonoBehaviour
         double newLatitude  = latitude  + dLat / earthRadius * (180 / Math.PI);
         double newLongitude = longitude + dLon / earthRadius * (180 / Math.PI) / Math.Cos(latitude * Math.PI / 180);
         return (newLatitude, newLongitude);
+    }
+
+    /*** Map Interactions ***/
+    public void DisableMapInteraction() {
+        mapTouchInteractionHandler.enabled = false;
+        mapBlocker.SetActive(true);
+    }
+
+    public void EnableMapInteraction() {
+        mapTouchInteractionHandler.enabled = true;
+        mapBlocker.SetActive(false);
     }
 }
