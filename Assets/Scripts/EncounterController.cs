@@ -5,7 +5,8 @@ using UnityEngine;
 using Newtonsoft.Json;
 using UnityEngine.UI;
 using System.Linq;
-
+using Microsoft.Maps.Unity;
+using Microsoft.Geospatial;
 
 public class EncounterController : MonoBehaviour
 {
@@ -29,6 +30,9 @@ public class EncounterController : MonoBehaviour
 
     [SerializeField]
     private GameObject gameplayCanvas;
+
+    [SerializeField]
+    private GameObject mapRenderer;
 
     private string leaderId;
 
@@ -79,7 +83,7 @@ public class EncounterController : MonoBehaviour
         monsterController = monsterManager.GetComponent<MonsterController>();
 
         CreateMonsterSpawn(); // TEMPORARY
-        CreateMonsterSpawn(); // TEMPORARY
+        // CreateMonsterSpawn(); // TEMPORARY
     }
 
     private void CreateMonsterSpawn() {
@@ -92,8 +96,12 @@ public class EncounterController : MonoBehaviour
         // Generate unique id for the encounter.
         string encounterId = Guid.NewGuid().ToString();
 
-        // Create a new enemy spawn
-        GameObject monsterSpawn = Instantiate(encounterSpawn, interfacePanel.transform);
+        // Create a new enemy spawn attached to map renderer.
+        GameObject monsterSpawn = Instantiate(encounterSpawn, mapRenderer.transform);
+
+        // Set the encounter spawn location.
+        monsterSpawn.GetComponent<MapPin>().Location = new LatLon(51.507, -0.17);
+
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
         encounterSpawnManager.EncounterSpawnInit(encounterId, monsters, skillSequences);
 
