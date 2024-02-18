@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Microsoft.Maps.Unity;
+using Microsoft.Geospatial;
+using System;
 
 public class MapManager : MonoBehaviour
 {
@@ -11,6 +13,16 @@ public class MapManager : MonoBehaviour
     private LocationServiceStatus locationServiceStatus;
     private bool permissionGranted = false;
     public GameObject map;
+
+    // Map Constants
+    private const int earthRadius = 6371000;
+    private const float granularity = 0.1f;
+    private const float minZoomLevel = 16;
+    private const float maxZoomLevel = 20;
+
+    // Pin Constants
+    private const float minPinScale = 0.025f;
+    private const float maxPinScale = 0.120f;
 
     public static MapManager Instance {
         get {
@@ -28,6 +40,12 @@ public class MapManager : MonoBehaviour
     void Awake()
     {
         map = gameObject;
+
+        // Set the map's zoom level
+        map.GetComponent<MapRenderer>().MinimumZoomLevel = minZoomLevel;
+        map.GetComponent<MapRenderer>().MaximumZoomLevel = maxZoomLevel;
+
+        // Start GPS location service
         StartCoroutine(GPSLoc());
     }
 
@@ -150,5 +168,67 @@ public class MapManager : MonoBehaviour
 
     public string getLongitude() {
         return location.longitude.ToString();
+    }
+
+    /*** Map Pins ***/
+    // Add Pin to some location
+    public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1) {
+        GameObject pin = Instantiate(prefab, map.transform);
+        // Add MapPin component to the pin if not already there
+        if (!pin.TryGetComponent(out MapPin mapPinComponent)) {
+            mapPinComponent = pin.AddComponent<MapPin>();
+        }
+        mapPinComponent.Location = new LatLon(latitude, longitude);
+
+        // Adjust scaling of the pin
+        mapPinComponent.Altitude = 1;
+        mapPinComponent.ScaleCurve = AnimationCurve.Linear(minZoomLevel, minPinScale, maxZoomLevel, maxPinScale);
+
+        // Set pin rotation to face the camera
+        pin.transform.LookAt(Camera.main.transform);
+        return pin;
+    }
+
+    // Add Pin near current location or provided location based on max and min radius, in some direction.
+    public GameObject AddPinNearLocation(GameObject prefab, float maxRadius, float minRadius = 0,
+                                   double direction = -1, double latitude = -1, double longitude = -1) {
+        //  Assert that direction must be between 0 and 360
+        if (direction != -1 && (direction < 0 || direction > 360)) {
+            throw new ArgumentException("Direction must be between 0 and 360");
+        }
+
+        // Assert that maxRadius must be greater than minRadius
+        if (maxRadius < minRadius) {
+            throw new ArgumentException("maxRadius must be greater than minRadius");
+        }
+
+        // Assert that minRadius must be greater than or equal to 0
+        if (minRadius < 0) {
+            throw new ArgumentException("minRadius must be greater than or equal to 0");
+        }
+
+        // Get random distance within maxRadius that is not within minRadius with a granularity of 0.1 meters
+        double randRadius = UnityEngine.Random.Range(minRadius / granularity, maxRadius / granularity) * granularity;
+
+        // Get random direction if not provided
+        direction = (direction == -1) ? UnityEngine.Random.Range(0, 360) : direction;
+
+        // Convert direction to radians and get the change in latitude and longitude
+        double directionInRadians = direction / 180 * Math.PI;
+        double dLon = randRadius * Math.Cos(directionInRadians);
+        double dLat = randRadius * Math.Sin(directionInRadians);
+
+        // If latitude and longitude are not provided, use current location
+        latitude = (latitude == -1) ? location.latitude : latitude;
+        longitude = (longitude == -1) ? location.longitude : longitude;
+
+        (double, double) newLocation = AddMetersToCoordinate(latitude, longitude, dLat, dLon);
+        return AddPin(prefab, newLocation.Item1, newLocation.Item2);
+    }
+
+    public static (double, double) AddMetersToCoordinate(double latitude, double longitude, double dLat, double dLon) {
+        double newLatitude  = latitude  + dLat / earthRadius * (180 / Math.PI);
+        double newLongitude = longitude + dLon / earthRadius * (180 / Math.PI) / Math.Cos(latitude * Math.PI / 180);
+        return (newLatitude, newLongitude);
     }
 }

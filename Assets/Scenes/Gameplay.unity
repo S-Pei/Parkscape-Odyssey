@@ -3029,7 +3029,7 @@ PrefabInstance:
     - target: {fileID: 8236090144277384260, guid: c08262b24dbc545fda9e898c065e1b3b,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0.0000033974648
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3628,9 +3628,9 @@ MonoBehaviour:
   _center:
     _latitude: 51.507
     _longitude: -0.169999999999988
-  _zoomLevel: 19.17
-  _minimumZoomLevel: 15.19
-  _maximumZoomLevel: 19.17
+  _zoomLevel: 16
+  _minimumZoomLevel: 16
+  _maximumZoomLevel: 20
   _mapTerrainType: 2
   _mapShape: 0
   _localMapDimension: {x: 0.8, y: 1.6}
@@ -3708,6 +3708,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef1496efeaa2046c18ad954eb2e6562f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  map: {fileID: 0}
 --- !u!1 &1940498430
 GameObject:
   m_ObjectHideFlags: 0
