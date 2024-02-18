@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Codice.Client.BaseCommands;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +18,8 @@ public class GameInterfaceManager : MonoBehaviour
 
     [SerializeField]
     private List<Sprite> playerIcons;
+
+    private GameObject playerView;
 
     private Dictionary<string, int> roleToIcon = new Dictionary<string, int>()
         {
@@ -53,7 +56,17 @@ public class GameInterfaceManager : MonoBehaviour
 
     // Opens the player view with the player's role informationa and stats
     public void OpenPlayerView() {
-        GameObject playerView = Instantiate(playerViewPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        playerView = Instantiate(playerViewPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+
+        // Disable Map Interactions
+        MapManager.Instance.DisableMapInteraction();
+
+
+        // Set close button onClick
+        Button closeButton = playerView.transform.Find("Close Button").GetComponent<Button>();
+        closeButton.onClick.AddListener(ClosePlayerView);
+
+        // Set up player view
         playerView.SetActive(false);
         PlayerViewManager playerViewManager = playerView.GetComponent<PlayerViewManager>();
 
@@ -62,6 +75,11 @@ public class GameInterfaceManager : MonoBehaviour
         playerViewManager.SetPlayerIcon(GameState.MyPlayer.Icon);
 
         playerView.SetActive(true);
+    }
+
+    private void ClosePlayerView() {
+        MapManager.Instance.EnableMapInteraction();
+        Destroy(playerView);
     }
 
     public Sprite GetIcon(string role) {
