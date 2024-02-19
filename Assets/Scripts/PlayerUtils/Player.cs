@@ -16,6 +16,7 @@ public class Player
     public int Defence  { get; private set; }
     public string Description { get; }
     public Sprite Icon { get; set; }
+    public bool IsLeader { get; set; }
 
     // Multipliers
     public float AttackMultiplier { get; set; }

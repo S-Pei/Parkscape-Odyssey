@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Microsoft.Maps.Unity;
+using Microsoft.Geospatial;
 
 public class GameState {
     private static readonly bool DEBUGMODE = 
@@ -50,6 +52,12 @@ public class GameState {
     public List<List<SkillName>> skillSequences;
 
     public Dictionary<string, string> partyMembers;
+
+    // MAP
+    // Medium Encounter Locations broadcasted by the leader/ web authoring tool in the beginning of the game
+    public Dictionary<string, LatLon> mediumEncounterLocations = new();
+    // Medium Encounter IDs found by the player, to be shared with other players
+    public HashSet<string> foundMediumEncounters = new();
 
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {

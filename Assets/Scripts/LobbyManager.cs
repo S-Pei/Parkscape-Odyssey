@@ -179,6 +179,7 @@ public class LobbyManager : MonoBehaviour {
 
 
         this.isLeader = isLeader;
+        GameState.Instance.MyPlayer.IsLeader = isLeader;
         if (!isLeader) {
             // Wait for room to be found.
             if (!FindRoom())

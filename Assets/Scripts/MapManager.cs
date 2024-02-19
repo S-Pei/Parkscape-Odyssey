@@ -4,6 +4,7 @@ using UnityEngine;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
 using System;
+using Newtonsoft.Json;
 
 public class MapManager : MonoBehaviour
 {
@@ -37,7 +38,7 @@ public class MapManager : MonoBehaviour
 
     public static MapManager Instance {
         get {
-            if (instance == null) {
+            if (selfReference == null) {
                 throw new Exception("MapManager has not been initialised.");
             }
             return selfReference;
@@ -49,8 +50,8 @@ public class MapManager : MonoBehaviour
     {
         // Initialisation
         map = gameObject;
-        network = NetworkManager.Instance.networkUtils;
-        instance = GetComponent<MapManager>();
+        network = NetworkManager.Instance.NetworkUtils;
+        selfReference = GetComponent<MapManager>();
         DontDestroyOnLoad(map);
 
         // Disable full blocker
@@ -65,7 +66,7 @@ public class MapManager : MonoBehaviour
         mapRenderer.MaximumZoomLevel = maxZoomLevel;
 
         // Start GPS location service
-        StartCoroutine(GPSLoc());
+        StartCoroutine(InitialiseAndUpdateGPS());
     }
 
     // Update is called once per frame
@@ -74,8 +75,12 @@ public class MapManager : MonoBehaviour
         
     }
 
-    IEnumerator GPSLoc() {
+    IEnumerator InitialiseAndUpdateGPS() {
+        yield return StartCoroutine(InitialiseGPS());
+        yield return StartCoroutine(GPSLoc());
+    }
 
+    IEnumerator InitialiseGPS() {
         #if UNITY_EDITOR
             // No permission handling needed in Editor
         #elif UNITY_ANDROID
@@ -83,7 +88,6 @@ public class MapManager : MonoBehaviour
                 Debug.Log("Requesting Fine Location Permission");
                 UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
             }
-           
 
             // Wait for the user to interact with the permission dialog
             while (!permissionGranted)
@@ -117,47 +121,55 @@ public class MapManager : MonoBehaviour
                 yield break;
             }
         #endif
+        yield return null;
+    }
 
-        // Start service before querying location
-        UnityEngine.Input.location.Start(500f, 500f);
-        Debug.Log("Location Service Status: " + UnityEngine.Input.location.status);
-                
-        // Wait until service initializes
-        int maxWait = 20;
-        while (UnityEngine.Input.location.status == LocationServiceStatus.Initializing && maxWait > 0) {
-            yield return new WaitForSecondsRealtime(1);
-            maxWait--;
-        }
-
-        // Editor has a bug which doesn't set the service status to Initializing. So extra wait in Editor.
-        #if UNITY_EDITOR
-            int editorMaxWait = 30;
-            while (UnityEngine.Input.location.status == LocationServiceStatus.Stopped && editorMaxWait > 0) {
+    IEnumerator GPSLoc() {
+        while (true) {
+            // Start service before querying location
+            UnityEngine.Input.location.Start(500f, 500f);
+            Debug.Log("Location Service Status: " + UnityEngine.Input.location.status);
+                    
+            // Wait until service initializes
+            int maxWait = 20;
+            while (UnityEngine.Input.location.status == LocationServiceStatus.Initializing && maxWait > 0) {
                 yield return new WaitForSecondsRealtime(1);
-                Debug.Log("Editor Wait: " + editorMaxWait);
-                Debug.Log("Editor Location Service Status: " + UnityEngine.Input.location.status);
-                editorMaxWait--;
+                maxWait--;
             }
-        #endif
 
-        // Service didn't initialize in 20 seconds
-        if (maxWait < 1)
-        {
-            Debug.LogError("Timed out");
-            yield break;
-        }
+            // Editor has a bug which doesn't set the service status to Initializing. So extra wait in Editor.
+            #if UNITY_EDITOR
+                int editorMaxWait = 30;
+                while (UnityEngine.Input.location.status == LocationServiceStatus.Stopped && editorMaxWait > 0) {
+                    yield return new WaitForSecondsRealtime(1);
+                    Debug.Log("Editor Wait: " + editorMaxWait);
+                    Debug.Log("Editor Location Service Status: " + UnityEngine.Input.location.status);
+                    editorMaxWait--;
+                }
+            #endif
 
-        // Connection has failed
-        if (Input.location.status == LocationServiceStatus.Failed)
-        {
-            Debug.LogError("Unable to determine device location");
-            yield break;
+            // Service didn't initialize in 20 seconds
+            if (maxWait < 1)
+            {
+                Debug.LogError("Timed out");
+                yield break;
+            }
+
+            // Connection has failed
+            if (Input.location.status == LocationServiceStatus.Failed)
+            {
+                Debug.LogError("Unable to determine device location");
+                yield break;
+            }
+            else
+            {
+                // Access granted and location value could be retrieved
+                UpdateGPSData();
+                Input.location.Stop();
+            }
+            yield return new WaitForSecondsRealtime(2);
         }
-        else
-        {
-            // Access granted and location value could be retrieved
-            InvokeRepeating("UpdateGPSData", 0.0f, 1.0f);
-        }
+        
     }
 
     private void UpdateGPSData() {
@@ -174,17 +186,17 @@ public class MapManager : MonoBehaviour
         mapRenderer.Center = new LatLon(location.latitude, location.longitude);
 
         // Check if map sharing is needed
-        if (GameState.Instance.MyPlayer.isLeader 
+        if (GameState.Instance.MyPlayer.IsLeader 
             && (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
             || NetworkManager.Instance.ChangeInConnectedPlayers())) {
             // Send map info to other players
             MapMessage mapMessage = new MapMessage(MapMessageType.RECEIVE_MAP_INFO, GameState.Instance.foundMediumEncounters);
-            network.broadcast(mapMessage);
+            network.broadcast(mapMessage.toJson());
         }
 
     }
 
-    private CallbackStatus HandleMessage(Message message) {
+    public CallbackStatus HandleMessage(Message message) {
         MapMessage mapMessage = (MapMessage) message.messageInfo;
         switch (mapMessage.type) {
             case MapMessageType.RECEIVE_MAP_INFO:
@@ -284,18 +296,36 @@ public class MapManager : MonoBehaviour
         mapTouchInteractionHandler.enabled = true;
         mapBlocker.SetActive(false);
     }
+
+    // ENCOUNTER SPAWNING
+    // Spawn local random encounters on the map
+    public void SpawnRandomEncounters() {
+        // TODO
+    }
+    // Leader gets medium encounter locations from web authoring tool
+    public void GetMediumEncounters() {
+        // if (GameState.Instance.)
+    }
 }
 
 public class MapMessage : MessageInfo 
 {
     public MapMessageType type {get; set;}
     public MessageType messageType {get; set;}
-    public Set<string> foundEncounterIds;
+    public HashSet<string> foundEncounterIds;
 
-    public MapMessage(MapMessageType type, Set<string> foundEncounterIds) {
+    public MapMessage(MapMessageType type, HashSet<string> foundEncounterIds) {
         this.foundEncounterIds = foundEncounterIds;
         this.messageType = MessageType.MAP;
         this.type = type;
+    }
+    
+    public string toJson() {
+        return JsonConvert.SerializeObject(this);
+    }
+
+    public string processMessageInfo() {
+        throw new NotImplementedException();
     }
 
 }
