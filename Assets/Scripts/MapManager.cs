@@ -8,11 +8,15 @@ using System;
 public class MapManager : MonoBehaviour
 {
     // Map manager is a singleton class
-    public static MapManager instance;
+    public static MapManager selfReference;
     private LocationInfo location;
     private LocationServiceStatus locationServiceStatus;
     private bool permissionGranted = false;
     public GameObject map;
+
+    // Network
+    private NetworkUtils network;
+    private int previousFoundEncounterCount = 0;
 
     // Map Constants
     private const int earthRadius = 6371000;
@@ -26,13 +30,12 @@ public class MapManager : MonoBehaviour
 
     public static MapManager Instance {
         get {
-            if (instance == null) {
+            if (selfReference == null) {
                 // To make sure that script is persistent across scenes
-                GameObject go = new GameObject("MapManager");
-                instance = go.AddComponent<MapManager>();
-                DontDestroyOnLoad(go);
+                selfReference = this;
+                DontDestroyOnLoad(gameObject);
             }
-            return instance;
+            return selfReference;
         }
     }
 
@@ -40,6 +43,7 @@ public class MapManager : MonoBehaviour
     void Awake()
     {
         map = gameObject;
+        network = NetworkManager.Instance.networkUtils;
 
         // Set the map's zoom level
         map.GetComponent<MapRenderer>().MinimumZoomLevel = minZoomLevel;
@@ -152,7 +156,30 @@ public class MapManager : MonoBehaviour
         }
         locationServiceStatus = Input.location.status;
         Debug.Log("Location Service Status: " + locationServiceStatus);
-        map.GetComponent<MapRenderer>().Center = new Microsoft.Geospatial.LatLon(location.latitude, location.longitude);
+
+        // Check if map sharing is needed
+        if (GameState.Instance.MyPlayer.isLeader 
+            && (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
+            || NetworkManager.Instance.ChangeInConnectedPlayers())) {
+            // Send map info to other players
+            MapMessage mapMessage = new MapMessage(MapMessageType.RECEIVE_MAP_INFO, GameState.Instance.foundMediumEncounters);
+            network.broadcast(mapMessage);
+        }
+        
+        map.GetComponent<MapRenderer>().Center = new LatLon(location.latitude, location.longitude);
+        
+    }
+
+    private CallbackStatus HandleMessage(Message message) {
+        MapMessage mapMessage = (MapMessage) message.messageInfo;
+        switch (mapMessage.type) {
+            case MapMessageType.RECEIVE_MAP_INFO:
+                // Add to list of found encounters
+                GameState.Instance.foundMediumEncounters.UnionWith(mapMessage.foundEncounterIds);
+                // Add pins for the found encounters
+                break;
+        }
+        return CallbackStatus.PROCESSED;
     }
 
     private void OnDestroy()
@@ -231,4 +258,22 @@ public class MapManager : MonoBehaviour
         double newLongitude = longitude + dLon / earthRadius * (180 / Math.PI) / Math.Cos(latitude * Math.PI / 180);
         return (newLatitude, newLongitude);
     }
+}
+
+public class MapMessage : MessageInfo 
+{
+    public MapMessageType type {get; set;}
+    public MessageType messageType {get; set;}
+    public Set<string> foundEncounterIds;
+
+    public MapMessage(MapMessageType type, Set<string> foundEncounterIds) {
+        this.foundEncounterIds = foundEncounterIds;
+        this.messageType = MessageType.MAP;
+        this.type = type;
+    }
+
+}
+
+public enum MapMessageType {
+    RECEIVE_MAP_INFO,
 }
