@@ -88,6 +88,8 @@ public class LobbyManager : MonoBehaviour {
         GameState gameState = GameState.Instance;
         gameState.Initialize(myID, roomCode, players);
 
+        GameState.Instance.MyPlayer.IsLeader = true;
+
         // Single player start
         if (players.Count == 1) {
             StartGame();
@@ -179,7 +181,6 @@ public class LobbyManager : MonoBehaviour {
 
 
         this.isLeader = isLeader;
-        GameState.Instance.MyPlayer.IsLeader = isLeader;
         if (!isLeader) {
             // Wait for room to be found.
             if (!FindRoom())

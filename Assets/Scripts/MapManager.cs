@@ -14,7 +14,16 @@ public class MapManager : MonoBehaviour
     private LocationServiceStatus locationServiceStatus;
     private bool permissionGranted = false;
     public GameObject map;
+    private bool mapCenterSet = false;
 
+    // Player pins
+    [SerializeField]
+    private GameObject playerPinObject;
+    private MapPin playerPin;
+
+    [SerializeField]
+    private GameObject playerRadiusObject;
+    private MapPin playerRadiusPin;
     // Network
     private NetworkUtils network;
     private int previousFoundEncounterCount = 0;
@@ -31,6 +40,7 @@ public class MapManager : MonoBehaviour
     private const float granularity = 0.1f;
     private const float minZoomLevel = 16;
     private const float maxZoomLevel = 20;
+    private const float defaultZoomLevel = 18.25f;
 
     // Pin Constants
     private const float minPinScale = 0.025f;
@@ -54,6 +64,8 @@ public class MapManager : MonoBehaviour
         selfReference = GetComponent<MapManager>();
         DontDestroyOnLoad(map);
 
+        Debug.Log("MapManager Awake");
+
         // Disable full blocker
         mapBlocker.SetActive(false);
 
@@ -61,9 +73,15 @@ public class MapManager : MonoBehaviour
         mapRenderer = GetComponent<MapRenderer>();
         mapTouchInteractionHandler = GetComponent<MapTouchInteractionHandler>();
 
+        playerPin = playerPinObject.GetComponent<MapPin>();
+        playerRadiusPin = playerRadiusObject.GetComponent<MapPin>();
+
         // Set the map's zoom level
         mapRenderer.MinimumZoomLevel = minZoomLevel;
         mapRenderer.MaximumZoomLevel = maxZoomLevel;
+
+        // Set Default zoom
+        mapRenderer.ZoomLevel = defaultZoomLevel;
 
         // Start GPS location service
         StartCoroutine(InitialiseAndUpdateGPS());
@@ -165,9 +183,9 @@ public class MapManager : MonoBehaviour
             {
                 // Access granted and location value could be retrieved
                 UpdateGPSData();
-                Input.location.Stop();
+                // Input.location.Stop();
             }
-            yield return new WaitForSecondsRealtime(2);
+            yield return new WaitForSecondsRealtime(1);
         }
         
     }
@@ -178,12 +196,21 @@ public class MapManager : MonoBehaviour
             // Access granted and location value could be retrieved
             location = Input.location.lastData;
             Debug.Log("Location: (" + location.latitude + ", " + location.longitude + ")");
+
+            // Set the map's center to the current location
+            if (!mapCenterSet) {
+                mapRenderer.Center = new LatLon(location.latitude, location.longitude);
+                mapCenterSet = true;
+            }
         } else {
             // GPS service stopped
         }
         locationServiceStatus = Input.location.status;
         Debug.Log("Location Service Status: " + locationServiceStatus);
-        mapRenderer.Center = new LatLon(location.latitude, location.longitude);
+
+        // Update player pin location
+        playerPin.Location = new LatLon(location.latitude, location.longitude);
+        playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
 
         // Check if map sharing is needed
         if (GameState.Instance.MyPlayer.IsLeader 
