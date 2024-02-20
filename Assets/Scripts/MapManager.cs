@@ -112,7 +112,7 @@ public class MapManager : MonoBehaviour
         if (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
             || NetworkManager.Instance.ChangeInConnectedPlayers()) {
             // Send map info to other players
-            MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters.ToList(), new());
+            MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters.ToList(), new Dictionary<string, Dictionary<string, double>>());
             network.broadcast(mapMessage.toJson());
         }
         
@@ -260,6 +260,7 @@ public class MapMessage : MessageInfo
     public List<string> foundEncounterIds;
     public Dictionary<string, Dictionary<string, double>> mediumEncounterLocations;
 
+    [JsonConstructor]
     public MapMessage(MapMessageType type, List<string> foundEncounterIds, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations) {
         this.messageType = MessageType.MAP;
         this.foundEncounterIds = foundEncounterIds;

@@ -183,7 +183,7 @@ IEnumerator GPSLoc() {
             Debug.Log("Sending encounter info to players in lobby");
             // Send medium encounters to players
             Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
-            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new(), mediumEncounterLocations).toJson());
+            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
         }
     }
 }
