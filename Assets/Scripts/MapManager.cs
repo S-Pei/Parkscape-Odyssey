@@ -5,6 +5,7 @@ using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
 using System;
 using Newtonsoft.Json;
+using System.Linq;
 
 public class MapManager : MonoBehaviour
 {
@@ -111,7 +112,7 @@ public class MapManager : MonoBehaviour
         if (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
             || NetworkManager.Instance.ChangeInConnectedPlayers()) {
             // Send map info to other players
-            MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters, new());
+            MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters.ToList(), new());
             network.broadcast(mapMessage.toJson());
         }
         
@@ -123,7 +124,8 @@ public class MapManager : MonoBehaviour
             // Receive new found encounters from other players
             case MapMessageType.FOUND_ENCOUNTERS:
                 // Add to list of found encounters
-                GameState.Instance.foundMediumEncounters.UnionWith(mapMessage.foundEncounterIds);
+                HashSet<string> newFoundEncounters = new HashSet<string>(mapMessage.foundEncounterIds);
+                GameState.Instance.foundMediumEncounters.UnionWith(newFoundEncounters);
                 // Add pins for the found encounters
                 break;
             // Receive medium encounter locations from leader
@@ -255,10 +257,10 @@ public class MapMessage : MessageInfo
 {
     public MapMessageType type {get; set;}
     public MessageType messageType {get; set;}
-    public HashSet<string> foundEncounterIds;
+    public List<string> foundEncounterIds;
     public Dictionary<string, Dictionary<string, double>> mediumEncounterLocations;
 
-    public MapMessage(MapMessageType type, HashSet<string> foundEncounterIds, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations) {
+    public MapMessage(MapMessageType type, List<string> foundEncounterIds, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations) {
         this.messageType = MessageType.MAP;
         this.foundEncounterIds = foundEncounterIds;
         this.type = type;
