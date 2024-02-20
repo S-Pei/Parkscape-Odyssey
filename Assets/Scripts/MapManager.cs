@@ -15,6 +15,7 @@ public class MapManager : MonoBehaviour
     private bool permissionGranted = false;
     public GameObject map;
     private bool mapCenterSet = false;
+    private bool follow = true;
 
     // Player pins
     [SerializeField]
@@ -40,8 +41,10 @@ public class MapManager : MonoBehaviour
     private const float granularity = 0.1f;
     private const float minZoomLevel = 16;
     private const float maxZoomLevel = 20;
-    private const float defaultZoomLevel = 18.25f;
-    private const float interactDistance = 40; // in meters
+    private const float defaultZoomLevel = 19;
+
+    [SerializeField]
+    private float interactDistance = 40; // in meters
 
     // Pin Constants
     private const float minPinScale = 0.025f;
@@ -72,7 +75,7 @@ public class MapManager : MonoBehaviour
         mapRenderer = GetComponent<MapRenderer>();
         mapTouchInteractionHandler = GetComponent<MapTouchInteractionHandler>();
 
-        if (playerPinObject == null || playerRadiusObject == null) {
+        if (playerPinObject != null && playerRadiusObject != null) {
             playerPin = playerPinObject.GetComponent<MapPin>();
             playerRadiusPin = playerRadiusObject.GetComponent<MapPin>();
         }
@@ -199,7 +202,7 @@ public class MapManager : MonoBehaviour
             Debug.Log("Location: (" + location.latitude + ", " + location.longitude + ")");
 
             // Set the map's center to the current location
-            if (!mapCenterSet) {
+            if (!mapCenterSet || follow) {
                 mapRenderer.Center = new LatLon(location.latitude, location.longitude);
                 mapCenterSet = true;
             }
@@ -287,6 +290,17 @@ public class MapManager : MonoBehaviour
         return pin;
     }
 
+    // Called when player clicks on the button.
+    public void SnapBack() {
+        mapRenderer.Center = new LatLon(location.latitude, location.longitude);
+        follow = true;
+    }
+
+    // Called when user moves the map.
+    public void StopFollowing() {
+        follow = false;
+    }
+
     // Add Pin near current location or provided location based on max and min radius, in some direction.
     public GameObject AddPinNearLocation(GameObject prefab, float maxRadius, float minRadius = 0,
                                    double direction = -1, double latitude = -1, double longitude = -1) {
@@ -303,6 +317,11 @@ public class MapManager : MonoBehaviour
         // Assert that minRadius must be greater than or equal to 0
         if (minRadius < 0) {
             throw new ArgumentException("minRadius must be greater than or equal to 0");
+        }
+
+        // Assert that location must have been initialised if latitude and longitude are not provided
+        if (latitude == -1 && longitude == -1 && !mapCenterSet) {
+            throw new ArgumentException("Location must be initialised or latitude and longitude must be provided");
         }
 
         // Get random distance within maxRadius that is not within minRadius with a granularity of 0.1 meters
