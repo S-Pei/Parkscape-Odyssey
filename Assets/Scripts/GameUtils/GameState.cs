@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 public class GameState {
@@ -244,6 +245,25 @@ public class GameState {
 
 
     // --------------------------------  BATTLE --------------------------------
+    public void ApplyBattleLossPenalty() {
+        // Get all available card ids
+        List<int> cardIds = MyCards.Keys.ToList();
+        
+        // randomly select half of the ids in cardsIds
+        int halfCount = cardIds.Count / 2;
+        List<int> selectedIds = new();
+        Random random = new();
+        for (int i = 0; i < halfCount; i++)
+        {
+            int randomIndex = random.Next(cardIds.Count);
+            selectedIds.Add(cardIds[randomIndex]);
+            cardIds.RemoveAt(randomIndex);
+        }
+
+        foreach (int id in selectedIds) {
+            RemoveCard(id);
+        }
+    }
 }
 
 public class GameStateMessage : MessageInfo {
