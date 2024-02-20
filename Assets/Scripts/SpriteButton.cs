@@ -8,7 +8,10 @@ public class SpriteButton : MonoBehaviour {
     [SerializeField]
     private bool Disabled;
 
-    void Start() {
+    protected SpriteRenderer spriteRenderer;
+    protected Color originalColor;
+
+    protected void Start() {
         if (onClick == null) {
             throw new System.Exception("SpriteButton requires an onClick event to be set.");
         }
@@ -17,16 +20,28 @@ public class SpriteButton : MonoBehaviour {
         if (GetComponent<BoxCollider>() == null) {
             throw new System.Exception("SpriteButton requires a BoxCollider component on the object.");
         }
+
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        originalColor = spriteRenderer.color;
     }
 
     // Update is called once per frame
-    void Update() {
+    protected void Update() {
         if (Disabled) return;
         if (Input.GetMouseButtonUp(0)) {
             GameObject target = GetClickedObject(out RaycastHit hit);
             if (target == gameObject) {
                 onClick.Invoke();
             }
+        }
+    }
+
+    protected void SetDisabled(bool disabled) {
+        Disabled = disabled;
+        if (disabled) {
+            spriteRenderer.color = Color.gray;
+        } else {
+            spriteRenderer.color = originalColor;
         }
     }
 
@@ -37,7 +52,6 @@ public class SpriteButton : MonoBehaviour {
             if (hit.collider != null)
                 target = hit.collider.gameObject;
         }
-        Debug.Log(target);
         return target;
     }
 }
