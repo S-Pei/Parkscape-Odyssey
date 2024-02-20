@@ -50,6 +50,7 @@ public class MapManager : MonoBehaviour
         get {
             if (selfReference == null) {
                 selfReference = new MapManager();
+                network = NetworkManager.Instance.NetworkUtils;
             }
             return selfReference;
         }
@@ -60,7 +61,6 @@ public class MapManager : MonoBehaviour
     {
         // Initialisation
         map = gameObject;
-        network = NetworkManager.Instance.NetworkUtils;
 
         Debug.Log("MapManager Awake");
 
