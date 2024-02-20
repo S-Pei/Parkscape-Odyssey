@@ -214,7 +214,7 @@ public class MapManager : MonoBehaviour
         if (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
             || NetworkManager.Instance.ChangeInConnectedPlayers()) {
             // Send map info to other players
-            MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters, null);
+            MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters, new());
             network.broadcast(mapMessage.toJson());
         }
 
@@ -338,7 +338,7 @@ public class MapManager : MonoBehaviour
 
             Debug.Log("Sending encounter info to players in lobby");
             // Send medium encounters to players
-            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, null, GameState.Instance.mediumEncounterLocations).toJson());
+            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new(), GameState.Instance.mediumEncounterLocations).toJson());
         }
     }
 }
@@ -351,10 +351,10 @@ public class MapMessage : MessageInfo
     public Dictionary<string, LatLon> mediumEncounterLocations;
 
     public MapMessage(MapMessageType type, HashSet<string> foundEncounterIds, Dictionary<string, LatLon> mediumEncounterLocations) {
-        this.foundEncounterIds = foundEncounterIds != null ? foundEncounterIds : new HashSet<string>();
+        this.foundEncounterIds = foundEncounterIds;
         this.messageType = MessageType.MAP;
         this.type = type;
-        this.mediumEncounterLocations = mediumEncounterLocations != null ? mediumEncounterLocations : new Dictionary<string, LatLon>();
+        this.mediumEncounterLocations = mediumEncounterLocations;
     }
     
     public string toJson() {
