@@ -227,7 +227,12 @@ public class BattleManager : MonoBehaviour {
 
     public void StartTurn() {
         Debug.Log("Started turn");
-        battleStatus = BattleStatus.TURN_IN_PROGRESS;
+
+        if (GameState.Instance.MyPlayer.IsDead()) {
+            battleStatus = BattleStatus.DEAD;
+        } else {
+            battleStatus = BattleStatus.TURN_IN_PROGRESS;
+        }
 
         Player myPlayer = GameState.Instance.MyPlayer;
 
@@ -240,7 +245,7 @@ public class BattleManager : MonoBehaviour {
 
 
     // Turn end
-    public void EndTurn() {        
+    public void EndTurn() {
         battleStatus = BattleStatus.TURN_ENDED;
         
 
@@ -684,7 +689,8 @@ public enum BattleMessageType {
 public enum BattleStatus {
     TURN_IN_PROGRESS,
     TURN_ENDED,
-    RESOLVING_PLAYED_CARDS
+    RESOLVING_PLAYED_CARDS,
+    DEAD
 }
 
 public class BattleMessage : MessageInfo
