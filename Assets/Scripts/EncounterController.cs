@@ -86,6 +86,7 @@ public class EncounterController : MonoBehaviour
         CreateMonsterSpawn(); // TEMPORARY
     }
 
+    // Location dependent encounter spawn, so need to have location initialized, or provide one.
     private void CreateMonsterSpawn() {
         // Generate monsters for the encounter.
         List<Monster> monsters = GenerateEncounterMonsters();
@@ -96,7 +97,7 @@ public class EncounterController : MonoBehaviour
         // Generate unique id for the encounter.
         string encounterId = Guid.NewGuid().ToString();
 
-        GameObject monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 50, 20);
+        GameObject monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 50, 20, latitude: 51.493529, longitude: -0.192376); // TEMPORARY
 
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
         encounterSpawnManager.EncounterSpawnInit(encounterId, monsters, skillSequences);
