@@ -94,27 +94,31 @@ public class MapManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Get GPS location
-        location = gpsManager.GetLocation();
+        if (gpsManager.getLocationServiceStatus() == LocationServiceStatus.Running) {
+            // Get GPS location
+            location = gpsManager.GetLocation();
 
-        // Set the map's center to the current location
-        if (!mapCenterSet || follow) {
-            mapRenderer.Center = new LatLon(location.latitude, location.longitude);
-            mapCenterSet = true;
-        }
+            // Set the map's center to the current location
+            if (!mapCenterSet || follow) {
+                mapRenderer.Center = new LatLon(location.latitude, location.longitude);
+                mapCenterSet = true;
+            }
 
-         // Update player pin location
-        if (playerPin != null) {
-            playerPin.Location = new LatLon(location.latitude, location.longitude);
-            playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
+            // Update player pin location
+            if (playerPin != null) {
+                playerPin.Location = new LatLon(location.latitude, location.longitude);
+                playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
+            }
         }
 
         // Check if map sharing is needed
         if (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
             || NetworkManager.Instance.ChangeInConnectedPlayers()) {
             // Send map info to other players
+            Debug.Log(GameState.Instance.foundMediumEncounters.Count + ", " + previousFoundEncounterCount);
             MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters.ToList(), new Dictionary<string, Dictionary<string, double>>());
             network.broadcast(mapMessage.toJson());
+            previousFoundEncounterCount = GameState.Instance.foundMediumEncounters.Count;
         }
         
     }

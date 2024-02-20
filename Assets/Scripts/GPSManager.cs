@@ -171,6 +171,10 @@ IEnumerator GPSLoc() {
         return location.longitude.ToString();
     }
 
+    public LocationServiceStatus getLocationServiceStatus() {
+        return locationServiceStatus;
+    }
+
     // ENCOUNTER SPAWNING
     // Leader gets medium encounter locations from web authoring tool
     public void GetMediumEncounters() {
