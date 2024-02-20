@@ -71,8 +71,10 @@ public class MapManager : MonoBehaviour
         mapRenderer = GetComponent<MapRenderer>();
         mapTouchInteractionHandler = GetComponent<MapTouchInteractionHandler>();
 
-        playerPin = playerPinObject.GetComponent<MapPin>();
-        playerRadiusPin = playerRadiusObject.GetComponent<MapPin>();
+        if (playerPinObject == null || playerRadiusObject == null) {
+            playerPin = playerPinObject.GetComponent<MapPin>();
+            playerRadiusPin = playerRadiusObject.GetComponent<MapPin>();
+        }
 
         // Set the map's zoom level
         mapRenderer.MinimumZoomLevel = minZoomLevel;
@@ -207,16 +209,21 @@ public class MapManager : MonoBehaviour
         Debug.Log("Location Service Status: " + locationServiceStatus);
 
         // Update player pin location
-        playerPin.Location = new LatLon(location.latitude, location.longitude);
-        playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
-
-        // Check if map sharing is needed
-        if (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
-            || NetworkManager.Instance.ChangeInConnectedPlayers()) {
-            // Send map info to other players
-            MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters, new());
-            network.broadcast(mapMessage.toJson());
+        if (playerPin != null) {
+            playerPin.Location = new LatLon(location.latitude, location.longitude);
+            playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
         }
+
+        if (GameState.Instance.Initialized && network != null) {
+            // Check if map sharing is needed
+            if (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
+                || NetworkManager.Instance.ChangeInConnectedPlayers()) {
+                // Send map info to other players
+                MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters, new());
+                network.broadcast(mapMessage.toJson());
+            }
+        }
+        
 
     }
 
@@ -231,7 +238,7 @@ public class MapManager : MonoBehaviour
                 break;
             // Receive medium encounter locations from leader
             case MapMessageType.MAP_INFO:
-                GameState.Instance.mediumEncounterLocations = mapMessage.mediumEncounterLocations;
+                GameState.Instance.mediumEncounterLocations = MapMessage.DictToLatLon(mapMessage.mediumEncounterLocations);
                 // Add pins for the medium encounters
                 break;
         }
@@ -338,7 +345,8 @@ public class MapManager : MonoBehaviour
 
             Debug.Log("Sending encounter info to players in lobby");
             // Send medium encounters to players
-            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new(), GameState.Instance.mediumEncounterLocations).toJson());
+            Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
+            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new(), mediumEncounterLocations).toJson());
         }
     }
 }
@@ -348,13 +356,32 @@ public class MapMessage : MessageInfo
     public MapMessageType type {get; set;}
     public MessageType messageType {get; set;}
     public HashSet<string> foundEncounterIds;
-    public Dictionary<string, LatLon> mediumEncounterLocations;
+    public Dictionary<string, Dictionary<string, double>> mediumEncounterLocations;
 
-    public MapMessage(MapMessageType type, HashSet<string> foundEncounterIds, Dictionary<string, LatLon> mediumEncounterLocations) {
-        this.foundEncounterIds = foundEncounterIds;
+    public MapMessage(MapMessageType type, HashSet<string> foundEncounterIds, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations) {
         this.messageType = MessageType.MAP;
+        this.foundEncounterIds = foundEncounterIds;
         this.type = type;
         this.mediumEncounterLocations = mediumEncounterLocations;
+    }
+
+    public static Dictionary<string, Dictionary<string, double>> LatLonToDict(Dictionary<string, LatLon> latLonDict) {
+        Dictionary<string, Dictionary<string, double>> dict = new();
+        foreach (var entry in latLonDict) {
+            dict.Add(entry.Key, new Dictionary<string, double> {
+                {"latitude", entry.Value.LatitudeInRadians},
+                {"longitude", entry.Value.LongitudeInRadians}
+            });
+        }
+        return dict;
+    }
+
+    public static Dictionary<string, LatLon> DictToLatLon(Dictionary<string, Dictionary<string, double>> dict) {
+        Dictionary<string, LatLon> latLonDict = new();
+        foreach (var entry in dict) {
+            latLonDict.Add(entry.Key, new LatLon(entry.Value["latitude"], entry.Value["longitude"]));
+        }
+        return latLonDict;
     }
     
     public string toJson() {
