@@ -50,7 +50,7 @@ public class MapManager : MonoBehaviour
         get {
             if (selfReference == null) {
                 selfReference = new MapManager();
-                network = NetworkManager.Instance.NetworkUtils;
+                selfReference.network = NetworkManager.Instance.NetworkUtils;
             }
             return selfReference;
         }
