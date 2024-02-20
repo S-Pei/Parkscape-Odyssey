@@ -41,6 +41,7 @@ public class MapManager : MonoBehaviour
     private const float minZoomLevel = 16;
     private const float maxZoomLevel = 20;
     private const float defaultZoomLevel = 18.25f;
+    private const float interactDistance = 40; // in meters
 
     // Pin Constants
     private const float minPinScale = 0.025f;
@@ -277,6 +278,12 @@ public class MapManager : MonoBehaviour
 
         // Set pin rotation to face the camera
         pin.transform.LookAt(Camera.main.transform);
+
+        // Set any other properties of the pin
+        if (pin.TryGetComponent(out SpriteButtonLocationBounded spriteButton)) {
+            spriteButton.SetLocation(latitude, longitude);
+        }
+
         return pin;
     }
 
@@ -321,6 +328,25 @@ public class MapManager : MonoBehaviour
         double newLatitude  = latitude  + dLat / earthRadius * (180 / Math.PI);
         double newLongitude = longitude + dLon / earthRadius * (180 / Math.PI) / Math.Cos(latitude * Math.PI / 180);
         return (newLatitude, newLongitude);
+    }
+
+    // Get distance between two points in metres.
+    public static double DistanceBetweenCoordinates(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = (lat2 - lat1) * (Math.PI / 180);
+        double dLon = (lon2 - lon1) * (Math.PI / 180);
+        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                   Math.Cos(lat1 * (Math.PI / 180)) * Math.Cos(lat2 * (Math.PI / 180)) *
+                   Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return earthRadius * c;
+    }
+
+    public double GetDistanceToPlayer(double latitude, double longitude) {
+        return DistanceBetweenCoordinates(location.latitude, location.longitude, latitude, longitude);
+    }
+
+    public bool WithinDistanceToPlayer(double latitude, double longitude) {
+        return GetDistanceToPlayer(latitude, longitude) <= interactDistance;
     }
 
     /*** Map Interactions ***/
