@@ -55,6 +55,9 @@ public class Player
         int healthToDecrease = Math.Max(dmg - Defence, 0);
         Defence = Math.Max(0, Defence - dmg);
         CurrentHealth -= healthToDecrease;
+        if (CurrentHealth < 0) {
+            CurrentHealth = 0;
+        }
     }
 
     public void Heal(int amount) {
