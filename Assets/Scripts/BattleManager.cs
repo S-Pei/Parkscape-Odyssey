@@ -259,15 +259,23 @@ public class BattleManager : MonoBehaviour {
         MonsterAttack();
         int battleStatus = BattleEnded();
         if (battleStatus == -1) {
+            // Battle hasn't ended, start next turn
             StartTurn();
             UpdateCardNumber();
-            battleUIManager.DisplayHand(hand);
+
+            if (GameState.Instance.MyPlayer.IsDead()) {
+                // Player is dead, don't display hand and display dead panel
+                battleUIManager.PlayerDeadUI();
+            } else {
+                // Player is alive, display hand
+                battleUIManager.DisplayHand(hand);
+            }
         } else {
             Debug.Log("Game ended");
             // End the encounter
             ResetAllPartyMemberStats();
+            battleUIManager.ResetUI();
             GameObject.FindGameObjectWithTag("EncounterManager").GetComponent<EncounterController>().OnFinishEncounter();
-
             GameState.Instance.ExitEncounter();
             SceneManager.UnloadSceneAsync("Battle");
             if (battleStatus == 0) {
@@ -452,7 +460,6 @@ public class BattleManager : MonoBehaviour {
         if (hand is null) {
             hand = new List<CardName>();
         } else {
-            Debug.Log($"Hand count: {hand.Count}");
             foreach (CardName card in hand) {
                 discardPile.Enqueue(card);
             }
@@ -461,7 +468,11 @@ public class BattleManager : MonoBehaviour {
             }
             hand = new();
         }
-        Debug.Log($"Hand count after reset: {hand.Count}");
+
+        // Do not draw a hand if the player is dead
+        if (GameState.Instance.MyPlayer.IsDead()) {
+            return;
+        }
 
         while (hand.Count < HAND_SIZE) {
             // Check whether the draw pile is empty, and reshuffle if so
