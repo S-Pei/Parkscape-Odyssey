@@ -50,7 +50,8 @@ public class MapManager : MonoBehaviour
     public static MapManager Instance {
         get {
             if (selfReference == null) {
-                throw new Exception("MapManager has not been initialised.");
+                selfReference = new MapManager();
+                selfReference.network = NetworkManager.Instance.NetworkUtils;
             }
             return selfReference;
         }
@@ -61,9 +62,6 @@ public class MapManager : MonoBehaviour
     {
         // Initialisation
         map = gameObject;
-        network = NetworkManager.Instance.NetworkUtils;
-        selfReference = GetComponent<MapManager>();
-        DontDestroyOnLoad(map);
 
         Debug.Log("MapManager Awake");
 
@@ -214,11 +212,10 @@ public class MapManager : MonoBehaviour
         playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
 
         // Check if map sharing is needed
-        if (GameState.Instance.MyPlayer.IsLeader 
-            && (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
-            || NetworkManager.Instance.ChangeInConnectedPlayers())) {
+        if (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
+            || NetworkManager.Instance.ChangeInConnectedPlayers()) {
             // Send map info to other players
-            MapMessage mapMessage = new MapMessage(MapMessageType.RECEIVE_MAP_INFO, GameState.Instance.foundMediumEncounters);
+            MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters, new());
             network.broadcast(mapMessage.toJson());
         }
 
@@ -227,10 +224,16 @@ public class MapManager : MonoBehaviour
     public CallbackStatus HandleMessage(Message message) {
         MapMessage mapMessage = (MapMessage) message.messageInfo;
         switch (mapMessage.type) {
-            case MapMessageType.RECEIVE_MAP_INFO:
+            // Receive new found encounters from other players
+            case MapMessageType.FOUND_ENCOUNTERS:
                 // Add to list of found encounters
                 GameState.Instance.foundMediumEncounters.UnionWith(mapMessage.foundEncounterIds);
                 // Add pins for the found encounters
+                break;
+            // Receive medium encounter locations from leader
+            case MapMessageType.MAP_INFO:
+                GameState.Instance.mediumEncounterLocations = mapMessage.mediumEncounterLocations;
+                // Add pins for the medium encounters
                 break;
         }
         return CallbackStatus.PROCESSED;
@@ -351,13 +354,18 @@ public class MapManager : MonoBehaviour
     }
 
     // ENCOUNTER SPAWNING
-    // Spawn local random encounters on the map
-    public void SpawnRandomEncounters() {
-        // TODO
-    }
     // Leader gets medium encounter locations from web authoring tool
     public void GetMediumEncounters() {
-        // if (GameState.Instance.)
+        if (GameState.Instance.MyPlayer.IsLeader) {
+            // TODO: get list from web authoring tool
+            // Hardcoded for now
+            GameState.Instance.mediumEncounterLocations.Add("1", new LatLon(51.49355, -0.1924046));
+            GameState.Instance.mediumEncounterLocations.Add("2", new LatLon(51.39355, -0.1924046));
+
+            Debug.Log("Sending encounter info to players in lobby");
+            // Send medium encounters to players
+            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new(), GameState.Instance.mediumEncounterLocations).toJson());
+        }
     }
 }
 
@@ -366,11 +374,13 @@ public class MapMessage : MessageInfo
     public MapMessageType type {get; set;}
     public MessageType messageType {get; set;}
     public HashSet<string> foundEncounterIds;
+    public Dictionary<string, LatLon> mediumEncounterLocations;
 
-    public MapMessage(MapMessageType type, HashSet<string> foundEncounterIds) {
+    public MapMessage(MapMessageType type, HashSet<string> foundEncounterIds, Dictionary<string, LatLon> mediumEncounterLocations) {
         this.foundEncounterIds = foundEncounterIds;
         this.messageType = MessageType.MAP;
         this.type = type;
+        this.mediumEncounterLocations = mediumEncounterLocations;
     }
     
     public string toJson() {
@@ -384,5 +394,6 @@ public class MapMessage : MessageInfo
 }
 
 public enum MapMessageType {
-    RECEIVE_MAP_INFO,
+    FOUND_ENCOUNTERS,
+    MAP_INFO
 }

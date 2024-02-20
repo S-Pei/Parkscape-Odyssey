@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
+using Microsoft.Geospatial;
 
 public class LobbyManager : MonoBehaviour {
     // Singleton
@@ -33,6 +34,9 @@ public class LobbyManager : MonoBehaviour {
     private int disconnectCount = 0;
     private List<string> playerIDs;
 
+    // Map
+    private MapManager mapManager;
+
     // Initialisation
 	void Awake () {
 		if(!selfReference) {
@@ -41,8 +45,9 @@ public class LobbyManager : MonoBehaviour {
             myID = SystemInfo.deviceUniqueIdentifier;
             msgFreq = maxPlayerCount;
             network = NetworkManager.Instance.NetworkUtils;
+            mapManager = MapManager.Instance;
 			DontDestroyOnLoad(gameObject);
-		}else 
+		} else 
             Destroy(gameObject);
 	}
 
@@ -94,6 +99,14 @@ public class LobbyManager : MonoBehaviour {
         if (players.Count == 1) {
             StartGame();
         } else {
+            Debug.Log("Getting medium encounters");
+            // Get and broadcast medium encounter positions
+            mapManager.GetMediumEncounters();
+            // Debugging
+            foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations)
+            {
+                Debug.Log("Key: " + item.Key + ", Location: (" + item.Value.LatitudeInRadians + ", " + item.Value.LongitudeInRadians + ")");
+            }
             LeaderSendStartGameMessage();
         }
     }
