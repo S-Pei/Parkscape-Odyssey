@@ -4124,7 +4124,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   map: {fileID: 1920711982}
   playerPinObject: {fileID: 243403145}
-  playerRadiusObject: {fileID: 0}
+  playerRadiusObject: {fileID: 1519129561}
   mapBlocker: {fileID: 1574329129}
 --- !u!1 &1940498430
 GameObject:
