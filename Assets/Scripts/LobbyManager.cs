@@ -35,7 +35,7 @@ public class LobbyManager : MonoBehaviour {
     private List<string> playerIDs;
 
     // Map
-    private MapManager mapManager;
+    private GPSManager gpsManager;
 
     // Initialisation
 	void Awake () {
@@ -45,7 +45,7 @@ public class LobbyManager : MonoBehaviour {
             myID = SystemInfo.deviceUniqueIdentifier;
             msgFreq = maxPlayerCount;
             network = NetworkManager.Instance.NetworkUtils;
-            mapManager = MapManager.Instance;
+            gpsManager = GPSManager.Instance;
 			DontDestroyOnLoad(gameObject);
 		} else 
             Destroy(gameObject);
@@ -101,7 +101,7 @@ public class LobbyManager : MonoBehaviour {
         } else {
             Debug.Log("Getting medium encounters");
             // Get and broadcast medium encounter positions
-            mapManager.GetMediumEncounters();
+            gpsManager.GetMediumEncounters();
             // Debugging
             foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations)
             {
