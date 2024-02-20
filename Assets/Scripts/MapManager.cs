@@ -64,6 +64,7 @@ public class MapManager : MonoBehaviour
     void Awake()
     {
         // Initialisation
+        selfReference = this;
         map = gameObject;
         network = NetworkManager.Instance.NetworkUtils;
         gpsManager = GPSManager.Instance;
