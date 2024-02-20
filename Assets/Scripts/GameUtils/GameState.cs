@@ -241,6 +241,9 @@ public class GameState {
     public void ExitEncounter() {
         IsInEncounter = false;
     }
+
+
+    // --------------------------------  BATTLE --------------------------------
 }
 
 public class GameStateMessage : MessageInfo {

@@ -64,6 +64,10 @@ public class Player
         CurrentHealth += amount;
     }
 
+    public void Revive() {
+        CurrentHealth = MaxHealth / 2;
+    }
+
     public bool IsDead() {
         return CurrentHealth <= 0;
     }

@@ -271,15 +271,23 @@ public class BattleManager : MonoBehaviour {
                 battleUIManager.DisplayHand(hand);
             }
         } else {
-            Debug.Log("Game ended");
             // End the encounter
             ResetAllPartyMemberStats();
-            battleUIManager.ResetUI();
+
+            // Reset variables in various classes
             GameObject.FindGameObjectWithTag("EncounterManager").GetComponent<EncounterController>().OnFinishEncounter();
+            battleUIManager.ResetUI();
             GameState.Instance.ExitEncounter();
+
+            // Unload the battle scene
             SceneManager.UnloadSceneAsync("Battle");
-            if (battleStatus == 0) {
+
+            if (battleStatus == 0 && !GameState.Instance.MyPlayer.IsDead()) {
+                // Party victory and player not dead, show loot overlay
                 Instantiate(lootOverlay);
+            } else if (battleStatus == 1) {
+                // Party wiped out, apply penalty
+                GameState.Instance.ApplyBattleLossPenalty();
             }
         }
     }
@@ -290,24 +298,33 @@ public class BattleManager : MonoBehaviour {
     //  1 : Players lost
     private int BattleEnded() {
         if (monsters[0].Health <= 0) {
+            Debug.Log("Battle ended with monster dead, party victory");
             return 0;
         }
         // Check if all players have died
         foreach (string id in partyMembers.Keys) {
             if (GameState.Instance.PlayersDetails[id].CurrentHealth > 0) {
+                Debug.Log("Battle hasn't ended");
                 return -1;
             }
         }
+        Debug.Log("Battle ended with party wiped out");
         return 1;
     }
 
     private void ResetAllPartyMemberStats() {
         // Reset own mana
         GameState.Instance.MyPlayer.ResetMana();
+        if (GameState.Instance.MyPlayer.IsDead()) {
+            GameState.Instance.MyPlayer.Revive();
+        }
 
         // Reset other players mana
         foreach (Player player in partyMembersInfo.Values) {
             player.ResetMana();
+            if (player.IsDead()) {
+                player.Revive();
+            }
         }
     }
 
