@@ -137,6 +137,7 @@ public class MapManager : MonoBehaviour
             case MapMessageType.MAP_INFO:
                 GameState.Instance.mediumEncounterLocations = MapMessage.DictToLatLon(mapMessage.mediumEncounterLocations);
                 // Add pins for the medium encounters
+                AddMediumEncounterPins();
                 break;
         }
         return CallbackStatus.PROCESSED;
@@ -144,6 +145,12 @@ public class MapManager : MonoBehaviour
     }
 
     /*** Map Pins ***/
+    // Add Medium Encounter Pins to the map
+    public void AddMediumEncounterPins() {
+        foreach (var entry in GameState.Instance.mediumEncounterLocations) {
+            AddPinNearLocation(playerPinObject, 0, latitude: entry.Value.LatitudeInRadians, longitude: entry.Value.LongitudeInRadians);
+        }
+    }
     // Add Pin to some location
     public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1) {
         GameObject pin = Instantiate(prefab, map.transform);
