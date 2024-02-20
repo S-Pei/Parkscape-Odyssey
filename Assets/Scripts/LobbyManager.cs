@@ -47,7 +47,7 @@ public class LobbyManager : MonoBehaviour {
             network = NetworkManager.Instance.NetworkUtils;
             mapManager = MapManager.Instance;
 			DontDestroyOnLoad(gameObject);
-		}else 
+		} else 
             Destroy(gameObject);
 	}
 
@@ -99,6 +99,7 @@ public class LobbyManager : MonoBehaviour {
         if (players.Count == 1) {
             StartGame();
         } else {
+            Debug.Log("Getting medium encounters");
             // Get and broadcast medium encounter positions
             mapManager.GetMediumEncounters();
             // Debugging

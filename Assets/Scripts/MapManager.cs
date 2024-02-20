@@ -49,7 +49,7 @@ public class MapManager : MonoBehaviour
     public static MapManager Instance {
         get {
             if (selfReference == null) {
-                throw new Exception("MapManager has not been initialised.");
+                selfReference = new MapManager();
             }
             return selfReference;
         }
@@ -61,8 +61,6 @@ public class MapManager : MonoBehaviour
         // Initialisation
         map = gameObject;
         network = NetworkManager.Instance.NetworkUtils;
-        selfReference = GetComponent<MapManager>();
-        DontDestroyOnLoad(map);
 
         Debug.Log("MapManager Awake");
 
