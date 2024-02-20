@@ -8,11 +8,22 @@ public class SkillsController {
       Initialise();
   }
 
+  private static Player SelectRandomPlayer(List<Player> players) {
+    // select a random player from the list of players who are not dead
+    Random random = new Random();
+    players.RemoveAll((player) => {
+      return player.IsDead();
+    });
+    int index = random.Next(players.Count);
+    return players[index];
+  }
+
   private class SKNormalAttack : Skill {
     public override SkillName Name => SkillName.NORMAL_ATTACK;
 
     public override void Perform(Monster monster, List<Player> players) {
-      players[0].TakeDamage(monster.BaseDamage);
+      Player target = SelectRandomPlayer(players);
+      target.TakeDamage(monster.BaseDamage);
     }
   }
 
@@ -20,7 +31,11 @@ public class SkillsController {
     public override SkillName Name => SkillName.AOE_NORMAL_ATTACK;
 
     public override void Perform(Monster monster, List<Player> players) {
-      players[0].TakeDamage(Convert.ToInt32(monster.BaseDamage * 0.8));
+      foreach (Player player in players) {
+        if (!player.IsDead()) {
+          player.TakeDamage(Convert.ToInt32(monster.BaseDamage * 0.8));
+        }
+      }
     }
   }
 
@@ -47,7 +62,9 @@ public class SkillsController {
 
     public override void Perform(Monster monster, List<Player> players) {
       foreach (Player player in players) {
-        player.TakeDamage(25);
+        if (!player.IsDead()) {
+          player.TakeDamage(25);
+        }
       }
       // can add burn effect once debuffs are implemented
     }
