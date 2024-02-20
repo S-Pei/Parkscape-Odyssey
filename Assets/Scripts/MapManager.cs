@@ -213,9 +213,8 @@ public class MapManager : MonoBehaviour
         playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
 
         // Check if map sharing is needed
-        if (GameState.Instance.MyPlayer.IsLeader 
-            && (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
-            || NetworkManager.Instance.ChangeInConnectedPlayers())) {
+        if (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
+            || NetworkManager.Instance.ChangeInConnectedPlayers()) {
             // Send map info to other players
             MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters, null);
             network.broadcast(mapMessage.toJson());
@@ -339,8 +338,9 @@ public class MapManager : MonoBehaviour
             GameState.Instance.mediumEncounterLocations.Add("1", new LatLon(51.49355, -0.1924046));
             GameState.Instance.mediumEncounterLocations.Add("2", new LatLon(51.39355, -0.1924046));
 
+            Debug.Log("Sending encounter info to players in lobby");
             // Send medium encounters to players
-            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, GameState.Instance.mediumEncounterLocations.Keys).toJson());
+            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, null, GameState.Instance.mediumEncounterLocations).toJson());
         }
     }
 }
@@ -350,13 +350,13 @@ public class MapMessage : MessageInfo
     public MapMessageType type {get; set;}
     public MessageType messageType {get; set;}
     public HashSet<string> foundEncounterIds;
-    Dictionary<string, LatLon> mediumEncounterLocations;
+    public Dictionary<string, LatLon> mediumEncounterLocations;
 
     public MapMessage(MapMessageType type, HashSet<string> foundEncounterIds, Dictionary<string, LatLon> mediumEncounterLocations) {
-        this.foundEncounterIds = foundEncounterIds ? foundEncounterIds : new HashSet<string>();
+        this.foundEncounterIds = foundEncounterIds != null ? foundEncounterIds : new HashSet<string>();
         this.messageType = MessageType.MAP;
         this.type = type;
-        this.mediumEncounterLocations = mediumEncounterLocations ? mediumEncounterLocations : new Dictionary<string, LatLon>();
+        this.mediumEncounterLocations = mediumEncounterLocations != null ? mediumEncounterLocations : new Dictionary<string, LatLon>();
     }
     
     public string toJson() {
