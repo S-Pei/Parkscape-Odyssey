@@ -205,21 +205,29 @@ public class NetworkManager : MonoBehaviour {
     public bool ChangeInConnectedPlayers()
     {
         // Check if the counts are the same
-        if (previouslyConnectedPlayers.Count != connectedPlayers.Count)
-            return false;
+        if (previouslyConnectedPlayers.Count != connectedPlayers.Count) {
+            previouslyConnectedPlayers = connectedPlayers;
+            return true;
+        }
+            
 
         // Check if all keys and values are the same
         foreach (var pair in previouslyConnectedPlayers)
         {
             string value;
-            if (!connectedPlayers.TryGetValue(pair.Key, out value))
-                return false;
+            if (!connectedPlayers.TryGetValue(pair.Key, out value)) {
+                previouslyConnectedPlayers = connectedPlayers;
+                return true;
+            }
 
-            if (!value.Equals(pair.Value))
-                return false;
+            if (!value.Equals(pair.Value)) {
+                previouslyConnectedPlayers = connectedPlayers;
+                return true;
+            }
         }
 
-        return true;
+        previouslyConnectedPlayers = connectedPlayers;
+        return false;
     }
 }
 

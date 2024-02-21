@@ -5,13 +5,14 @@ using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
 using System;
 using Newtonsoft.Json;
+using System.Linq;
 
 public class MapManager : MonoBehaviour
 {
     // Map manager is a singleton class
     public static MapManager selfReference;
+    private GPSManager gpsManager;
     private LocationInfo location;
-    private LocationServiceStatus locationServiceStatus;
     private bool permissionGranted = false;
     public GameObject map;
     private bool mapCenterSet = false;
@@ -69,7 +70,6 @@ public class MapManager : MonoBehaviour
         get {
             if (selfReference == null) {
                 selfReference = new MapManager();
-                selfReference.network = NetworkManager.Instance.NetworkUtils;
             }
             return selfReference;
         }
@@ -79,7 +79,10 @@ public class MapManager : MonoBehaviour
     void Awake()
     {
         // Initialisation
+        selfReference = this;
         map = gameObject;
+        network = NetworkManager.Instance.NetworkUtils;
+        gpsManager = GPSManager.Instance;
 
         Debug.Log("MapManager Awake");
 
@@ -105,150 +108,42 @@ public class MapManager : MonoBehaviour
 
         // Set Default zoom
         mapRenderer.ZoomLevel = defaultZoomLevel;
-
-        // Start GPS location service
-        StartCoroutine(InitialiseAndUpdateGPS());
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (mapCenterSet)
-        KeepMapWithinRadius();
-    }
-
-    IEnumerator InitialiseAndUpdateGPS() {
-        yield return StartCoroutine(InitialiseGPS());
-        yield return StartCoroutine(GPSLoc());
-    }
-
-    IEnumerator InitialiseGPS() {
-        #if UNITY_EDITOR
-            // No permission handling needed in Editor
-        #elif UNITY_ANDROID
-            if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.FineLocation)) {
-                Debug.Log("Requesting Fine Location Permission");
-                UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
-            }
-
-            // Wait for the user to interact with the permission dialog
-            while (!permissionGranted)
-            {
-                // Check the permission status
-                permissionGranted = UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.FineLocation);
-                Debug.Log("Permission Granted: " + permissionGranted);
-
-                // Yielding allows other parts of the program to execute while waiting for user interaction
-                yield return null;
-            }
-
-            // Check if location service is initializing
-            if (UnityEngine.Input.location.status == LocationServiceStatus.Initializing)
-            {
-                // Wait for initialization to complete
-                Debug.Log("Waiting for location service to initialize");
-                yield return new WaitUntil(() => UnityEngine.Input.location.status != LocationServiceStatus.Initializing);
-            }
-
-            // First, check if user has location service enabled
-            if (!UnityEngine.Input.location.isEnabledByUser) {
-                Debug.LogError("Android and Location not enabled");
-                Debug.Log("Editor Location Service Status: " + UnityEngine.Input.location.status);
-                yield break;
-            }
-
-        #elif UNITY_IOS
-            if (!UnityEngine.Input.location.isEnabledByUser) {
-                Debug.LogError("IOS and Location not enabled");
-                yield break;
-            }
-        #endif
-        yield return null;
-    }
-
-    IEnumerator GPSLoc() {
-        while (true) {
-            // Start service before querying location
-            UnityEngine.Input.location.Start(500f, 500f);
-            Debug.Log("Location Service Status: " + UnityEngine.Input.location.status);
-                    
-            // Wait until service initializes
-            int maxWait = 20;
-            while (UnityEngine.Input.location.status == LocationServiceStatus.Initializing && maxWait > 0) {
-                yield return new WaitForSecondsRealtime(1);
-                maxWait--;
-            }
-
-            // Editor has a bug which doesn't set the service status to Initializing. So extra wait in Editor.
-            #if UNITY_EDITOR
-                int editorMaxWait = 30;
-                while (UnityEngine.Input.location.status == LocationServiceStatus.Stopped && editorMaxWait > 0) {
-                    yield return new WaitForSecondsRealtime(1);
-                    Debug.Log("Editor Wait: " + editorMaxWait);
-                    Debug.Log("Editor Location Service Status: " + UnityEngine.Input.location.status);
-                    editorMaxWait--;
-                }
-            #endif
-
-            // Service didn't initialize in 20 seconds
-            if (maxWait < 1)
-            {
-                Debug.LogError("Timed out");
-                yield break;
-            }
-
-            // Connection has failed
-            if (Input.location.status == LocationServiceStatus.Failed)
-            {
-                Debug.LogError("Unable to determine device location");
-                yield break;
-            }
-            else
-            {
-                // Access granted and location value could be retrieved
-                UpdateGPSData();
-                // Input.location.Stop();
-            }
-            yield return new WaitForSecondsRealtime(1);
-        }
-        
-    }
-
-    private void UpdateGPSData() {
-
-        if (Input.location.status == LocationServiceStatus.Running) {
-            // Access granted and location value could be retrieved
-            location = Input.location.lastData;
-            Debug.Log("Location: (" + location.latitude + ", " + location.longitude + ")");
+        if (gpsManager.getLocationServiceStatus() == LocationServiceStatus.Running) {
+            // Get GPS location
+            location = gpsManager.GetLocation();
 
             // Set the map's center to the current location
             if (!mapCenterSet || follow) {
                 mapRenderer.Center = new LatLon(location.latitude, location.longitude);
                 mapCenterSet = true;
             }
-        } else {
-            // GPS service stopped
-        }
-        locationServiceStatus = Input.location.status;
-        Debug.Log("Location Service Status: " + locationServiceStatus);
 
-        // Update player pin location
-        if (playerPin != null) {
-            playerPin.Location = new LatLon(location.latitude, location.longitude);
-            playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
-        }
-
-        if (GameState.Instance.Initialized && network != null) {
-            // Check if map sharing is needed
-            if (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
-                || NetworkManager.Instance.ChangeInConnectedPlayers()) {
-                // Send map info to other players
-                MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters, new());
-                network.broadcast(mapMessage.toJson());
+            // Update player pin location
+            if (playerPin != null) {
+                playerPin.Location = new LatLon(location.latitude, location.longitude);
+                playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
             }
+
+            // Keep map within radius
+            if (mapCenterSet)
+                KeepMapWithinRadius();
+        }
+
+        // Check if map sharing is needed
+        if (GameState.Instance.foundMediumEncounters.Count > previousFoundEncounterCount
+            || NetworkManager.Instance.ChangeInConnectedPlayers()) {
+            // Send map info to other players
+            Debug.Log(GameState.Instance.foundMediumEncounters.Count + ", " + previousFoundEncounterCount);
+            MapMessage mapMessage = new MapMessage(MapMessageType.FOUND_ENCOUNTERS, GameState.Instance.foundMediumEncounters.ToList(), new Dictionary<string, Dictionary<string, double>>());
+            network.broadcast(mapMessage.toJson());
+            previousFoundEncounterCount = GameState.Instance.foundMediumEncounters.Count;
         }
         
-
     }
 
     public CallbackStatus HandleMessage(Message message) {
@@ -257,35 +152,28 @@ public class MapManager : MonoBehaviour
             // Receive new found encounters from other players
             case MapMessageType.FOUND_ENCOUNTERS:
                 // Add to list of found encounters
-                GameState.Instance.foundMediumEncounters.UnionWith(mapMessage.foundEncounterIds);
+                HashSet<string> newFoundEncounters = new HashSet<string>(mapMessage.foundEncounterIds);
+                GameState.Instance.foundMediumEncounters.UnionWith(newFoundEncounters);
                 // Add pins for the found encounters
                 break;
             // Receive medium encounter locations from leader
             case MapMessageType.MAP_INFO:
                 GameState.Instance.mediumEncounterLocations = MapMessage.DictToLatLon(mapMessage.mediumEncounterLocations);
                 // Add pins for the medium encounters
+                AddMediumEncounterPins();
                 break;
         }
         return CallbackStatus.PROCESSED;
         
     }
 
-    private void OnDestroy()
-    {
-        // Stop location services when the script is destroyed
-        Input.location.Stop();
-    }
-
-    // Getter functions for GPS location
-    public string getLatitude() {
-        return location.latitude.ToString();
-    }
-
-    public string getLongitude() {
-        return location.longitude.ToString();
-    }
-
     /*** Map Pins ***/
+    // Add Medium Encounter Pins to the map
+    public void AddMediumEncounterPins() {
+        foreach (var entry in GameState.Instance.mediumEncounterLocations) {
+            AddPinNearLocation(playerPinObject, 0, latitude: entry.Value.LatitudeInRadians, longitude: entry.Value.LongitudeInRadians);
+        }
+    }
     // Add Pin to some location
     public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1) {
         GameObject pin = Instantiate(prefab, map.transform);
@@ -425,32 +313,17 @@ public class MapManager : MonoBehaviour
         mapTouchInteractionHandler.enabled = true;
         mapBlocker.SetActive(false);
     }
-
-    // ENCOUNTER SPAWNING
-    // Leader gets medium encounter locations from web authoring tool
-    public void GetMediumEncounters() {
-        if (GameState.Instance.MyPlayer.IsLeader) {
-            // TODO: get list from web authoring tool
-            // Hardcoded for now
-            GameState.Instance.mediumEncounterLocations.Add("1", new LatLon(51.49355, -0.1924046));
-            GameState.Instance.mediumEncounterLocations.Add("2", new LatLon(51.39355, -0.1924046));
-
-            Debug.Log("Sending encounter info to players in lobby");
-            // Send medium encounters to players
-            Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
-            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new(), mediumEncounterLocations).toJson());
-        }
-    }
 }
 
 public class MapMessage : MessageInfo 
 {
     public MapMessageType type {get; set;}
     public MessageType messageType {get; set;}
-    public HashSet<string> foundEncounterIds;
+    public List<string> foundEncounterIds;
     public Dictionary<string, Dictionary<string, double>> mediumEncounterLocations;
 
-    public MapMessage(MapMessageType type, HashSet<string> foundEncounterIds, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations) {
+    [JsonConstructor]
+    public MapMessage(MapMessageType type, List<string> foundEncounterIds, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations) {
         this.messageType = MessageType.MAP;
         this.foundEncounterIds = foundEncounterIds;
         this.type = type;
