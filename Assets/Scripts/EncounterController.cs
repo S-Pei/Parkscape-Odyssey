@@ -5,7 +5,8 @@ using UnityEngine;
 using Newtonsoft.Json;
 using UnityEngine.UI;
 using System.Linq;
-
+using Microsoft.Maps.Unity;
+using Microsoft.Geospatial;
 
 public class EncounterController : MonoBehaviour
 {
@@ -29,6 +30,9 @@ public class EncounterController : MonoBehaviour
 
     [SerializeField]
     private GameObject gameplayCanvas;
+
+    [SerializeField]
+    private GameObject mapRenderer;
 
     private string leaderId;
 
@@ -78,19 +82,25 @@ public class EncounterController : MonoBehaviour
         encounterUIManager = GetComponent<EncounterUIManager>();
         monsterController = monsterManager.GetComponent<MonsterController>();
 
-        CreateMonsterSpawn(); // TEMPORARY
-        CreateMonsterSpawn(); // TEMPORARY
+        // CreateMonsterSpawn(); // TEMPORARY
+        // CreateMonsterSpawn(); // TEMPORARY
     }
 
-    private void CreateMonsterSpawn() {
+    // Location dependent encounter spawn, so need to have location initialized, or provide one.
+    public void CreateMonsterSpawn(string encounterId, LatLon location) {
         // Generate monsters for the encounter.
         List<Monster> monsters = GenerateEncounterMonsters();
 
-        // Generate unique id for the encounter.
-        string encounterId = Guid.NewGuid().ToString();
+        // Generates skill sequences for the monsters.
+        List<List<SkillName>> skillSequences = GenerateMonsterSkillSequences(monsters);
 
-        // Create a new enemy spawn
-        GameObject monsterSpawn = Instantiate(encounterSpawn, interfacePanel.transform);
+        // Generate unique id for the encounter. (not needed for medium encounters)
+        // string encounterId = Guid.NewGuid().ToString();
+
+        // GameObject monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 50, 20, latitude: 51.493529, longitude: -0.192376); // TEMPORARY
+        Debug.Log("Location: (" + location.LatitudeInDegrees + ", " + location.LongitudeInDegrees + ")");
+        GameObject monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 0, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees);
+
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
         encounterSpawnManager.EncounterSpawnInit(encounterId, monsters);
 
@@ -324,7 +334,7 @@ public class EncounterController : MonoBehaviour
     }
 
     private void SendStartEncounterMessage() {
-        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.START_ENCOUNTER, encounterId : encounterId);
+        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.START_ENCOUNTER, encounterId: encounterId);
         network.broadcast(encounterMessage.toJson());
     }
 

@@ -78,6 +78,9 @@ public class InventoryUIManager : MonoBehaviour
 
         closeCardTradePopUp();
         gameObject.SetActive(true);
+
+        // Disable map
+        MapManager.Instance.DisableMapInteraction();
     }
 
     private void displayAllCards() {
@@ -194,6 +197,7 @@ public class InventoryUIManager : MonoBehaviour
     }
 
     public void closeInventory() {
+        MapManager.Instance.EnableMapInteraction();
         gameObject.SetActive(false);
     }
 }
