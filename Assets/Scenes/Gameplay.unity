@@ -263,7 +263,7 @@ MonoBehaviour:
   encounterFoundPopup: {fileID: 2087278705650436577, guid: fb5dfb8f2d1424add9200af6a99ac1a4,
     type: 3}
   gameplayCanvas: {fileID: 1802788016}
-  mapRenderer: {fileID: 0}
+  mapRenderer: {fileID: 1920711982}
 --- !u!4 &114873852
 Transform:
   m_ObjectHideFlags: 0
@@ -5047,10 +5047,6 @@ MonoBehaviour:
   playerPinObject: {fileID: 243403145}
   playerRadiusObject: {fileID: 1519129561}
   mapBlocker: {fileID: 1574329129}
-  interactDistance: 40
-  maxRadius: 1000
-  startingLatitude: 51.493529
-  startingLongitude: -0.1924046
 --- !u!1 &1940498430
 GameObject:
   m_ObjectHideFlags: 0
