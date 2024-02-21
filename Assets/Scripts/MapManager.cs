@@ -52,15 +52,15 @@ public class MapManager : MonoBehaviour
     private const float defaultZoomLevel = 19;
 
     [SerializeField]
-    private float interactDistance = 40; // in meters
+    private float interactDistance = 1000; // in meters
 
     [SerializeField]
-    private float maxRadius = 5000; // in meters
+    private float maxRadius = 1000; // in meters
 
-    [SerializeField]
+    // [SerializeField]
     private double startingLatitude = 51.498468;
     
-    [SerializeField]
+    // [SerializeField]
     private double startingLongitude = -0.179036;
 
     // Pin Constants
