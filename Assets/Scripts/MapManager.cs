@@ -55,7 +55,7 @@ public class MapManager : MonoBehaviour
     private float interactDistance = 40; // in meters
 
     [SerializeField]
-    private float maxRadius = 1000; // in meters
+    private float maxRadius = 5000; // in meters
 
     [SerializeField]
     private double startingLatitude = 51.506665;
@@ -196,6 +196,7 @@ public class MapManager : MonoBehaviour
         if (pin.TryGetComponent(out SpriteButtonLocationBounded spriteButton)) {
             spriteButton.SetLocation(latitude, longitude);
         }
+        Debug.Log("Pin added at " + latitude + ", " + longitude);
 
         return pin;
     }
