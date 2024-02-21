@@ -47,7 +47,7 @@ public class BattleManager : MonoBehaviour {
 
     // monster
     private List<Monster> monsters;
-    private List<List<SkillName>> skillsSequences;
+    private (SkillName, List<string>) monsterAttack;
 
 
     // p2p networking
@@ -74,7 +74,6 @@ public class BattleManager : MonoBehaviour {
     private Dictionary<string, string> partyMembers;
     private Dictionary<string, Player> partyMembersInfo = new();
     private BattleStatus battleStatus = BattleStatus.TURN_IN_PROGRESS;
-    private int monsterSkillIndex = 0;
 
     void Awake() {
         if (!selfReference) {
@@ -100,7 +99,7 @@ public class BattleManager : MonoBehaviour {
         Debug.Log(GameState.Instance.encounterMonsters[0].name);
         Debug.Log(GameState.Instance.encounterMonsters[0].Health);
         monsters = GameState.Instance.encounterMonsters;
-        skillsSequences = GameState.Instance.skillSequences;
+        // skillsSequences = GameState.Instance.skillSequences;
         partyMembers = GameState.Instance.partyMembers;
 
         // Search for the CardsUIManager here because in Awake() it is not initialised yet
@@ -253,7 +252,12 @@ public class BattleManager : MonoBehaviour {
             // Send my played cards to leader if I'm not the leader
             BroadcastCardsPlayed();
         } else {
-            BroadcastAllPlayersCardsPlayed();
+            Debug.Log("Generating monster attack...");
+            monsterAttack = GenerateMonsterAttack();
+
+            Debug.Log("Generated monster attack!");
+            BroadcastAllPhaseInfo();
+            Debug.Log("Broadcasted phase info!");
             CheckProceedToResolve();
         }
     }
@@ -383,23 +387,47 @@ public class BattleManager : MonoBehaviour {
         cardsToPlay = new();
     }
 
+
+    // -------------------------------- MONSTER --------------------------------
+    private (SkillName, List<string>) GenerateMonsterAttack() {
+        Monster attackingMonster = monsters[0];
+
+        // Get a random skill from the monsters available skills
+        System.Random random = new();
+        int skillIndex = random.Next(attackingMonster.skills.Count);
+        Skill skill = attackingMonster.skills[skillIndex];
+
+        Debug.Log($"Skill is of type {skill.SkillType}");
+        Debug.Log(partyMembersInfo.Values.ToList().Count);
+
+        // Select player targets based on skill chosen
+        List<Player> partyMembersLs = partyMembersInfo.Values.ToList();
+        partyMembersLs.Add(GameState.Instance.MyPlayer);
+        List<Player> targets = MonsterFactory.skillsController.SelectTargets(skill, partyMembersLs);
+
+        // Get the ids of the target players
+        List<string> targetPlayerIds = targets.Select(player => player.Id).ToList();
+        
+        return (skill.Name, targetPlayerIds);
+    }
+
     // Monster Attacks
     public void MonsterAttack() {
-        SkillName skill = skillsSequences[0][monsterSkillIndex];
+        SkillName skillName = monsterAttack.Item1;
 
-        List<Player> players = new();
-        foreach (string id in partyMembers.Keys) {
-            players.Add(GameState.Instance.PlayersDetails[id]);
+        List<Player> targets = new();
+        foreach (string id in monsterAttack.Item2) {
+            targets.Add(GameState.Instance.PlayersDetails[id]);
         } 
         
-        MonsterFactory.skillsController.Get(skill).Perform(monsters[0], players);
-        Debug.Log("Monster attacking with " + skill);
+        MonsterFactory.skillsController.Get(skillName).Perform(monsters[0], targets);
+        Debug.Log("Monster attacking with " + skillName);
         UpdatesPlayerStats();
         UpdateOtherPlayerStats();
         UpdateMonsterStats();
-        monsterSkillIndex++;
-        monsterSkillIndex %= skillsSequences[0].Count;
     }
+
+    // ------------------------------ UI UPDATES ------------------------------
 
     // Update monster stats based on played cards
     private void UpdateMonsterStats() {
@@ -516,6 +544,7 @@ public class BattleManager : MonoBehaviour {
     }
 
     private void CheckProceedToResolve() {
+        Debug.Log("Checking to proceed to resolve");
         int notReceived = 0;
         foreach (string id in partyMembers.Keys) {
             if (id == GameState.Instance.myID || othersCardsToPlay.ContainsKey(id)) {
@@ -612,7 +641,7 @@ public class BattleManager : MonoBehaviour {
 
             if (battleStatus != BattleStatus.TURN_IN_PROGRESS) {
                 // My turn has ended, checking if I can proceed to resolve phase
-                BroadcastAllPlayersCardsPlayed();
+                BroadcastAllPhaseInfo();
                 CheckProceedToResolve();
             }
             return CallbackStatus.PROCESSED;
@@ -641,6 +670,9 @@ public class BattleManager : MonoBehaviour {
                 othersCardsToPlay.Add(id,  battleMessage.AllCardsPlayed[id]);
             }
 
+            // Load monster attack
+            monsterAttack = battleMessage.MonsterAttack;
+
             if (battleStatus != BattleStatus.TURN_IN_PROGRESS) { 
                 // My turn has ended, checking if I can proceed to resolve phase
                 CheckProceedToResolve();
@@ -655,13 +687,13 @@ public class BattleManager : MonoBehaviour {
         network.broadcast(cardsPlayedMessage.toJson());
     }
 
-    private void BroadcastAllPlayersCardsPlayed() {
+    private void BroadcastAllPhaseInfo() {
         Dictionary<string, List<CardName>> toSendLs = new(othersCardsToPlay)
         {
             { GameState.Instance.myID, cardsToPlay }
         };
 
-        BattleMessage allPlayersCardsPlayedMessage = new(BattleMessageType.ALL_PLAYED_CARDS, turn, toSendLs, sendTos : new());
+        BattleMessage allPlayersCardsPlayedMessage = new(BattleMessageType.ALL_PLAYED_CARDS, turn, toSendLs, monsterAttack, sendTos : new());
         network.broadcast(allPlayersCardsPlayedMessage.toJson());
     }
 
@@ -700,6 +732,7 @@ public class BattleMessage : MessageInfo
     public int Turn;
     public List<CardName> CardsPlayed {get; set;}
     public Dictionary<string, List<CardName>> AllCardsPlayed {get; set;}
+    public (SkillName, List<string>) MonsterAttack {get; set;}
     public string SendFrom {get; set;}
     public List<string> SendTos {get; set;}
 
@@ -723,23 +756,26 @@ public class BattleMessage : MessageInfo
         SendFrom = sendFrom == "" ? GameState.Instance.myID : sendFrom;
     }
 
-    public BattleMessage(BattleMessageType type, int turn, Dictionary<string, List<CardName>> allCardsPlayed, List<string> sendTos, string sendFrom = "") {
+    public BattleMessage(BattleMessageType type, int turn, Dictionary<string, List<CardName>> allCardsPlayed, (SkillName, List<string>) monsterAttack, List<string> sendTos, string sendFrom = "") {
         messageType = MessageType.BATTLEMESSAGE;
         Type = type;
         Turn = turn;
         CardsPlayed = new();
         AllCardsPlayed = allCardsPlayed == null ? new() : allCardsPlayed;
+        MonsterAttack = monsterAttack;
         SendTos = sendTos == null ? new() : sendTos;
         SendFrom = sendFrom == "" ? GameState.Instance.myID : sendFrom;
     }
 
     [JsonConstructor]
-    public BattleMessage(BattleMessageType type, int turn, List<CardName> cardsPlayed, Dictionary<string, List<CardName>> allCardsPlayed, List<string> sendTos, string sendFrom = "") {
+    public BattleMessage(BattleMessageType type, int turn, List<CardName> cardsPlayed, Dictionary<string, 
+                            List<CardName>> allCardsPlayed, (SkillName, List<string>) monsterAttack, List<string> sendTos, string sendFrom = "") {
         messageType = MessageType.BATTLEMESSAGE;
         Type = type;
         Turn = turn;
         CardsPlayed = cardsPlayed == null ? new() : cardsPlayed;
         AllCardsPlayed = allCardsPlayed == null ? new() : allCardsPlayed;
+        MonsterAttack = monsterAttack;
         SendTos = sendTos == null ? new() : sendTos;
         SendFrom = sendFrom == "" ? GameState.Instance.myID : sendFrom;
     }

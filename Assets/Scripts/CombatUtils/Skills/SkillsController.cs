@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 public class SkillsController {
   public Dictionary<SkillName, Skill> skillsDB = new();
@@ -14,12 +15,16 @@ public class SkillsController {
     players.RemoveAll((player) => {
       return player.IsDead();
     });
+    if (players.Count == 0) {
+      throw new ArgumentException("Players list provided shoulen't be empty / contain onyl dead players!");
+    }
     int index = random.Next(players.Count);
     return players[index];
   }
 
   private class SKNormalAttack : Skill {
     public override SkillName Name => SkillName.NORMAL_ATTACK;
+    public override SkillType SkillType => SkillType.SINGLE;
 
     public override void Perform(Monster monster, List<Player> players) {
       Player target = SelectRandomPlayer(players);
@@ -29,6 +34,7 @@ public class SkillsController {
 
   private class SKAoeNormalAttack : Skill {
     public override SkillName Name => SkillName.AOE_NORMAL_ATTACK;
+    public override SkillType SkillType => SkillType.AOE;
 
     public override void Perform(Monster monster, List<Player> players) {
       foreach (Player player in players) {
@@ -41,6 +47,7 @@ public class SkillsController {
 
   private class SKBlock : Skill {
     public override SkillName Name => SkillName.BLOCK;
+    public override SkillType SkillType => SkillType.BUFF;
 
     public override void Perform(Monster monster, List<Player> players) {
       monster.IncreaseDef();
@@ -49,6 +56,7 @@ public class SkillsController {
 
   private class SKEnrage : Skill {
     public override SkillName Name => SkillName.ENRAGE;
+    public override SkillType SkillType => SkillType.BUFF;
 
     public override void Perform(Monster monster, List<Player> players) {
       monster.TakeDamage(6);
@@ -59,6 +67,7 @@ public class SkillsController {
   // Catastrophe
   private class SKCatastrophe : Skill {
     public override SkillName Name => SkillName.CATASTROPHE;
+    public override SkillType SkillType => SkillType.AOE;
 
     public override void Perform(Monster monster, List<Player> players) {
       foreach (Player player in players) {
@@ -84,5 +93,19 @@ public class SkillsController {
     }
     
     return null;
+  }
+
+  public List<Player> SelectTargets(Skill skill, List<Player> players) {
+    switch (skill.SkillType) {
+      case SkillType.SINGLE:
+        return new List<Player> { SelectRandomPlayer(players) };
+      case SkillType.AOE:
+          players.RemoveAll((player) => { return !player.IsDead(); });
+          return players;
+      case SkillType.BUFF:
+          return new();
+      default:
+        throw new ArgumentException("Invalid skill type!");
+    }
   }
 }

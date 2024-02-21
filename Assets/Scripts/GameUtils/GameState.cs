@@ -49,7 +49,6 @@ public class GameState {
 
     // ENCOUNTER
     public List<Monster> encounterMonsters;
-    public List<List<SkillName>> skillSequences;
 
     public Dictionary<string, string> partyMembers;
 
@@ -228,13 +227,12 @@ public class GameState {
 
 
     // ------------------------------- ENCOUNTER -------------------------------
-    public void StartEncounter(List<Monster> monsters, List<List<SkillName>> skillSequences, Dictionary<string, string> partyMembers) {
+    public void StartEncounter(List<Monster> monsters, Dictionary<string, string> partyMembers) {
         CheckInitialised();
         if (IsInEncounter) {
             return;
         }
         encounterMonsters = monsters;
-        this.skillSequences = skillSequences;
         this.partyMembers = partyMembers;
         IsInEncounter = true;
     }
