@@ -101,7 +101,7 @@ public class LobbyManager : MonoBehaviour {
         // Debugging
         foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations)
         {
-            Debug.Log("Key: " + item.Key + ", Location: (" + item.Value.LatitudeInRadians + ", " + item.Value.LongitudeInRadians + ")");
+            Debug.Log("Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
         }
 
         if (players.Count > 1) {

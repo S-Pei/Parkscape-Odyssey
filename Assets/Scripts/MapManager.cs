@@ -365,3 +365,4 @@ public enum MapMessageType {
     FOUND_ENCOUNTERS,
     MAP_INFO
 }
+ 
