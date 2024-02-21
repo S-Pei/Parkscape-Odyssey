@@ -58,10 +58,10 @@ public class MapManager : MonoBehaviour
     private float maxRadius = 1000; // in meters
 
     [SerializeField]
-    private double startingLatitude = 51.507;
+    private double startingLatitude = 51.506665;
     
     [SerializeField]
-    private double startingLongitude = -0.17;
+    private double startingLongitude = -0.175624;
 
     // Pin Constants
     private const float minPinScale = 0.025f;
@@ -173,7 +173,7 @@ public class MapManager : MonoBehaviour
         foreach (var entry in GameState.Instance.mediumEncounterLocations) {
             Debug.Log("Adding pin for " + entry.Key);
             Debug.Log(encounterController);
-            encounterController.CreateMonsterSpawn(entry.Value);
+            encounterController.CreateMonsterSpawn(entry.Key, entry.Value);
         }
     }
     // Add Pin to some location
