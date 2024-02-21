@@ -173,6 +173,7 @@ public class MapManager : MonoBehaviour
     // Add Medium Encounter Pins to the map
     public void AddMediumEncounterPins() {
         foreach (var entry in GameState.Instance.mediumEncounterLocations) {
+            Debug.Log("Adding pin for " + entry.Key);
             encounterController.CreateMonsterSpawn(entry.Value);
         }
     }
