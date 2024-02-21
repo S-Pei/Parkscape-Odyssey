@@ -307,6 +307,10 @@ public class EncounterController : MonoBehaviour
                 break;
             case EncounterMessageType.START_ENCOUNTER:
                 // member receives notification from encounter leader to start encounter
+                Debug.Log("Received start encounter message");
+                Debug.Log("isLeader: " + isLeader);
+                Debug.Log("encounterId: " + encounterId);
+                Debug.Log(*"encounterMessage.encounterId: " + encounterMessage.encounterId);
                 if (!isLeader && encounterId == encounterMessage.encounterId) {
                     MemberStartEncounter();
                 }
@@ -328,7 +332,7 @@ public class EncounterController : MonoBehaviour
     }
 
     private void SendStartEncounterMessage() {
-        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.START_ENCOUNTER);
+        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.START_ENCOUNTER, encounterId: encounterId);
         network.broadcast(encounterMessage.toJson());
     }
 
