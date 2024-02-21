@@ -177,6 +177,7 @@ public class MapManager : MonoBehaviour
     public void AddMediumEncounterPins() {
         foreach (var entry in GameState.Instance.mediumEncounterLocations) {
             Debug.Log("Adding pin for " + entry.Key);
+            Debug.Log(encounterController);
             encounterController.CreateMonsterSpawn(entry.Value);
         }
     }
