@@ -51,17 +51,17 @@ public class MapManager : MonoBehaviour
     private const float maxZoomLevel = 20;
     private const float defaultZoomLevel = 19;
 
-    [SerializeField]
-    private float interactDistance = 40; // in meters
+    // [SerializeField]
+    private float interactDistance = 2000; // in meters
 
-    [SerializeField]
-    private float maxRadius = 1000; // in meters
+    // [SerializeField]
+    private float maxRadius = 2000; // in meters
 
-    [SerializeField]
-    private double startingLatitude = 51.507;
+    // [SerializeField]
+    private double startingLatitude = 51.498468;
     
-    [SerializeField]
-    private double startingLongitude = -0.17;
+    // [SerializeField]
+    private double startingLongitude = -0.179036;
 
     // Pin Constants
     private const float minPinScale = 0.025f;
@@ -173,7 +173,7 @@ public class MapManager : MonoBehaviour
         foreach (var entry in GameState.Instance.mediumEncounterLocations) {
             Debug.Log("Adding pin for " + entry.Key);
             Debug.Log(encounterController);
-            encounterController.CreateMonsterSpawn(entry.Value);
+            encounterController.CreateMonsterSpawn(entry.Key, entry.Value);
         }
     }
     // Add Pin to some location
@@ -196,6 +196,7 @@ public class MapManager : MonoBehaviour
         if (pin.TryGetComponent(out SpriteButtonLocationBounded spriteButton)) {
             spriteButton.SetLocation(latitude, longitude);
         }
+        Debug.Log("Pin added at " + latitude + ", " + longitude);
 
         return pin;
     }

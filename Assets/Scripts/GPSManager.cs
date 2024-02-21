@@ -181,13 +181,24 @@ IEnumerator GPSLoc() {
         if (GameState.Instance.MyPlayer.IsLeader) {
             // TODO: get list from web authoring tool
             // Hardcoded for now
-            GameState.Instance.mediumEncounterLocations.Add("1", new LatLon(51.49355, -0.1924046));
-            GameState.Instance.mediumEncounterLocations.Add("2", new LatLon(51.39355, -0.1924046));
+            List<LatLon> encounterLocations = new List<LatLon>();
+            encounterLocations.Add(new LatLon(51.496451, -0.176775));
+            encounterLocations.Add(new LatLon(51.39355, -0.1924046));
+            // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
+            // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.39355, -0.1924046));
 
             Debug.Log("Sending encounter info to players in lobby");
             // Send medium encounters to players
+            SetMediumEncounterID(encounterLocations);
             Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
             network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
+        }
+    }
+
+    public void SetMediumEncounterID(List<LatLon> locations) {
+        foreach (LatLon location in locations) {
+            string encounterId = Guid.NewGuid().ToString();
+            GameState.Instance.mediumEncounterLocations.Add(encounterId, location);
         }
     }
 }
