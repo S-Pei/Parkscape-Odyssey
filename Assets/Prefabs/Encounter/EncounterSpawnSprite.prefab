@@ -206,7 +206,6 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   Disabled: 0
-  nearDistance: 40
   known: 0
   PinState: 1
   repeat: 1
