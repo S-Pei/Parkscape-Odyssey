@@ -40,7 +40,7 @@ public class EncounterController : MonoBehaviour
 
     // current encounter monster details
     private List<Monster> monsters;
-    private List<List<SkillName>> skillSequences;
+
     private string encounterId = "";
     private bool isLeader = false;
 
@@ -102,7 +102,7 @@ public class EncounterController : MonoBehaviour
         GameObject monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 0, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees);
 
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
-        encounterSpawnManager.EncounterSpawnInit(encounterId, monsters, skillSequences);
+        encounterSpawnManager.EncounterSpawnInit(encounterId, monsters);
 
         // TODO: Set the position of the monster to predetermined position with an algorithm.
         Vector3 randomPos = new Vector3(
@@ -148,9 +148,8 @@ public class EncounterController : MonoBehaviour
     }
 
     // Shows encounter lobby on the UI
-    public void SpawnEncounterLobby(string encounterId, List<Monster> monsters, List<List<SkillName>> skillSequences) {
+    public void SpawnEncounterLobby(string encounterId, List<Monster> monsters) {
         this.monsters = monsters;
-        this.skillSequences = skillSequences;
         this.encounterId = encounterId;
 
         GameObject encounterLobby = Instantiate(encounterLobbyOverlay);
@@ -178,10 +177,10 @@ public class EncounterController : MonoBehaviour
     }
 
     // Called from encounter spawn manager when leader initiates the encounter lobby
-    public void CreateEncounterLobby(string encounterId, List<Monster> monsters, List<List<SkillName>> skillSequences) {
+    public void CreateEncounterLobby(string encounterId, List<Monster> monsters) {
         isLeader = true;
         Debug.Log($"Spawning encounter lobby: {monsters[0].Health}");
-        SpawnEncounterLobby(encounterId, monsters, skillSequences);
+        SpawnEncounterLobby(encounterId, monsters);
 
         // Add self as a member of the party in the encounter lobby
         partyMembers.Add(GameState.Instance.myID, GameState.Instance.PlayersDetails[GameState.Instance.myID].Name);
@@ -240,9 +239,8 @@ public class EncounterController : MonoBehaviour
 
     public void LeaderStartEncounter() {
         // Save monster details for entering encounter
-
         Debug.Log($"isInEncounter: {GameState.Instance.IsInEncounter}");
-        GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
+        GameState.Instance.StartEncounter(monsters, partyMembers);
         Debug.Log("Leader Starting encounter with monsters: " + monsters[0].name + " " + monsters[0].Health);
 
         // Close the encounter spawn
@@ -254,7 +252,7 @@ public class EncounterController : MonoBehaviour
     }
 
     private void MemberStartEncounter() {
-        GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
+        GameState.Instance.StartEncounter(monsters, partyMembers);
         Debug.Log("Member Starting encounter");
         GameObject.FindGameObjectWithTag("EncounterLobby").GetComponent<EncounterLobbyUIManager>().StartEncounter();
         inEncounterLobby = false;
@@ -348,6 +346,7 @@ public class EncounterController : MonoBehaviour
         List<int> defenseAmount = new List<int>();
         List<int> baseDamage = new List<int>();
         List<EnemyLevel> levels = new List<EnemyLevel>();
+        List<List<SkillName>> skills = new();
         foreach (Monster monster in monsters) {
             monsterNames.Add(monster.name);
             health.Add(monster.Health);
@@ -355,18 +354,19 @@ public class EncounterController : MonoBehaviour
             defenseAmount.Add(monster.defenseAmount);
             baseDamage.Add(monster.BaseDamage);
             levels.Add(monster.level);
+            skills.Add(monster.skills.Select(skill => skill.Name).ToList());
         }
         Debug.Log($"Responding to: {toSend}");
         EncounterMessage encounterMessage 
           = new EncounterMessage(EncounterMessageType.JOINED_ENCOUNTER_CONFIRMATION, partyMembers,
-                                monsterNames, health, defense, defenseAmount, baseDamage, skillSequences, levels, encounterId : encounterId, sendTo:toSend);
+                                monsterNames, health, defense, defenseAmount, baseDamage, skills, levels, encounterId : encounterId, sendTo:toSend);
         network.broadcast(encounterMessage.toJson());
     }
 
     private void StopSendingJoinEncounterMessagesAndShowLobby(EncounterMessage encounterMessage) {
         if (encounterMessage.sendTo == GameState.Instance.myID && !inEncounterLobby) {
             List<Monster> monsters = ProcessEncounterMessageWithMonsterInfo(encounterMessage);
-            SpawnEncounterLobby(encounterMessage.encounterId, monsters, encounterMessage.skills);
+            SpawnEncounterLobby(encounterMessage.encounterId, monsters);
             inEncounterLobby = true;
             ListPartyMembers(encounterMessage.members);
         } else if (encounterMessage.sendTo != GameState.Instance.myID && inEncounterLobby) {

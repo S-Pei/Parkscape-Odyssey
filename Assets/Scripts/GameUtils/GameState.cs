@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
@@ -50,7 +51,6 @@ public class GameState {
 
     // ENCOUNTER
     public List<Monster> encounterMonsters;
-    public List<List<SkillName>> skillSequences;
 
     public Dictionary<string, string> partyMembers;
 
@@ -235,19 +235,40 @@ public class GameState {
 
 
     // ------------------------------- ENCOUNTER -------------------------------
-    public void StartEncounter(List<Monster> monsters, List<List<SkillName>> skillSequences, Dictionary<string, string> partyMembers) {
+    public void StartEncounter(List<Monster> monsters, Dictionary<string, string> partyMembers) {
         CheckInitialised();
         if (IsInEncounter) {
             return;
         }
         encounterMonsters = monsters;
-        this.skillSequences = skillSequences;
         this.partyMembers = partyMembers;
         IsInEncounter = true;
     }
 
     public void ExitEncounter() {
         IsInEncounter = false;
+    }
+
+
+    // --------------------------------  BATTLE --------------------------------
+    public void ApplyBattleLossPenalty() {
+        // Get all available card ids
+        List<int> cardIds = MyCards.Keys.ToList();
+        
+        // randomly select half of the ids in cardsIds
+        int halfCount = cardIds.Count / 2;
+        List<int> selectedIds = new();
+        Random random = new();
+        for (int i = 0; i < halfCount; i++)
+        {
+            int randomIndex = random.Next(cardIds.Count);
+            selectedIds.Add(cardIds[randomIndex]);
+            cardIds.RemoveAt(randomIndex);
+        }
+
+        foreach (int id in selectedIds) {
+            RemoveCard(id);
+        }
     }
 }
 
