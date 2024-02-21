@@ -336,8 +336,8 @@ public class MapMessage : MessageInfo
         Dictionary<string, Dictionary<string, double>> dict = new();
         foreach (var entry in latLonDict) {
             dict.Add(entry.Key, new Dictionary<string, double> {
-                {"latitude", entry.Value.LatitudeInRadians},
-                {"longitude", entry.Value.LongitudeInRadians}
+                {"latitude", entry.Value.LatitudeInDegrees},
+                {"longitude", entry.Value.LongitudeInDegrees}
             });
         }
         return dict;
