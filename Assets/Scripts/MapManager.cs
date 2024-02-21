@@ -114,9 +114,7 @@ public class MapManager : MonoBehaviour
 
     void Start() {
         encounterController = EncounterController.selfReference;
-        if (GameState.Instance.MyPlayer.IsLeader) {
-            AddMediumEncounterPins();
-        }
+        AddMediumEncounterPins();
     }
     // Update is called once per frame
     void Update()
@@ -163,12 +161,6 @@ public class MapManager : MonoBehaviour
                 HashSet<string> newFoundEncounters = new HashSet<string>(mapMessage.foundEncounterIds);
                 GameState.Instance.foundMediumEncounters.UnionWith(newFoundEncounters);
                 // Add pins for the found encounters
-                break;
-            // Receive medium encounter locations from leader
-            case MapMessageType.MAP_INFO:
-                GameState.Instance.mediumEncounterLocations = MapMessage.DictToLatLon(mapMessage.mediumEncounterLocations);
-                // Add pins for the medium encounters
-                AddMediumEncounterPins();
                 break;
         }
         return CallbackStatus.PROCESSED;
