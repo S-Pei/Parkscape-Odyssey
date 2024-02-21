@@ -84,7 +84,6 @@ public class MapManager : MonoBehaviour
         map = gameObject;
         network = NetworkManager.Instance.NetworkUtils;
         gpsManager = GPSManager.Instance;
-        encounterController = EncounterController.selfReference;
 
         Debug.Log("MapManager Awake");
 
@@ -112,6 +111,10 @@ public class MapManager : MonoBehaviour
         mapRenderer.ZoomLevel = defaultZoomLevel;
     }
 
+
+    void Start() {
+        encounterController = EncounterController.selfReference;
+    }
     // Update is called once per frame
     void Update()
     {
