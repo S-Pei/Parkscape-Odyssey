@@ -58,10 +58,10 @@ public class MapManager : MonoBehaviour
     private float maxRadius = 5000; // in meters
 
     [SerializeField]
-    private double startingLatitude = 51.506665;
+    private double startingLatitude = 51.498468;
     
     [SerializeField]
-    private double startingLongitude = -0.175624;
+    private double startingLongitude = -0.179036;
 
     // Pin Constants
     private const float minPinScale = 0.025f;
