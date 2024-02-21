@@ -17,6 +17,10 @@ public class MapManager : MonoBehaviour
     private bool mapCenterSet = false;
     private bool follow = true;
 
+    // Pop ups
+    [SerializeField]
+    private GameObject outOfRadiusPopup;
+
     // Player pins
     [SerializeField]
     private GameObject playerPinObject;
@@ -25,9 +29,11 @@ public class MapManager : MonoBehaviour
     [SerializeField]
     private GameObject playerRadiusObject;
     private MapPin playerRadiusPin;
+
     // Network
     private NetworkUtils network;
     private int previousFoundEncounterCount = 0;
+
     // Map Blocker
     [SerializeField]
     private GameObject mapBlocker;
@@ -45,6 +51,15 @@ public class MapManager : MonoBehaviour
 
     [SerializeField]
     private float interactDistance = 40; // in meters
+
+    [SerializeField]
+    private float maxRadius = 1000; // in meters
+
+    [SerializeField]
+    private double startingLatitude = 51.507;
+    
+    [SerializeField]
+    private double startingLongitude = -0.17;
 
     // Pin Constants
     private const float minPinScale = 0.025f;
@@ -80,6 +95,10 @@ public class MapManager : MonoBehaviour
             playerRadiusPin = playerRadiusObject.GetComponent<MapPin>();
         }
 
+        // Disable any popups
+        if (outOfRadiusPopup != null)
+            outOfRadiusPopup.SetActive(false);
+
         // Set the map's zoom level
         mapRenderer.MinimumZoomLevel = minZoomLevel;
         mapRenderer.MaximumZoomLevel = maxZoomLevel;
@@ -94,7 +113,8 @@ public class MapManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (mapCenterSet)
+        KeepMapWithinRadius();
     }
 
     IEnumerator InitialiseAndUpdateGPS() {
@@ -299,6 +319,33 @@ public class MapManager : MonoBehaviour
     // Called when user moves the map.
     public void StopFollowing() {
         follow = false;
+    }
+
+    private void KeepMapWithinRadius() {
+        // Get distance between starting location and map center
+        double distance = DistanceBetweenCoordinates(startingLatitude, startingLongitude, 
+                            mapRenderer.Center.LatitudeInDegrees, mapRenderer.Center.LongitudeInDegrees);
+        if (distance > maxRadius) {
+            // Get angle between starting location and map center
+            double angle = Math.Atan2(mapRenderer.Center.LatitudeInDegrees - startingLatitude, 
+                                      mapRenderer.Center.LongitudeInDegrees - startingLongitude);
+            float maxRadiusDecreased = maxRadius - 1;
+
+            TriggerOutOfRadius();
+
+            // Move map back to the edge of the radius
+            (double, double) newCoords = AddMetersToCoordinate(startingLatitude, startingLongitude, 
+                                            maxRadiusDecreased * Math.Sin(angle), maxRadiusDecreased * Math.Cos(angle));
+            mapRenderer.Center = new LatLon(newCoords.Item1, newCoords.Item2);
+        }
+    }
+
+    public void TriggerOutOfRadius() {
+        outOfRadiusPopup.SetActive(true);
+    }
+
+    public void CloseOutOfRadiusPopup() {
+        outOfRadiusPopup.SetActive(false);
     }
 
     // Add Pin near current location or provided location based on max and min radius, in some direction.
