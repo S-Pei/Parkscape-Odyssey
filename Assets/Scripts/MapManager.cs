@@ -114,6 +114,9 @@ public class MapManager : MonoBehaviour
 
     void Start() {
         encounterController = EncounterController.selfReference;
+        if (GameState.Instance.MyPlayer.IsLeader) {
+            AddMediumEncounterPins();
+        }
     }
     // Update is called once per frame
     void Update()
