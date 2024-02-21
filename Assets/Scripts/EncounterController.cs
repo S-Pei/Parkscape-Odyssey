@@ -98,7 +98,7 @@ public class EncounterController : MonoBehaviour
         string encounterId = Guid.NewGuid().ToString();
 
         // GameObject monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 50, 20, latitude: 51.493529, longitude: -0.192376); // TEMPORARY
-        Debug.Log("Location: (" + location.LatitudeInRadians + ", " + location.LongitudeInRadians + ")");
+        Debug.Log("Location: (" + location.LatitudeInDegrees + ", " + location.LongitudeInDegrees + ")");
         GameObject monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 0, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees);
 
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
