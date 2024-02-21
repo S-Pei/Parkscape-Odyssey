@@ -12,6 +12,7 @@ public class MapManager : MonoBehaviour
     // Map manager is a singleton class
     public static MapManager selfReference;
     private GPSManager gpsManager;
+    private EncounterController encounterController;
     private LocationInfo location;
     private bool permissionGranted = false;
     public GameObject map;
@@ -68,6 +69,7 @@ public class MapManager : MonoBehaviour
         map = gameObject;
         network = NetworkManager.Instance.NetworkUtils;
         gpsManager = GPSManager.Instance;
+        encounterController = EncounterController.selfReference;
 
         Debug.Log("MapManager Awake");
 
@@ -148,7 +150,7 @@ public class MapManager : MonoBehaviour
     // Add Medium Encounter Pins to the map
     public void AddMediumEncounterPins() {
         foreach (var entry in GameState.Instance.mediumEncounterLocations) {
-            AddPinNearLocation(playerPinObject, 0, latitude: entry.Value.LatitudeInRadians, longitude: entry.Value.LongitudeInRadians);
+            encounterController.CreateMonsterSpawn(entry.Value);
         }
     }
     // Add Pin to some location
