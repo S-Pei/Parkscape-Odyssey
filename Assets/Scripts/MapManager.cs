@@ -51,11 +51,11 @@ public class MapManager : MonoBehaviour
     private const float maxZoomLevel = 20;
     private const float defaultZoomLevel = 19;
 
-    [SerializeField]
+    // [SerializeField]
     private float interactDistance = 1000; // in meters
 
-    [SerializeField]
-    private float maxRadius = 1000; // in meters
+    // [SerializeField]
+    private float maxRadius = 2000; // in meters
 
     // [SerializeField]
     private double startingLatitude = 51.498468;
