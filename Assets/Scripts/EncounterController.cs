@@ -5,8 +5,13 @@ using UnityEngine;
 using Newtonsoft.Json;
 using UnityEngine.UI;
 using System.Linq;
-using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
+
+public enum EncounterType {
+    RANDOM_ENCOUNTER,
+    MEDIUM_BOSS
+}
+
 
 public class EncounterController : MonoBehaviour
 {
@@ -87,7 +92,7 @@ public class EncounterController : MonoBehaviour
     }
 
     // Location dependent encounter spawn, so need to have location initialized, or provide one.
-    public void CreateMonsterSpawn(string encounterId, LatLon location) {
+    public void CreateMonsterSpawn(string encounterId, LatLon location, EncounterType type) {
         // Generate monsters for the encounter.
         List<Monster> monsters = GenerateEncounterMonsters();
 
@@ -97,19 +102,13 @@ public class EncounterController : MonoBehaviour
         // Generate unique id for the encounter. (not needed for medium encounters)
         // string encounterId = Guid.NewGuid().ToString();
 
-        // GameObject monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 50, 20, latitude: 51.493529, longitude: -0.192376); // TEMPORARY
         Debug.Log("Location: (" + location.LatitudeInDegrees + ", " + location.LongitudeInDegrees + ")");
         GameObject monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 0, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees);
+        monsterSpawn.GetComponent<EncounterIconChanger>().SetEncounterType(type);
 
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
         encounterSpawnManager.EncounterSpawnInit(encounterId, monsters);
 
-        // TODO: Set the position of the monster to predetermined position with an algorithm.
-        Vector3 randomPos = new Vector3(
-            UnityEngine.Random.Range(-MAX_SPAWN_AREA_X, MAX_SPAWN_AREA_X), 
-            UnityEngine.Random.Range(-MAX_SPAWN_AREA_Y, MAX_SPAWN_AREA_Y),
-            0);
-        monsterSpawn.transform.localPosition = randomPos;
         encountersSpawned.Add(monsterSpawn);
         Debug.Log($"Created encounter spawn: {encounterId}");
     }
@@ -243,9 +242,6 @@ public class EncounterController : MonoBehaviour
         GameState.Instance.StartEncounter(monsters, partyMembers);
         Debug.Log("Leader Starting encounter with monsters: " + monsters[0].name + " " + monsters[0].Health);
 
-        // Close the encounter spawn
-        CloseEncounterSpawn();
-
         SendStartEncounterMessage();
         inEncounterLobby = false;
         AcceptMessages = false;
@@ -259,11 +255,12 @@ public class EncounterController : MonoBehaviour
         AcceptMessages = false;
     }
 
-    private void CloseEncounterSpawn() {
+    public void KillMonster() {
         GameObject encounter = encountersSpawned.Find((spawn) => spawn.GetComponent<EncounterSpawnManager>().GetEncounterId() == encounterId);
         if (encounter != null) {
             encountersSpawned.Remove(encounter);
-            Destroy(encounter);
+            // Instead of destroying the encounter, we can just disable it.
+            encounter.GetComponent<EncounterIconChanger>().KillSprite();
         }
     }
 
@@ -273,7 +270,9 @@ public class EncounterController : MonoBehaviour
         partyMembers.Clear();
     }
 
-    public void OnFinishEncounter() {
+    public void OnFinishEncounter(bool win) {
+        if (win)
+            KillMonster();
         partyMembers.Clear();
         encounterId = "";
         AcceptMessages = true;

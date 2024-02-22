@@ -284,7 +284,7 @@ public class BattleManager : MonoBehaviour {
             ResetAllPartyMemberStats();
 
             // Reset variables in various classes
-            GameObject.FindGameObjectWithTag("EncounterManager").GetComponent<EncounterController>().OnFinishEncounter();
+            GameObject.FindGameObjectWithTag("EncounterManager").GetComponent<EncounterController>().OnFinishEncounter(battleStatus == 0);
             battleUIManager.ResetUI();
             GameState.Instance.ExitEncounter();
 

@@ -64,8 +64,8 @@ public class MapManager : MonoBehaviour
     private double startingLongitude = -0.179036;
 
     // Pin Constants
-    private const float minPinScale = 0.025f;
-    private const float maxPinScale = 0.120f;
+    private const float minPinScale = 0.04f;
+    private const float maxPinScale = 0.20f;
 
     public static MapManager Instance {
         get {
@@ -173,9 +173,10 @@ public class MapManager : MonoBehaviour
         foreach (var entry in GameState.Instance.mediumEncounterLocations) {
             Debug.Log("Adding pin for " + entry.Key);
             Debug.Log(encounterController);
-            encounterController.CreateMonsterSpawn(entry.Key, entry.Value);
+            encounterController.CreateMonsterSpawn(entry.Key, entry.Value, EncounterType.MEDIUM_BOSS);
         }
     }
+
     // Add Pin to some location
     public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1) {
         GameObject pin = Instantiate(prefab, map.transform);
