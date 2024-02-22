@@ -248,8 +248,4 @@ public class PingMessageInfo : MessageInfo {
         public string toJson() {
             return JsonConvert.SerializeObject(this);
         }
-
-        public string processMessageInfo() {
-            return "";
-        }
 }

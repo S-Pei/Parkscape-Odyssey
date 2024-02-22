@@ -357,10 +357,6 @@ public class MapMessage : MessageInfo
         return JsonConvert.SerializeObject(this);
     }
 
-    public string processMessageInfo() {
-        throw new NotImplementedException();
-    }
-
 }
 
 public enum MapMessageType {
