@@ -59,7 +59,7 @@ public class MapManager : MonoBehaviour
     private const float defaultZoomLevel = 19;
 
     // [SerializeField]
-    private float interactDistance = 2000; // in meters
+    private float interactDistance = 7000; // in meters
 
     // [SerializeField]
     private float maxRadius = 2000; // in meters
@@ -71,8 +71,8 @@ public class MapManager : MonoBehaviour
     private double startingLongitude = -0.179036;
 
     // Pin Constants
-    private const float minPinScale = 0.025f;
-    private const float maxPinScale = 0.120f;
+    private const float minPinScale = 0.04f;
+    private const float maxPinScale = 0.20f;
 
     public static MapManager Instance {
         get {
@@ -193,8 +193,10 @@ public class MapManager : MonoBehaviour
     // Randomly choose grids to spawn encounters
     public void SpawnRandomEncounters() {
         // Get random number of encounters to spawn
-        int numEncounters = UnityEngine.Random.Range(1, 5);
         int gridNum = (int) Math.Ceiling(mapLength / gridLength) * (int) Math.Ceiling(mapWidth / gridWidth);
+        int lb = (int) gridNum / 4;
+        int ub = (int) gridNum / 4 * 3;
+        int numEncounters = UnityEngine.Random.Range(lb, ub);
         for (int i = 0; i < numEncounters; i++) {
             // Get random grid to spawn encounter
             int randomIndex = UnityEngine.Random.Range(0, gridNum - 1);
@@ -202,7 +204,7 @@ public class MapManager : MonoBehaviour
             LatLon centre = centres[randomIndex][0];
             string encounterId = Guid.NewGuid().ToString();
             // Add pin for the encounter
-            encounterController.CreateMonsterSpawn(encounterId, new LatLon(centre.LatitudeInDegrees, centre.LongitudeInDegrees), true);
+            encounterController.CreateMonsterSpawn(encounterId, new LatLon(centre.LatitudeInDegrees, centre.LongitudeInDegrees), EncounterType.RANDOM_ENCOUNTER);
         }
     }
 
@@ -212,9 +214,10 @@ public class MapManager : MonoBehaviour
         foreach (var entry in GameState.Instance.mediumEncounterLocations) {
             Debug.Log("Adding pin for " + entry.Key);
             Debug.Log(encounterController);
-            encounterController.CreateMonsterSpawn(entry.Key, entry.Value);
+            encounterController.CreateMonsterSpawn(entry.Key, entry.Value, EncounterType.MEDIUM_BOSS);
         }
     }
+
     // Add Pin to some location
     public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1) {
         GameObject pin = Instantiate(prefab, map.transform);

@@ -284,7 +284,7 @@ public class BattleManager : MonoBehaviour {
             ResetAllPartyMemberStats();
 
             // Reset variables in various classes
-            GameObject.FindGameObjectWithTag("EncounterManager").GetComponent<EncounterController>().OnFinishEncounter();
+            GameObject.FindGameObjectWithTag("EncounterManager").GetComponent<EncounterController>().OnFinishEncounter(battleStatus == 0);
             battleUIManager.ResetUI();
             GameState.Instance.ExitEncounter();
 
@@ -296,6 +296,7 @@ public class BattleManager : MonoBehaviour {
                 Instantiate(lootOverlay);
             } else if (battleStatus == 1) {
                 // Party wiped out, apply penalty
+                MapManager.Instance.EnableMapInteraction();
                 GameState.Instance.ApplyBattleLossPenalty();
             }
         }
