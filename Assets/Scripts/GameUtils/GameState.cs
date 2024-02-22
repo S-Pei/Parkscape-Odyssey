@@ -6,7 +6,7 @@ using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
 
 public class GameState {
-    private static readonly bool DEBUGMODE = 
+    public static readonly bool DEBUGMODE = 
     #if UNITY_EDITOR 
         true;
     #else
