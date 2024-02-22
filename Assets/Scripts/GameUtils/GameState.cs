@@ -22,6 +22,7 @@ public class GameState {
                 {"3", "Player 3"},
                 {"4", "Player 4"},
             });
+            gameState.isLeader = true;
         }
         return gameState; } }
 
