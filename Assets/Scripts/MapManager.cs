@@ -19,6 +19,13 @@ public class MapManager : MonoBehaviour
     private bool mapCenterSet = false;
     private bool follow = true;
 
+    // Map Grids
+    private double mapLength = 2000;
+    private double mapWidth = 2000;
+    private double gridLength = 100;
+    private double gridWidth = 100;
+    private List<List<LatLon>> centres = new();
+
     // Pop ups
     [SerializeField]
     private GameObject outOfRadiusPopup;
@@ -113,6 +120,8 @@ public class MapManager : MonoBehaviour
 
 
     void Start() {
+        DiscretiseMap();
+        SpawnRandomEncounters();
         encounterController = EncounterController.selfReference;
         AddMediumEncounterPins();
     }
@@ -165,6 +174,36 @@ public class MapManager : MonoBehaviour
         }
         return CallbackStatus.PROCESSED;
         
+    }
+
+    /*** Random Encounter Generation ***/
+    // Discretise the map into grids
+    public void DiscretiseMap() {
+        double leftBound = startingLongitude - mapWidth / 2;
+        double rightBound = startingLongitude + mapWidth / 2;
+        double topBound = startingLatitude + mapLength / 2;
+        double bottomBound = startingLatitude - mapLength / 2;
+        for (double i = bottomBound; i < topBound; i += gridWidth) {
+            for (double j = leftBound; j < rightBound; j += gridLength) {
+                centres.Add(new List<LatLon> {new LatLon(i + gridWidth / 2, j + gridLength / 2)});
+            }
+        }
+    }
+
+    // Randomly choose grids to spawn encounters
+    public void SpawnRandomEncounters() {
+        // Get random number of encounters to spawn
+        int numEncounters = UnityEngine.Random.Range(1, 5);
+        int gridNum = (int) Math.Ceiling(mapLength / gridLength) * (int) Math.Ceiling(mapWidth / gridWidth);
+        for (int i = 0; i < numEncounters; i++) {
+            // Get random grid to spawn encounter
+            int randomIndex = UnityEngine.Random.Range(0, gridNum - 1);
+
+            LatLon centre = centres[randomIndex][0];
+            string encounterId = Guid.NewGuid().ToString();
+            // Add pin for the encounter
+            encounterController.CreateMonsterSpawn(encounterId, new LatLon(centre.LatitudeInDegrees, centre.LongitudeInDegrees), true);
+        }
     }
 
     /*** Map Pins ***/
