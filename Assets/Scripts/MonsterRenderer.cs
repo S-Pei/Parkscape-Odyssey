@@ -75,7 +75,7 @@ public class MonsterRenderer : MonoBehaviour
         monsterHealth = monster.Health;
 
         // Update health bar width
-        GameObject monsterHealthBar = monsterHealthObj.transform.GetChild(1).gameObject;
-        monsterHealthBar.GetComponent<Slider>().value = monster.Health / monsterMaxHealth;
+        GameObject monsterHealthBarLineSlider = monsterHealthObj.transform.GetChild(0).gameObject;
+        monsterHealthBarLineSlider.GetComponent<Slider>().value = monster.Health / monsterMaxHealth;
     }
 }
