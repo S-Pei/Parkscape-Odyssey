@@ -187,6 +187,9 @@ public class EncounterController : MonoBehaviour
         // Broadcast to all players that an encounter has been found.
         BroadcastFoundEncounterMessage();
 
+        // Disable map interactions
+        MapManager.Instance.DisableMapInteraction();
+
         inEncounterLobby = true;
     }
 
@@ -195,6 +198,9 @@ public class EncounterController : MonoBehaviour
         // AcceptMessages = true;
         Debug.Log("Accepting join encounter");
         CloseEncounterFoundPopup(accept:true);
+
+        // Disable map interactions
+        MapManager.Instance.DisableMapInteraction();
 
         // Send a message to the leader to request to join encounter.
         SendJoinEncounterMessage();
@@ -265,6 +271,8 @@ public class EncounterController : MonoBehaviour
     }
 
     public void ExitEncounterLobby() {
+        // Enable map interactions.
+        MapManager.Instance.EnableMapInteraction();
         inEncounterLobby = false;
         encounterId = "";
         partyMembers.Clear();

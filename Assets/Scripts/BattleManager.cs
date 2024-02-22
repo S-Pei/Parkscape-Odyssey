@@ -296,6 +296,7 @@ public class BattleManager : MonoBehaviour {
                 Instantiate(lootOverlay);
             } else if (battleStatus == 1) {
                 // Party wiped out, apply penalty
+                MapManager.Instance.EnableMapInteraction();
                 GameState.Instance.ApplyBattleLossPenalty();
             }
         }
