@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3637592451827347815}
   - component: {fileID: 2959229505528025887}
   - component: {fileID: 3286978128801743006}
+  - component: {fileID: 5448648371334243828}
   m_Layer: 5
   m_Name: EncounterSpawnSprite
   m_TagString: Untagged
@@ -30,7 +31,7 @@ RectTransform:
   m_GameObject: {fileID: 3568983973437442300}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.4, y: 1.4, z: 1.4}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -81,7 +82,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: ceb93c28982664b1a8a6e66eba92b912, type: 3}
+  m_Sprite: {fileID: 21300000, guid: cb82c72b73e36204db8493d4f52ebdbd, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -209,3 +210,22 @@ MonoBehaviour:
   known: 0
   PinState: 1
   repeat: 1
+--- !u!114 &5448648371334243828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3568983973437442300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8053c8f5ef6651848afc71429aa84f86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  randomEncounterSprite: {fileID: 21300000, guid: cb82c72b73e36204db8493d4f52ebdbd,
+    type: 3}
+  randomEncounterDeadSprite: {fileID: 21300000, guid: ea46ebb3835a75345808c9c450ae14ac,
+    type: 3}
+  mediumBossSprite: {fileID: 21300000, guid: 71805f94576a40c46bfb031238f92585, type: 3}
+  mediumBossDeadSprite: {fileID: 21300000, guid: 94614ab1059fa8945af4e9dc64966f16,
+    type: 3}
