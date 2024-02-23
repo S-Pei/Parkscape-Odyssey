@@ -19,6 +19,16 @@ public class MapManager : MonoBehaviour
     private bool mapCenterSet = false;
     private bool follow = true;
 
+    // Map Grids
+    private double mapLength = 900;
+    private double mapWidth = 2000;
+    private double gridLength = 100;
+    private double gridWidth = 100;
+    private int gridLengthNum;
+    private int gridWidthNum;
+    private int randomGridChance = 10;
+    private List<List<LatLon>> centres = new();
+
     // Pop ups
     [SerializeField]
     private GameObject outOfRadiusPopup;
@@ -52,16 +62,16 @@ public class MapManager : MonoBehaviour
     private const float defaultZoomLevel = 19;
 
     // [SerializeField]
-    private float interactDistance = 2000; // in meters
+    private float interactDistance = 7000; // in meters
 
     // [SerializeField]
     private float maxRadius = 2000; // in meters
 
     // [SerializeField]
-    private double startingLatitude = 51.498468;
+    private double startingLatitude = 51.506061;
     
     // [SerializeField]
-    private double startingLongitude = -0.179036;
+    private double startingLongitude = -0.174226;
 
     // Pin Constants
     private const float minPinScale = 0.04f;
@@ -113,7 +123,13 @@ public class MapManager : MonoBehaviour
 
 
     void Start() {
+        if (GameState.DEBUGMODE) {
+            mapRenderer.Center = new LatLon(startingLatitude, startingLongitude);
+            mapCenterSet = true;
+        }
         encounterController = EncounterController.selfReference;
+        DiscretiseMap();
+        SpawnRandomEncounters();
         AddMediumEncounterPins();
     }
     // Update is called once per frame
@@ -124,9 +140,11 @@ public class MapManager : MonoBehaviour
             location = gpsManager.GetLocation();
 
             // Set the map's center to the current location
-            if (!mapCenterSet || follow) {
-                mapRenderer.Center = new LatLon(location.latitude, location.longitude);
-                mapCenterSet = true;
+            if (!GameState.DEBUGMODE) {
+                if (!mapCenterSet || follow) {
+                    mapRenderer.Center = new LatLon(location.latitude, location.longitude);
+                    mapCenterSet = true;
+                }
             }
 
             // Update player pin location
@@ -165,6 +183,45 @@ public class MapManager : MonoBehaviour
         }
         return CallbackStatus.PROCESSED;
         
+    }
+
+    /*** Random Encounter Generation ***/
+    // Discretise the map into grids
+    public void DiscretiseMap() {
+        (double, double) bottomLeft = AddMetersToCoordinate(startingLatitude, startingLongitude, - mapLength / 2, - mapWidth / 2);
+        gridLengthNum = (int) Math.Ceiling(mapLength / gridLength);
+        gridWidthNum = (int) Math.Ceiling(mapWidth / gridWidth);
+        for (int i = 0; i < gridLengthNum; i++) {
+            List<LatLon> row = new List<LatLon>();
+            for (int j = 0; j < gridWidthNum; j++) {
+                double latDisplacement = i * gridWidth + gridWidth / 2;
+                double longDisplacement = j * gridLength + gridLength / 2;
+                (double, double) centre = AddMetersToCoordinate(bottomLeft.Item1, bottomLeft.Item2, latDisplacement, longDisplacement);
+                row.Add(new LatLon(centre.Item1, centre.Item2));
+            }
+            centres.Add(row);
+        }
+    }
+
+    // Randomly choose grids to spawn encounters
+    public void SpawnRandomEncounters() {
+        // Get random number of encounters to spawn
+        int gridNum = (int) Math.Ceiling(mapLength / gridLength) * (int) Math.Ceiling(mapWidth / gridWidth);
+        int lb = (int) gridNum / 4;
+        int ub = (int) gridNum / 4 * 3;
+        int numEncounters = UnityEngine.Random.Range(lb, ub);
+        for (int i = 0; i < gridLengthNum; i++) {
+            for (int j = 0; j < gridWidthNum; j++) {
+                // Get random grid to spawn encounter
+                int spawn = UnityEngine.Random.Range(0, 100);
+                if (spawn < randomGridChance) {
+                    LatLon centre = centres[i][j];
+                    string encounterId = Guid.NewGuid().ToString();
+                    // Add pin for the encounter
+                    encounterController.CreateMonsterSpawn(encounterId, new LatLon(centre.LatitudeInDegrees, centre.LongitudeInDegrees), EncounterType.RANDOM_ENCOUNTER);
+                }
+            }
+        }
     }
 
     /*** Map Pins ***/
@@ -304,6 +361,8 @@ public class MapManager : MonoBehaviour
     }
 
     public bool WithinDistanceToPlayer(double latitude, double longitude) {
+        if (GameState.DEBUGMODE)
+            return true;
         return GetDistanceToPlayer(latitude, longitude) <= interactDistance;
     }
 

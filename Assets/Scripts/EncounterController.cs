@@ -94,18 +94,21 @@ public class EncounterController : MonoBehaviour
     // Location dependent encounter spawn, so need to have location initialized, or provide one.
     public void CreateMonsterSpawn(string encounterId, LatLon location, EncounterType type) {
         // Generate monsters for the encounter.
-        List<Monster> monsters = GenerateEncounterMonsters();
+        List<Monster> monsters = GenerateEncounterMonsters(type);
 
         // Generates skill sequences for the monsters.
         List<List<SkillName>> skillSequences = GenerateMonsterSkillSequences(monsters);
 
         // Generate unique id for the encounter. (not needed for medium encounters)
         // string encounterId = Guid.NewGuid().ToString();
-
+        GameObject monsterSpawn = null;
         Debug.Log("Location: (" + location.LatitudeInDegrees + ", " + location.LongitudeInDegrees + ")");
-        GameObject monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 0, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees);
+        if (type == EncounterType.RANDOM_ENCOUNTER) {
+            monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 50, 20, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees); 
+        } else {
+            monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 0, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees);
+        }
         monsterSpawn.GetComponent<EncounterIconChanger>().SetEncounterType(type);
-
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
         encounterSpawnManager.EncounterSpawnInit(encounterId, monsters);
 
@@ -113,14 +116,18 @@ public class EncounterController : MonoBehaviour
         Debug.Log($"Created encounter spawn: {encounterId}");
     }
 
-    private List<Monster> GenerateEncounterMonsters() {
+    private List<Monster> GenerateEncounterMonsters(EncounterType type) {
         List<Monster> monsters = new List<Monster>();
 
         // Select a random number between 1 and maxPlayerCount to determine the number of monsters in the encounter.
         int numMonsters = UnityEngine.Random.Range(1, GameState.Instance.maxPlayerCount);
 
+        MonsterName monsterName = MonsterName.DRAGON;
+        if (type == EncounterType.RANDOM_ENCOUNTER) {
+            monsterName = MonsterName.GOBLIN;
+        }
         // Select a type of monster for the encounter.
-        MonsterName monsterName = (MonsterName) UnityEngine.Random.Range(0, Enum.GetValues(typeof(MonsterName)).Length);
+        // MonsterName monsterName = (MonsterName) UnityEngine.Random.Range(0, Enum.GetValues(typeof(MonsterName)).Length);
 
         // Create the monsters.
         for (int i = 0; i < numMonsters; i++) {
