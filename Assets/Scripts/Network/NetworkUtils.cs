@@ -33,18 +33,6 @@ public abstract class NetworkUtils
     public abstract string getName();
     /* Listener function */
     public abstract void onReceive(System.Func<Message, CallbackStatus> callback);
-
-    /* Called in Update to process any incoming messages. */
-    public string processNewMessage() {
-        string jsonMessage = this.getMessageReceived();
-        Debug.Log("received message: " + jsonMessage);
-        if (!jsonMessage.Equals("")) {
-            Debug.Log("processing message: " + jsonMessage);
-            Message message = JsonConvert.DeserializeObject<Message>(jsonMessage, new NetworkJsonConverter());
-            currentMessage = message.processMessage();
-        }
-        return currentMessage;
-    }
 }
 
 public enum CallbackStatus {
