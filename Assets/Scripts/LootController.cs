@@ -99,6 +99,10 @@ public class LootController : MonoBehaviour
         if (focusedCard != null) {
             addCardToPlayerDeck(focusedCard);
             lootUIManager.closeCardConfirmationPopUp();
+
+            // Enable map after this selection
+            MapManager.Instance.EnableMapInteraction();
+
             destroyer.DestroySelf();
             return;
         }
