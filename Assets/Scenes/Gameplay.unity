@@ -262,6 +262,7 @@ MonoBehaviour:
   interfacePanel: {fileID: 640020643}
   encounterFoundPopup: {fileID: 2087278705650436577, guid: fb5dfb8f2d1424add9200af6a99ac1a4,
     type: 3}
+  randomEncounterFoundPopup: {fileID: 1647402645}
   gameplayCanvas: {fileID: 1802788016}
   mapRenderer: {fileID: 1920711982}
 --- !u!4 &114873852
