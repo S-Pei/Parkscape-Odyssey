@@ -12,6 +12,12 @@ public class GameState {
     #else
         false;
     #endif
+    public static readonly bool MAPDEBUGMODE = 
+    #if UNITY_EDITOR 
+        true;
+    #else
+        false;
+    #endif
 
     private static readonly Lazy<GameState> LazyGameState = new(() => new GameState());
 
