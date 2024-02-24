@@ -34,6 +34,9 @@ public class EncounterController : MonoBehaviour
     private GameObject encounterFoundPopup;
 
     [SerializeField]
+    private GameObject randomEncounterFoundPopup;
+
+    [SerializeField]
     private GameObject gameplayCanvas;
 
     [SerializeField]
