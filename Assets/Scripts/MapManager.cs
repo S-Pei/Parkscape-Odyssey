@@ -136,22 +136,26 @@ public class MapManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (gpsManager.getLocationServiceStatus() == LocationServiceStatus.Running || GameState.MAPDEBUGMODE) {
-            if (GameState.MAPDEBUGMODE) {
-                location = mapRenderer.Center;
-            } else {
-                // Get GPS location
-                location = gpsManager.GetLocation();
+        if (GameState.MAPDEBUGMODE) {
+            location = mapRenderer.Center;
+            // Update player pin location
+            if (playerPin != null) {
+                playerPin.Location = location;
+                playerRadiusPin.Location = location;
             }
+            return;
+        }
+
+        if (gpsManager.getLocationServiceStatus() == LocationServiceStatus.Running) {
+            // Get GPS location
+            location = gpsManager.GetLocation();
 
             // Set the map's center to the current location
-            if (!GameState.MAPDEBUGMODE) {
-                if (!mapCenterSet || follow) {
-                    mapRenderer.Center = location;
-                    mapCenterSet = true;
-                }
+            if (!mapCenterSet || follow) {
+                mapRenderer.Center = location;
+                mapCenterSet = true;
             }
-
+ 
             // Update player pin location
             if (playerPin != null) {
                 playerPin.Location = location;
