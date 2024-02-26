@@ -577,7 +577,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 243403145}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -5414.0103}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -585,7 +585,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.30163535}
+  m_AnchoredPosition: {x: -1547.3778, y: 0.30163535}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &243403147
@@ -4199,7 +4199,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1519129561}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -5414.0103}
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4207,7 +4207,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.30163535}
+  m_AnchoredPosition: {x: -1547.3778, y: 0.30163535}
   m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1519129563
@@ -4812,6 +4812,7 @@ GameObject:
   - component: {fileID: 1920711984}
   - component: {fileID: 1920711983}
   - component: {fileID: 1920711993}
+  - component: {fileID: 1920711994}
   m_Layer: 5
   m_Name: Map
   m_TagString: Untagged
@@ -4971,8 +4972,8 @@ MonoBehaviour:
   _numElevationTileFallbackLods: 2
   _requestTilesAroundView: 1
   _center:
-    _latitude: 0
-    _longitude: 0
+    _latitude: 51
+    _longitude: 17
   _zoomLevel: 16
   _minimumZoomLevel: 16
   _maximumZoomLevel: 20
@@ -4993,6 +4994,7 @@ MonoBehaviour:
   _clippingDistanceLayer: 23
   _textureTileLayers:
     _list:
+    - {fileID: 1920711994}
     - {fileID: 1920711989}
   _elevationTileLayers:
     _list: []
@@ -5061,6 +5063,20 @@ MonoBehaviour:
   playerPinObject: {fileID: 243403145}
   playerRadiusObject: {fileID: 1519129561}
   mapBlocker: {fileID: 1574329129}
+--- !u!114 &1920711994
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1920711982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04d217cfc3f240240998b71c9d849ac3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _opacity: 1
+  ImagePath: Assets/Images/Map/Plain_Tile.png
 --- !u!1 &1940498430
 GameObject:
   m_ObjectHideFlags: 0
