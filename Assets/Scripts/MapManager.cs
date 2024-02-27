@@ -163,8 +163,11 @@ public class MapManager : MonoBehaviour
                 mapCenterSet = true;
             }
  
+ 
             // Update player pin location
             if (playerPin != null) {
+                playerPin.Location = location;
+                playerRadiusPin.Location = location;
                 playerPin.Location = location;
                 playerRadiusPin.Location = location;
             }
@@ -193,6 +196,12 @@ public class MapManager : MonoBehaviour
             case MapMessageType.FOUND_ENCOUNTERS:
                 // Add to list of found encounters
                 HashSet<string> newFoundEncounters = new HashSet<string>(mapMessage.foundEncounterIds);
+                // Add pins for the new found encounters
+                foreach (string id in newFoundEncounters) {
+                    if (GameState.Instance.foundMediumEncounters.Contains(id))
+                        continue;
+                    encounterController.CreateMonsterSpawn(id, GameState.Instance.mediumEncounterLocations[id], EncounterType.MEDIUM_BOSS);
+                }
                 // Add pins for the new found encounters
                 foreach (string id in newFoundEncounters) {
                     if (GameState.Instance.foundMediumEncounters.Contains(id))
@@ -298,6 +307,7 @@ public class MapManager : MonoBehaviour
     // Called when player clicks on the button.
     public void SnapBack() {
         mapRenderer.Center = location;
+        mapRenderer.Center = location;
         follow = true;
     }
 
@@ -373,6 +383,8 @@ public class MapManager : MonoBehaviour
         // If latitude and longitude are not provided, use current location
         latitude = (latitude == -1) ? location.LatitudeInDegrees : latitude;
         longitude = (longitude == -1) ? location.LongitudeInDegrees : longitude;
+        latitude = (latitude == -1) ? location.LatitudeInDegrees : latitude;
+        longitude = (longitude == -1) ? location.LongitudeInDegrees : longitude;
 
         (double, double) newLocation = AddMetersToCoordinate(latitude, longitude, dLat, dLon);
         return AddPin(prefab, newLocation.Item1, newLocation.Item2);
@@ -396,6 +408,7 @@ public class MapManager : MonoBehaviour
     }
 
     public double GetDistanceToPlayer(double latitude, double longitude) {
+        return DistanceBetweenCoordinates(location.LatitudeInDegrees, location.LongitudeInDegrees, latitude, longitude);
         return DistanceBetweenCoordinates(location.LatitudeInDegrees, location.LongitudeInDegrees, latitude, longitude);
     }
 
