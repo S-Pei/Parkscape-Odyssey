@@ -5,9 +5,15 @@ public class SetPlayerPin : MonoBehaviour {
     [SerializeField]
     private List<Sprite> playerPins;
 
-    void Start() {
+    public void Set(string playerID) {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        string role = GameState.Instance.MyPlayer.Role;
+        string role = "";
+        foreach (Player player in GameState.Instance.PlayersDetails.Values) {
+            if (player.Id == playerID) {
+                role = player.Role;
+                break;
+            }
+        }
         Sprite playerPin = null;
         for (int i = 0; i < playerPins.Count; i++) {
             if (playerPins[i].name.Contains(role)) {

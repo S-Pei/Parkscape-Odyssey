@@ -14,11 +14,15 @@ public class GPSManager : MonoBehaviour
     private NetworkUtils network;
     private bool permissionGranted = false;
 
+    private Dictionary<string, LatLon> playerLocations = new();
+    private Dictionary<string, float> playerLocationTimes = new();
+    private const float staleTime = 10f;
+
     public static GPSManager Instance { 
         get {
             if (instance == null) {
                 // To make sure that script is persistent across scenes
-                GameObject go = new GameObject("GPSManager");
+                GameObject go = new("GPSManager");
                 instance = go.AddComponent<GPSManager>();
                 DontDestroyOnLoad(go);
             }
@@ -156,6 +160,10 @@ IEnumerator GPSLoc() {
         return location;
     }
 
+    public Dictionary<string, LatLon> GetPlayerLocations() {
+        return playerLocations;
+    }
+
     private void OnDestroy()
     {
         // Stop location services when the script is destroyed
@@ -199,6 +207,53 @@ IEnumerator GPSLoc() {
         foreach (LatLon location in locations) {
             string encounterId = Guid.NewGuid().ToString();
             GameState.Instance.mediumEncounterLocations.Add(encounterId, location);
+        }
+    }
+
+    // Geolocation sharing
+    public void ShareLocationToLeader() {
+        if (GameState.Instance.MyPlayer.IsLeader)
+            return;
+        Debug.Log("Sending location to leader");
+        LocationInfo location = GetLocation();
+        network.broadcast(new MapMessage(new LatLon(location.latitude, location.longitude)).toJson());
+    }
+
+    public void ShareLocationsToPlayers() {
+        if (!GameState.Instance.MyPlayer.IsLeader)
+            return;
+        Debug.Log("Sending locations to players");
+        UpdatePlayerLocations(GameState.Instance.MyPlayer.Id, new LatLon(location.latitude, location.longitude));
+
+        // Remove stale locations
+        foreach (KeyValuePair<string, float> locationTime in playerLocationTimes) {
+            if (Time.time - locationTime.Value > staleTime) {
+                playerLocations.Remove(locationTime.Key);
+                playerLocationTimes.Remove(locationTime.Key);
+            }
+        }
+        network.broadcast(new MapMessage(playerLocations).toJson());
+    }
+
+    public void UpdatePlayerLocations(string playerId, LatLon location) {
+        if (playerLocations.ContainsKey(playerId)) {
+            playerLocations[playerId] = location;
+            playerLocationTimes[playerId] = Time.time;
+        } else {
+            playerLocations.Add(playerId, location);
+            playerLocationTimes.Add(playerId, Time.time);
+        }
+    }
+
+    public void UpdatePlayerLocations(Dictionary<string, LatLon> locations) {
+        foreach (KeyValuePair<string, LatLon> location in locations) {
+            UpdatePlayerLocations(location.Key, location.Value);
+        }
+        // Check if some locations are not included. If so, send them away.
+        foreach (var entry in playerLocations) {
+            if (entry.Key != GameState.Instance.MyPlayer.Id && !locations.ContainsKey(entry.Key)) {
+                playerLocations[entry.Key] = new LatLon(0, 0);
+            }
         }
     }
 }

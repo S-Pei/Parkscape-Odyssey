@@ -35,12 +35,17 @@ public class MapManager : MonoBehaviour
 
     // Player pins
     [SerializeField]
+    private GameObject playerPinPrefab;
+
+    [SerializeField]
     private GameObject playerPinObject;
     private MapPin playerPin;
 
     [SerializeField]
     private GameObject playerRadiusObject;
     private MapPin playerRadiusPin;
+
+    private Dictionary<string, MapPin> otherPlayerPins = new();
 
     // Network
     private NetworkUtils network;
@@ -104,10 +109,9 @@ public class MapManager : MonoBehaviour
         mapRenderer = GetComponent<MapRenderer>();
         mapTouchInteractionHandler = GetComponent<MapTouchInteractionHandler>();
 
-        if (playerPinObject != null && playerRadiusObject != null) {
-            playerPin = playerPinObject.GetComponent<MapPin>();
-            playerRadiusPin = playerRadiusObject.GetComponent<MapPin>();
-        }
+        playerPin = playerPinObject.GetComponent<MapPin>();
+        playerPinObject.GetComponent<SetPlayerPin>().Set(GameState.Instance.MyPlayer.Id);
+        playerRadiusPin = playerRadiusObject.GetComponent<MapPin>();
 
         // Disable any popups
         if (outOfRadiusPopup != null)
@@ -131,6 +135,14 @@ public class MapManager : MonoBehaviour
         DiscretiseMap();
         SpawnRandomEncounters();
         AddMediumEncounterPins();
+
+        foreach (var entry in GameState.Instance.PlayersDetails) {
+            if (entry.Key != GameState.Instance.MyPlayer.Id) {
+                GameObject otherPin = AddPin(playerPinPrefab, 0, 0);
+                otherPin.GetComponent<SetPlayerPin>().Set(entry.Key);
+                otherPlayerPins.Add(entry.Key, otherPin.GetComponent<MapPin>());
+            }
+        }
     }
     // Update is called once per frame
     void Update()
@@ -180,9 +192,38 @@ public class MapManager : MonoBehaviour
                 GameState.Instance.foundMediumEncounters.UnionWith(newFoundEncounters);
                 // Add pins for the found encounters
                 break;
+            case MapMessageType.LEADER_SHARE_GEOLOCATION:
+                // Move pins for the player locations
+                Dictionary<string, LatLon> playerLocations = MapMessage.DictToLatLon(mapMessage.playerLocations);
+                gpsManager.UpdatePlayerLocations(playerLocations);
+
+                foreach (var entry in gpsManager.GetPlayerLocations()) {
+                    if (entry.Key != GameState.Instance.MyPlayer.Id) {
+                        otherPlayerPins[entry.Key].Location = entry.Value;
+                    }
+                }
+                break;
+
+            case MapMessageType.MEMBER_SHARE_GEOLOCATION:
+                gpsManager.UpdatePlayerLocations(mapMessage.sentFrom, MapMessage.DictToLatLon(mapMessage.myLocation));
+                break;
         }
         return CallbackStatus.PROCESSED;
-        
+    }
+
+    private int leaderFreq = 5;
+    private int count = 0;
+    public void SendMessages() {
+        if (GameState.Instance.MyPlayer.IsLeader) {
+            if (count < leaderFreq) {
+                count++;
+            } else {
+                count = 0;
+                gpsManager.ShareLocationsToPlayers();
+            }
+        } else {
+            gpsManager.ShareLocationToLeader();
+        }
     }
 
     /*** Random Encounter Generation ***/
@@ -384,6 +425,9 @@ public class MapMessage : MessageInfo
     public MessageType messageType {get; set;}
     public List<string> foundEncounterIds;
     public Dictionary<string, Dictionary<string, double>> mediumEncounterLocations;
+    public Dictionary<string, Dictionary<string, double>> playerLocations;
+    public Dictionary<string, double> myLocation;
+    public string sentFrom;
 
     [JsonConstructor]
     public MapMessage(MapMessageType type, List<string> foundEncounterIds, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations) {
@@ -393,21 +437,42 @@ public class MapMessage : MessageInfo
         this.mediumEncounterLocations = mediumEncounterLocations;
     }
 
+    public MapMessage(Dictionary<string, LatLon> playerLocations) {
+        this.messageType = MessageType.MAP;
+        this.type = MapMessageType.LEADER_SHARE_GEOLOCATION;
+        this.playerLocations = LatLonToDict(playerLocations);
+    }
+
+    public MapMessage(LatLon myLocation) {
+        this.messageType = MessageType.MAP;
+        this.type = MapMessageType.MEMBER_SHARE_GEOLOCATION;
+        this.sentFrom = GameState.Instance.MyPlayer.Id;
+        this.myLocation = LatLonToDict(myLocation);
+    }
+
+    public static Dictionary<string, double> LatLonToDict(LatLon latLon) {
+        return new Dictionary<string, double> {
+            {"latitude", latLon.LatitudeInDegrees},
+            {"longitude", latLon.LongitudeInDegrees}
+        };
+    }
+
     public static Dictionary<string, Dictionary<string, double>> LatLonToDict(Dictionary<string, LatLon> latLonDict) {
         Dictionary<string, Dictionary<string, double>> dict = new();
         foreach (var entry in latLonDict) {
-            dict.Add(entry.Key, new Dictionary<string, double> {
-                {"latitude", entry.Value.LatitudeInDegrees},
-                {"longitude", entry.Value.LongitudeInDegrees}
-            });
+            dict.Add(entry.Key, LatLonToDict(entry.Value));
         }
         return dict;
+    }
+
+    public static LatLon DictToLatLon(Dictionary<string, double> dict) {
+        return new LatLon(dict["latitude"], dict["longitude"]);
     }
 
     public static Dictionary<string, LatLon> DictToLatLon(Dictionary<string, Dictionary<string, double>> dict) {
         Dictionary<string, LatLon> latLonDict = new();
         foreach (var entry in dict) {
-            latLonDict.Add(entry.Key, new LatLon(entry.Value["latitude"], entry.Value["longitude"]));
+            latLonDict.Add(entry.Key, DictToLatLon(entry.Value));
         }
         return latLonDict;
     }
@@ -420,6 +485,8 @@ public class MapMessage : MessageInfo
 
 public enum MapMessageType {
     FOUND_ENCOUNTERS,
-    MAP_INFO
+    MAP_INFO,
+    LEADER_SHARE_GEOLOCATION,
+    MEMBER_SHARE_GEOLOCATION
 }
  
