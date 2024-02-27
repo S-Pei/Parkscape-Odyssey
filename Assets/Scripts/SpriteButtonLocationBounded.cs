@@ -22,6 +22,9 @@ public class SpriteButtonLocationBounded : SpriteButton {
     [SerializeField]
     private float repeat = 1;
     private float frameTime = 0;
+    // fog
+    [SerializeField]
+    private bool isFog;
 
     public SpriteButtonLocationBounded() : base() {}
 
@@ -32,19 +35,28 @@ public class SpriteButtonLocationBounded : SpriteButton {
         }
 
         base.Start();
+        if (!isFog) {
+            if (known) {
+                PinState = PinState.FAR;
+            } else {
+                PinState = PinState.UNKNOWN;
+                spriteRenderer.enabled = false;
+            }
 
-        if (known) {
-            PinState = PinState.FAR;
-        } else {
-            PinState = PinState.UNKNOWN;
-            spriteRenderer.enabled = false;
+        
+            // By default, the button is disabled.
+            SetDisabled(true);
         }
-
-        // By default, the button is disabled.
-        SetDisabled(true);
+        
     }
 
     new void Update() {
+        if (isFog) {
+            if (mapManager.WithinDistanceToPlayer(latitude, longitude, mapManager.fogOfWarSize / 2)) {
+                spriteRenderer.enabled = false;
+            }
+            return;
+        }
         base.Update();
 
         // Check distance to player, only once every repeat seconds

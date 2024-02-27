@@ -62,7 +62,7 @@ public class MapManager : MonoBehaviour
     private const float defaultZoomLevel = 19;
 
     // [SerializeField]
-    private float interactDistance = 200; // in meters
+    private float interactDistance = 40; // in meters
 
     // [SerializeField]
     private float maxRadius = 2000; // in meters
@@ -76,6 +76,11 @@ public class MapManager : MonoBehaviour
     // Pin Constants
     private const float minPinScale = 0.04f;
     private const float maxPinScale = 0.20f;
+    
+    // Fog of War
+    [SerializeField]
+    private GameObject fogOfWarPrefab;
+    public float fogOfWarSize = 100;
 
 
     public static MapManager Instance {
@@ -130,6 +135,7 @@ public class MapManager : MonoBehaviour
         }
         encounterController = EncounterController.selfReference;
         DiscretiseMap();
+        PinFogOfWar();
         SpawnRandomEncounters();
         AddMediumEncounterPins();
     }
@@ -143,6 +149,7 @@ public class MapManager : MonoBehaviour
                 playerPin.Location = location;
                 playerRadiusPin.Location = location;
             }
+            KeepMapWithinRadius();
             return;
         }
 
@@ -199,6 +206,17 @@ public class MapManager : MonoBehaviour
         
     }
 
+    /*** Fog of War ***/
+    public void PinFogOfWar() {
+        float fogRadius = maxRadius + 350;
+        for (float dx = -fogRadius; dx < fogRadius; dx += fogOfWarSize) {
+            for (float dy = -fogRadius; dy < fogRadius; dy += fogOfWarSize) {
+                (double, double) centre = AddMetersToCoordinate(startingLatitude, startingLongitude, dx, dy);
+                AddPin(fogOfWarPrefab, centre.Item1, centre.Item2, dontAlter: true);
+            }
+        }
+    }
+
     /*** Random Encounter Generation ***/
     // Discretise the map into grids
     public void DiscretiseMap() {
@@ -249,7 +267,7 @@ public class MapManager : MonoBehaviour
     }
 
     // Add Pin to some location
-    public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1) {
+    public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1, bool dontAlter = false) {
         GameObject pin = Instantiate(prefab, map.transform);
         // Add MapPin component to the pin if not already there
         if (!pin.TryGetComponent(out MapPin mapPinComponent)) {
@@ -259,10 +277,14 @@ public class MapManager : MonoBehaviour
 
         // Adjust scaling of the pin
         mapPinComponent.Altitude = 1;
-        mapPinComponent.ScaleCurve = AnimationCurve.Linear(minZoomLevel, minPinScale, maxZoomLevel, maxPinScale);
+        
 
         // Set pin rotation to face the camera
-        pin.transform.LookAt(Camera.main.transform);
+        if (!dontAlter) {
+            mapPinComponent.ScaleCurve = AnimationCurve.Linear(minZoomLevel, minPinScale, maxZoomLevel, maxPinScale);
+            pin.transform.LookAt(Camera.main.transform);
+        }
+        
 
         // Set any other properties of the pin
         if (pin.TryGetComponent(out SpriteButtonLocationBounded spriteButton)) {
@@ -289,17 +311,20 @@ public class MapManager : MonoBehaviour
         double distance = DistanceBetweenCoordinates(startingLatitude, startingLongitude, 
                             mapRenderer.Center.LatitudeInDegrees, mapRenderer.Center.LongitudeInDegrees);
         if (distance > maxRadius) {
-            // Get angle between starting location and map center
-            double angle = Math.Atan2(mapRenderer.Center.LatitudeInDegrees - startingLatitude, 
-                                      mapRenderer.Center.LongitudeInDegrees - startingLongitude);
+            double farDistance = DistanceBetweenCoordinates(startingLatitude, startingLongitude, 
+                            mapRenderer.Center.LatitudeInDegrees, mapRenderer.Center.LongitudeInDegrees);
+            
+            double dx = startingLatitude - mapRenderer.Center.LatitudeInDegrees;
+            double dy = startingLongitude - mapRenderer.Center.LongitudeInDegrees;
             float maxRadiusDecreased = maxRadius - 1;
+            double ratio = maxRadiusDecreased / farDistance;
 
             TriggerOutOfRadius();
 
             // Move map back to the edge of the radius
-            (double, double) newCoords = AddMetersToCoordinate(startingLatitude, startingLongitude, 
-                                            maxRadiusDecreased * Math.Sin(angle), maxRadiusDecreased * Math.Cos(angle));
-            mapRenderer.Center = new LatLon(newCoords.Item1, newCoords.Item2);
+            double newX = startingLatitude - dx * ratio;
+            double newY = startingLongitude - dy * ratio;
+            mapRenderer.Center = new LatLon(newX, newY);
         }
     }
 
@@ -374,8 +399,10 @@ public class MapManager : MonoBehaviour
         return DistanceBetweenCoordinates(location.LatitudeInDegrees, location.LongitudeInDegrees, latitude, longitude);
     }
 
-    public bool WithinDistanceToPlayer(double latitude, double longitude) {
-        return GetDistanceToPlayer(latitude, longitude) <= interactDistance;
+    public bool WithinDistanceToPlayer(double latitude, double longitude, float distance = -1) {
+        if (distance == -1)
+            distance = interactDistance;
+        return GetDistanceToPlayer(latitude, longitude) <= distance;
     }
 
     /*** Map Interactions ***/
