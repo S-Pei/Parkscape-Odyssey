@@ -12,6 +12,9 @@ public class SpriteButtonLocationBounded : SpriteButton {
     private double latitude;
     private double longitude;
     private MapManager mapManager;
+    [SerializeField]
+    public System.Action onFound;
+    public string encounterId;
 
     // State
     [SerializeField]
@@ -67,6 +70,11 @@ public class SpriteButtonLocationBounded : SpriteButton {
         if (mapManager.WithinDistanceToPlayer(latitude, longitude)) {
             if (PinState == PinState.UNKNOWN) {
                 spriteRenderer.enabled = true;
+                if (onFound != null) {
+                    onFound();
+                    Debug.Log("Found encounters : " + GameState.Instance.foundMediumEncounters.Count);
+                }
+                
             }
 
             PinState = PinState.NEAR;

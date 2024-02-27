@@ -110,6 +110,9 @@ public class EncounterController : MonoBehaviour
             monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 50, 20, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees); 
         } else {
             monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 0, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees);
+            monsterSpawn.GetComponent<SpriteButtonLocationBounded>().onFound = () => {
+                GameState.Instance.AddFoundMediumEncounter(encounterId);
+            };
         }
         monsterSpawn.GetComponent<EncounterIconChanger>().SetEncounterType(type);
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
