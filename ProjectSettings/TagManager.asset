@@ -12,6 +12,7 @@ TagManager:
   - GameManager
   - EncounterManager
   - CardDescription
+  - Database
   - EncounterLobby
   - MonsterManager
   layers:
