@@ -93,7 +93,7 @@ public class LobbyManager : MonoBehaviour {
         GameState gameState = GameState.Instance;
 
         // Game state already initialised if in debug mode
-        if (GameState.DEBUGMODE) { 
+        if (!GameState.DEBUGMODE) {
             gameState.Initialize(myID, roomCode, players);
         }
 

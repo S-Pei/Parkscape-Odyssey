@@ -13,6 +13,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-common:20.3.3' // Assets/Firebase/Editor/AppDependencies.xml:13
     implementation 'com.google.firebase:firebase-database:20.2.2' // Assets/Firebase/Editor/DatabaseDependencies.xml:13
     implementation 'com.google.firebase:firebase-database-unity:11.6.0' // Assets/Firebase/Editor/DatabaseDependencies.xml:22
+    implementation 'com.google.firebase:firebase-firestore:24.8.1' // Assets/Firebase/Editor/FirestoreDependencies.xml:13
+    implementation 'com.google.firebase:firebase-firestore-unity:11.6.0' // Assets/Firebase/Editor/FirestoreDependencies.xml:20
     implementation 'com.google.firebase:firebase-storage:20.2.1' // Assets/Firebase/Editor/StorageDependencies.xml:13
     implementation 'com.google.firebase:firebase-storage-unity:11.6.0' // Assets/Firebase/Editor/StorageDependencies.xml:20
 // Android Resolver Dependencies End

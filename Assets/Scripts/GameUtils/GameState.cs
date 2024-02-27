@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
 
+using Firebase;
+using Firebase.Firestore;
+using Firebase.Extensions;
+
 public class GameState {
     public static readonly bool DEBUGMODE = 
     #if UNITY_EDITOR 
@@ -24,6 +28,18 @@ public class GameState {
                 {"3", "Player 3"},
                 {"4", "Player 4"},
             });
+
+            // Debug.LogWarning("Creating users/alovelace in GameState initialisation.");
+            // DocumentReference docRef = FirebaseFirestore.DefaultInstance.Collection("users").Document("alovelace");
+            // Dictionary<string, object> user = new Dictionary<string, object>
+            // {
+            //         { "First", "Ada" },
+            //         { "Last", "Lovelace" },
+            //         { "Born", 1815 },
+            // };
+            // docRef.SetAsync(user).ContinueWithOnMainThread(task => {
+            //         // Debug.Log("Added data to the alovelace document in the users collection.");
+            // });
         }
         return gameState; } }
 
