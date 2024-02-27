@@ -284,10 +284,6 @@ public class GameStateMessage : MessageInfo {
         this.messageType = MessageType.GAMESTATE;
     }
 
-    public string processMessageInfo() {
-        throw new NotImplementedException();
-    }
-
     public static GameStateMessage fromJson(string json) {
         return JsonConvert.DeserializeObject<GameStateMessage>(json);
     }

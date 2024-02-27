@@ -69,8 +69,4 @@ public class P2pTestAndroid : MonoBehaviour
         networkUtils.onReceive(callback);
         
     }
-
-    public void updateString() {
-        dataStr.text = networkUtils.processNewMessage();
-    }
 } 

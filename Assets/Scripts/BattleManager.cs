@@ -784,8 +784,4 @@ public class BattleMessage : MessageInfo
     public string toJson() {
         return JsonConvert.SerializeObject(this);
     }
-
-    public string processMessageInfo() {
-        return "";
-    }
 }
