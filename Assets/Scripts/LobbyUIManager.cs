@@ -51,7 +51,11 @@ public class LobbyUIManager : MonoBehaviour
 
     public void AddPlayer(string name) {
         playerNames.Add(name);
-        updateCounter++;
+        foreach (string player in playerNames) {
+            Debug.Log(player);
+        }
+        DisplayPlayerList();
+        // updateCounter++;
     }
 
     public void RemovePlayer(string name) {
@@ -74,6 +78,7 @@ public class LobbyUIManager : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
+        // Debug.Log("LobbyUIManager Update");
         if (!inLobby || updateCounter == 0)
             return;
         

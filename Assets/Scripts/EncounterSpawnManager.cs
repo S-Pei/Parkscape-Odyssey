@@ -5,22 +5,25 @@ using UnityEngine;
 public class EncounterSpawnManager : MonoBehaviour
 {
     private List<Monster> monsters;
-    private List<List<SkillName>> skillSequences;
 
     private string encounterId;
 
     private GameObject encounterManager;
 
-    public void EncounterSpawnInit(string encounterId, List<Monster> monsters, List<List<SkillName>> skillSequences) {
+    public void EncounterSpawnInit(string encounterId, List<Monster> monsters) {
         this.encounterId = encounterId;
         this.monsters = monsters;
-        this.skillSequences = skillSequences;
         encounterManager = GameObject.FindGameObjectWithTag("EncounterManager");
+        Debug.Log($"EncounterId {encounterId}");
     }
 
     public void CreateEncounterLobby() {
         // Create a new encounter lobby
         encounterManager.GetComponent<EncounterController>()
-            .CreateEncounterLobby(encounterId, monsters, skillSequences);
+            .CreateEncounterLobby(encounterId, monsters);
+    }
+
+    public string GetEncounterId() {
+        return encounterId;
     }
 }

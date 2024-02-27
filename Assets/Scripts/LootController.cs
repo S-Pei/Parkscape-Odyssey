@@ -42,7 +42,7 @@ public class LootController : MonoBehaviour
         destroyer = GetComponent<Destroyer>();
 
         // Generate cards loot and display on screen
-        Card[] cardsLoot = generateCardsLoot(EnemyLevel.BOSS);
+        Card[] cardsLoot = generateCardsLoot(GameState.Instance.encounterMonsters[0].level);
         lootUIManager.displayCardsLoot(cardsLoot);
     }
 
@@ -99,6 +99,10 @@ public class LootController : MonoBehaviour
         if (focusedCard != null) {
             addCardToPlayerDeck(focusedCard);
             lootUIManager.closeCardConfirmationPopUp();
+
+            // Enable map after this selection
+            MapManager.Instance.EnableMapInteraction();
+
             destroyer.DestroySelf();
             return;
         }

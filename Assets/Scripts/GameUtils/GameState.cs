@@ -1,12 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
-using UnityEngine.PlayerLoop;
-using Firebase.Extensions;
-
+using Microsoft.Maps.Unity;
+using Microsoft.Geospatial;
 
 public class GameState {
-    private static bool DEBUGMODE = false;
+    public static readonly bool DEBUGMODE = 
+    #if UNITY_EDITOR 
+        true;
+    #else
+        false;
+    #endif
+
     private static readonly Lazy<GameState> LazyGameState = new(() => new GameState());
 
     public static GameState Instance { get {
@@ -31,21 +37,28 @@ public class GameState {
     public List<Player> OtherPlayers = new();
 
     public Dictionary<string, Player> PlayersDetails = new();
-    public List<CardName> MyCards = new() {
-        CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
-        CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
-    };
+    private Dictionary<int, CardName> MyCards = new();
+    public bool isLeader = false;
     public bool IsInEncounter = false;
     public int Score = 0;
-
-    // Reference to the Firebase app
-    public Firebase.FirebaseApp App;
-    public bool FirebaseReady = false;
 
     private List<CardName> InitialCards = new List<CardName> {
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
         CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
     };
+
+    private int cardID = 0;
+
+    // ENCOUNTER
+    public List<Monster> encounterMonsters;
+
+    public Dictionary<string, string> partyMembers;
+
+    // MAP
+    // Medium Encounter Locations broadcasted by the leader/ web authoring tool in the beginning of the game
+    public Dictionary<string, LatLon> mediumEncounterLocations = new();
+    // Medium Encounter IDs found by the player, to be shared with other players
+    public HashSet<string> foundMediumEncounters = new();
 
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
@@ -74,10 +87,9 @@ public class GameState {
             }
         }
 
-        // Set initial cards.
-        MyCards = InitialCards;
         this.myID = myID;
         Initialized = true;
+        InitialiseCards();
     }
 
     // Method to specify the initial state of the game.
@@ -86,8 +98,9 @@ public class GameState {
         RoomCode = roomCode;
         MyPlayer = myPlayer;
         OtherPlayers = otherPlayers;
-        MyCards = initialCards;
+
         Initialized = true;
+        InitialiseCards();
     }
 
     // This method returns a reference to a player with the given name.
@@ -105,14 +118,56 @@ public class GameState {
         return null;
     }
 
-    public void AddCard(CardName card) {
+    public Player GetPlayerByID(string id) {
         CheckInitialised();
-        MyCards.Add(card);
+        if (MyPlayer.Id == id) {
+            return MyPlayer;
+        }
+        foreach (Player player in OtherPlayers) {
+            if (player.Id == id) {
+                return player;
+            }
+        }
+        return null;
     }
 
-    public void RemoveCard(CardName card) {
+    public void AddCard(CardName card) {
         CheckInitialised();
-        MyCards.Remove(card);
+        cardID++;
+        MyCards.Add(cardID, card);
+    }
+
+    public void RemoveCard(int cardID) {
+        CheckInitialised();
+        MyCards.Remove(cardID);
+    }
+
+    public List<CardName> GetCards() {
+        CheckInitialised();
+        return new List<CardName>(MyCards.Values);
+    }
+
+    public bool HasCard(int cardID) {
+        CheckInitialised();
+        return MyCards.ContainsKey(cardID);
+    }
+
+    public CardName GetCard(int cardID) {
+        CheckInitialised();
+        return MyCards[cardID];
+    }
+
+    public List<int> GetCardIDs() {
+        CheckInitialised();
+        return new List<int>(MyCards.Keys);
+    }
+
+    public void InitialiseCards() {
+        MyCards = new();
+        cardID = 0;
+        foreach (CardName card in InitialCards) {
+            AddCard(card);
+        }
     }
 
     public GameStateMessage ToMessage() {
@@ -150,9 +205,9 @@ public class GameState {
         // Initialise other fields
         RoomCode = roomCode;
         this.myID = myID;
-        MyCards = InitialCards;
-
+        
         Initialized = true;
+        InitialiseCards();
     }
 
     public void UpdateFromMessage(GameStateMessage message) {
@@ -165,9 +220,9 @@ public class GameState {
         MyPlayer = null;
         OtherPlayers = new();
         PlayersDetails = new();
-        MyCards = InitialCards;
         IsInEncounter = false;
         Score = 0;
+        InitialiseCards();
         Initialized = false;
     }
 
@@ -183,22 +238,42 @@ public class GameState {
         }
     }
 
-    private void StartFirebase() {
-        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task => {
-            var dependencyStatus = task.Result;
-            if (dependencyStatus == Firebase.DependencyStatus.Available) {
-                // Create and hold a reference to your FirebaseApp,
-                // where app is a Firebase.FirebaseApp property of your application class.
-                App = Firebase.FirebaseApp.DefaultInstance;
-                // Set a flag here to indicate whether Firebase is ready to use by your app.
-                FirebaseReady = true;
-                UnityEngine.Debug.Log("Firebase is ready to use.");
-            } else {
-                UnityEngine.Debug.LogError(System.String.Format(
-                "Could not resolve all Firebase dependencies: {0}", dependencyStatus));
-                // Firebase Unity SDK is not safe to use here.
-            }
-        });
+
+    // ------------------------------- ENCOUNTER -------------------------------
+    public void StartEncounter(List<Monster> monsters, Dictionary<string, string> partyMembers) {
+        CheckInitialised();
+        if (IsInEncounter) {
+            return;
+        }
+        encounterMonsters = monsters;
+        this.partyMembers = partyMembers;
+        IsInEncounter = true;
+    }
+
+    public void ExitEncounter() {
+        IsInEncounter = false;
+    }
+
+
+    // --------------------------------  BATTLE --------------------------------
+    public void ApplyBattleLossPenalty() {
+        // Get all available card ids
+        List<int> cardIds = MyCards.Keys.ToList();
+        
+        // randomly select half of the ids in cardsIds
+        int halfCount = cardIds.Count / 2;
+        List<int> selectedIds = new();
+        Random random = new();
+        for (int i = 0; i < halfCount; i++)
+        {
+            int randomIndex = random.Next(cardIds.Count);
+            selectedIds.Add(cardIds[randomIndex]);
+            cardIds.RemoveAt(randomIndex);
+        }
+
+        foreach (int id in selectedIds) {
+            RemoveCard(id);
+        }
     }
 }
 
@@ -211,10 +286,6 @@ public class GameStateMessage : MessageInfo {
         this.playerRoles = playerRoles;
         this.playerNames = playerNames;
         this.messageType = MessageType.GAMESTATE;
-    }
-
-    public string processMessageInfo() {
-        throw new NotImplementedException();
     }
 
     public static GameStateMessage fromJson(string json) {

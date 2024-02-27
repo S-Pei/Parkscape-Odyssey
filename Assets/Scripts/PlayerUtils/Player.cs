@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Player
@@ -6,14 +7,16 @@ public class Player
     public string Name { get; }
     public string Id { get; }
     public string Role { get; }
-    public int Speed { get; }
+    public int Speed { get; private set;}
     public int MaxHealth { get; }
     public int CurrentHealth { get; private set; }
     public int Mana { get; private set; }
     public int MaxMana { get; }
-    public int Strength { get; }
+    public int Strength { get; private set;}
+    public int Defence  { get; private set; }
     public string Description { get; }
     public Sprite Icon { get; set; }
+    public bool IsLeader { get; set; }
 
     // Multipliers
     public float AttackMultiplier { get; set; }
@@ -34,6 +37,7 @@ public class Player
         MaxMana = maxMana;
         Mana = maxMana;
         Strength = BASESTRENGTH;
+        Defence = 0;
         AttackMultiplier = BASEMULTIPLIER;
         DefenceMultiplier = BASEMULTIPLIER;
         Description = description;
@@ -49,14 +53,35 @@ public class Player
 
 
     public void TakeDamage(int dmg) {
-        CurrentHealth -= dmg;
+        int healthToDecrease = Math.Max(dmg - Defence, 0);
+        Defence = Math.Max(0, Defence - dmg);
+        CurrentHealth -= healthToDecrease;
+        if (CurrentHealth < 0) {
+            CurrentHealth = 0;
+        }
     }
 
     public void Heal(int amount) {
         CurrentHealth += amount;
     }
 
+    public void Revive() {
+        CurrentHealth = MaxHealth / 2;
+    }
+
     public bool IsDead() {
         return CurrentHealth <= 0;
+    }
+
+    public void AddDefence(int amount) {
+        Defence += amount;
+    }
+
+    public void AddStrength(int amount) {
+        Strength += amount;
+    }
+
+    public void AddSpeed(int amount) {
+        Speed += amount;
     }
 }

@@ -12,13 +12,17 @@ public class NetworkManager : MonoBehaviour {
 
     private LobbyManager lobbyManager;
     private EncounterController encounterController;
+    private TradeManager tradeManager;
+    private BattleManager battleManager;
+    private MapManager mapManager;
 
-    private readonly float baseFreq = 0.1f; // per second
-    private readonly float baseSendFreq = 0.2f; // per second
+    private readonly float baseFreq = 0.5f; // per second
+    private readonly float baseSendFreq = 1f; // per second
     private float baseSendTimer = 0f; // per second
 
-    private Dictionary<string, string> connectedPlayers = new ();
+    public Dictionary<string, string> connectedPlayers = new ();
     private Dictionary<string, float> connectedPlayersTimer = new();
+    private Dictionary<string, string> previouslyConnectedPlayers = new();
     private int numConnectedPlayers = 0;
 
     private readonly float pingFreq = 2f;
@@ -69,6 +73,17 @@ public class NetworkManager : MonoBehaviour {
         if (EncounterController.selfReference != null) {
             encounterController = EncounterController.selfReference;
         }
+
+        if (TradeManager.selfReference != null) {
+            tradeManager = TradeManager.selfReference;
+        }
+        
+        if  (BattleManager.selfReference != null) {
+            battleManager = BattleManager.selfReference;
+        }
+        if (MapManager.selfReference != null) {
+            mapManager = MapManager.selfReference;
+        }
     }
 
     public NetworkUtils NetworkUtils {
@@ -85,17 +100,20 @@ public class NetworkManager : MonoBehaviour {
         };
         networkUtils.onReceive(callback);
 
+        // Check for disconnected players.
+        List<string> disconnectedPlayers = CountdownPlayersLoseConnectionTimer();
+
         if (baseSendTimer >= baseSendFreq) {
-            SendMessages();
+            SendMessages(disconnectedPlayers);
             baseSendTimer = 0;
         } else {
             baseSendTimer += baseFreq;
         }
 
-        CountdownPlayersLoseConnectionTimer();
     }
 
-    private void CountdownPlayersLoseConnectionTimer() {
+    private List<string> CountdownPlayersLoseConnectionTimer() {
+        List<string> disconnectedPlayers = new List<string>();
         foreach (string id in connectedPlayersTimer.Keys.ToList()) {
             connectedPlayersTimer[id] -= baseFreq;
             if (connectedPlayersTimer[id] <= 0) {
@@ -103,8 +121,10 @@ public class NetworkManager : MonoBehaviour {
                 connectedPlayersTimer.Remove(id);
                 connectedPlayers.Remove(id);
                 numConnectedPlayers -= 1;
+                disconnectedPlayers.Add(id);
             }
         }
+        return disconnectedPlayers;
     }
 
     // Handle incoming messages for all managers.
@@ -133,33 +153,81 @@ public class NetworkManager : MonoBehaviour {
                 } else {
                     return CallbackStatus.DORMANT;
                 }
+            case MessageType.TRADE:
+                if (tradeManager != null) {
+                    return tradeManager.HandleMessage(message);
+                } else {
+                    return CallbackStatus.DORMANT;
+                }
+            case MessageType.BATTLEMESSAGE:
+                if (battleManager != null) {
+                    return battleManager.HandleMessage(message);
+                } else {
+                    return CallbackStatus.DORMANT;
+                }
+            case MessageType.MAP:
+                if (mapManager != null) {
+                    return mapManager.HandleMessage(message);
+                } else {
+                    return CallbackStatus.DORMANT;
+                }
         }
         return CallbackStatus.NOT_PROCESSED;
     }
 
     // Handle sending messages for all managers.
-    private void SendMessages() {
+    private void SendMessages(List<string> disconnectedPlayers) {
         if (networkUtils == null)
             return;
 
+        // Debug.Log("Connected devices: " + networkUtils.getConnectedDevices().Count);
+        // Debug.Log("Connected players: " + connectedPlayers.Count);
+
         // Send ping messages to all connected players every PingFreq.
         if (networkUtils.getConnectedDevices().Count > 0) {
-            if (pingTimer >= pingFreq) {
-                PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
-                networkUtils.broadcast(pingMessage.toJson());
-                pingTimer = 0;
-            } else {
-                pingTimer += baseFreq * (baseSendFreq / baseFreq);
-            }
+        if (pingTimer >= pingFreq) {
+            PingMessageInfo pingMessage = new PingMessageInfo(PlayerPrefs.GetString("name"));
+            networkUtils.broadcast(pingMessage.toJson());
+            pingTimer = 0;
+        } else {
+            pingTimer += baseFreq * (baseSendFreq / baseFreq);
+        }
         }
         
         if (lobbyManager != null) {
-            lobbyManager.SendMessages(numConnectedPlayers, connectedPlayers);
+            lobbyManager.SendMessages(connectedPlayers, disconnectedPlayers);
+        }
+        if (battleManager != null) {
+            battleManager.SendMessages(connectedPlayers, disconnectedPlayers);
+        }
+    }
+
+    public bool ChangeInConnectedPlayers()
+    {
+        // Check if the counts are the same
+        if (previouslyConnectedPlayers.Count != connectedPlayers.Count) {
+            previouslyConnectedPlayers = connectedPlayers;
+            return true;
+        }
+            
+
+        // Check if all keys and values are the same
+        foreach (var pair in previouslyConnectedPlayers)
+        {
+            string value;
+            if (!connectedPlayers.TryGetValue(pair.Key, out value)) {
+                previouslyConnectedPlayers = connectedPlayers;
+                return true;
+            }
+
+            if (!value.Equals(pair.Value)) {
+                previouslyConnectedPlayers = connectedPlayers;
+                return true;
+            }
         }
 
-        if (encounterController != null) {
-            encounterController.SendMessages();
-        }
+        previouslyConnectedPlayers = connectedPlayers;
+        return false;
     }
 }
 
@@ -179,9 +247,5 @@ public class PingMessageInfo : MessageInfo {
         
         public string toJson() {
             return JsonConvert.SerializeObject(this);
-        }
-
-        public string processMessageInfo() {
-            return "";
         }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.CompilerServices;
 using UnityEngine.UI;
+using TMPro;
 
 [assembly:InternalsVisibleTo("EditMode")]
 
@@ -20,6 +21,17 @@ public class InventoryUIManager : MonoBehaviour
     [SerializeField]
     private GameObject popUpPanel;
 
+    [SerializeField]
+    private GameObject nearbyPlayersGrid;
+
+    [SerializeField]
+    private GameObject nearbyPlayerPrefab;
+    private int updateCount = 0;
+    private const int updateCountMax = 50;
+
+    [SerializeField]
+    private TMP_Text tradeMessage;
+
     private GameObject cardsManager;
 
     CardsUIManager cardsUIManager;
@@ -31,6 +43,7 @@ public class InventoryUIManager : MonoBehaviour
     void Start()
     {
         closeCardTradePopUp();
+        closeInventory();
 
         if (GameObject.FindGameObjectsWithTag("CardsManager").Length <= 0) {
             cardsManager = Instantiate(cardsManagerPrefab);
@@ -40,15 +53,41 @@ public class InventoryUIManager : MonoBehaviour
         }
         cardsUIManager = cardsManager.GetComponent<CardsUIManager>();
         inventoryController = GetComponent<InventoryController>();
+        SetUpNearbyPlayers();
+    }
+
+    void Update() {
+        UpdateNearbyPlayers();
+    }
+
+    public void OpenInventory() {
+        List<CardName> cards = GameState.Instance.GetCards();
+        inventoryController.inventoryCards = cards;
+
+        // Clear text from trade message.
+        tradeMessage.text = "";
+
+        // Clear all cards from the inventory.
+        foreach (GameObject card in cardsDisplaying) {
+            Destroy(card);
+        }
+        cardsDisplaying.Clear();
+
         displayAllCards();
         addListenerForCards();
+
+        closeCardTradePopUp();
+        gameObject.SetActive(true);
+
+        // Disable map
+        MapManager.Instance.DisableMapInteraction();
     }
 
     private void displayAllCards() {
-        List<CardName> cardsNames = inventoryController.inventoryCards;
         int i = 0;
-        foreach (CardName cardName in cardsNames) {
-            GameObject newCard = displayCardAndApplyIndex(cardName, i);
+        foreach (int cardID in GameState.Instance.GetCardIDs()) {
+            GameObject newCard = displayCardAndApplyIndex(GameState.Instance.GetCard(cardID), i);
+            newCard.name = cardID.ToString();
             if (newCard != null) {
                 cardsDisplaying.Add(newCard);
                 i ++;
@@ -89,6 +128,7 @@ public class InventoryUIManager : MonoBehaviour
         CardRenderer cardRenderer = focusedCard.GetComponentInChildren<CardRenderer>();
         cardRenderer.RenderCard(cardDetails);
         
+        focusedCard.name = card.name;
         focusedCard.tag = "CardsInventoryFocusedCard";
         cardRenderer.ScaleCardSize(10f);
 
@@ -96,16 +136,68 @@ public class InventoryUIManager : MonoBehaviour
     }
 
     public void closeCardTradePopUp() {
-        GameObject[] focusedcard = GameObject.FindGameObjectsWithTag("CardsInventoryFocusedCard");
-        if (focusedcard.Length != 0) {
-            Destroy(focusedcard[0]);
+        GameObject focusedCard = getFocusedCard();
+        if (focusedCard != null) {
+            Destroy(focusedCard);
         }
 
         popUpPanel.SetActive(false);
+
+        // Clear text from trade message.
+        tradeMessage.text = "";
     }
 
-    public void DestroySelf() {
-        Destroy(cardsManager);
-        Destroy(gameObject);
+    private GameObject getFocusedCard() {
+        GameObject[] focusedcard = GameObject.FindGameObjectsWithTag("CardsInventoryFocusedCard");
+        if (focusedcard.Length != 0) {
+            return focusedcard[0];
+        }
+        return null;
+    }
+
+    private void SetUpNearbyPlayers() {
+        foreach (Player p in GameState.Instance.OtherPlayers) {
+            GameObject playerButton = Instantiate(nearbyPlayerPrefab, nearbyPlayersGrid.transform);
+            playerButton.name = p.Id;
+            playerButton.GetComponentInChildren<TMP_Text>().text = p.Name;
+            ((Image) playerButton.GetComponentInChildren(typeof(Image))).sprite = p.Icon;
+            playerButton.GetComponent<Button>().onClick.AddListener(() => {
+                GameObject focusedCard = getFocusedCard();
+                if (focusedCard == null)
+                    return;
+
+                string cardObjectName = focusedCard.name;
+                TradeManager.selfReference.StartTrade(p, int.Parse(cardObjectName));
+            });
+        }
+    }
+
+    // Update the nearby players list
+    private void UpdateNearbyPlayers() {
+        // Perform this if panel is open.
+        if (!gameObject.activeSelf) {
+            return;
+        }
+
+        // Perform this only every updateCountMax 
+        updateCount++;
+        if (updateCount < updateCountMax) {
+            return;
+        }
+        updateCount = 0;
+        
+        // Grey out the players that are not nearby
+        foreach (Transform child in nearbyPlayersGrid.transform) {
+            if (NetworkManager.Instance.connectedPlayers.ContainsKey(child.name)) {
+                child.GetComponent<Button>().interactable = true;
+            } else {
+                child.GetComponent<Button>().interactable = false;
+            }
+        }
+    }
+
+    public void closeInventory() {
+        MapManager.Instance.EnableMapInteraction();
+        gameObject.SetActive(false);
     }
 }
