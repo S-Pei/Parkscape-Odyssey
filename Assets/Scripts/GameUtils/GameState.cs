@@ -6,7 +6,7 @@ using Firebase.Extensions;
 
 
 public class GameState {
-    private static bool DEBUGMODE = true;
+    private static bool DEBUGMODE = false;
     private static readonly Lazy<GameState> LazyGameState = new(() => new GameState());
 
     public static GameState Instance { get {
@@ -42,13 +42,14 @@ public class GameState {
     public Firebase.FirebaseApp App;
     public bool FirebaseReady = false;
 
-    private List<CardName> InitialCards = new List<CardName> { 
+    private List<CardName> InitialCards = new List<CardName> {
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
         CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
     };
 
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
+
         CheckNotInitialised();
 
         StartFirebase();

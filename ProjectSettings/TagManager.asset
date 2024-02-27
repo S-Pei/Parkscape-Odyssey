@@ -12,6 +12,7 @@ TagManager:
   - GameManager
   - EncounterManager
   - CardDescription
+  - Database
   layers:
   - Default
   - TransparentFX

@@ -10,6 +10,14 @@ public class GameManager : MonoBehaviour
 
     // Start is called before the first frame update
     void Start() {
+        DatabaseManager databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
+        if (databaseManager != null) {
+            Debug.Log("DatabaseManager found. Ready: " + databaseManager.FirebaseReady);
+        }
+        else {
+            Debug.LogError("DatabaseManager not found.");
+        }
+
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
     }
