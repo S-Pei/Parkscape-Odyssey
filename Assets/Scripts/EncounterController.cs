@@ -113,7 +113,7 @@ public class EncounterController : MonoBehaviour
         }
         monsterSpawn.GetComponent<EncounterIconChanger>().SetEncounterType(type);
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
-        encounterSpawnManager.EncounterSpawnInit(encounterId, monsters);
+        encounterSpawnManager.EncounterSpawnInit(encounterId, monsters, type);
 
         encountersSpawned.Add(monsterSpawn);
         Debug.Log($"Created encounter spawn: {encounterId}");
@@ -250,6 +250,25 @@ public class EncounterController : MonoBehaviour
                 encounterId = "";
             }
         }
+    }
+
+    public void ShowRandomEncounterPopup(string encounterId, List<Monster> monsters) {
+        randomEncounterFoundPopup.SetActive(true);
+
+        this.monsters = monsters;
+        this.encounterId = encounterId;
+
+        // // Disable map interactions
+        // MapManager.Instance.DisableMapInteraction();
+    }
+
+    public void CloseRandomEncounterPopup() {
+        randomEncounterFoundPopup.SetActive(false);
+
+        this.encounterId = "";
+
+        // // Enable map interactions
+        // MapManager.Instance.EnableMapInteraction();
     }
 
     public void LeaderStartEncounter() {
