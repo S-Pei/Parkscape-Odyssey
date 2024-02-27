@@ -13,7 +13,7 @@ public class MapManager : MonoBehaviour
     public static MapManager selfReference;
     private GPSManager gpsManager;
     private EncounterController encounterController;
-    private LocationInfo location;
+    private LatLon location;
     private bool permissionGranted = false;
     public GameObject map;
     private bool mapCenterSet = false;
@@ -35,12 +35,17 @@ public class MapManager : MonoBehaviour
 
     // Player pins
     [SerializeField]
+    private GameObject playerPinPrefab;
+
+    [SerializeField]
     private GameObject playerPinObject;
     private MapPin playerPin;
 
     [SerializeField]
     private GameObject playerRadiusObject;
     private MapPin playerRadiusPin;
+
+    private Dictionary<string, MapPin> otherPlayerPins = new();
 
     // Network
     private NetworkUtils network;
@@ -62,7 +67,7 @@ public class MapManager : MonoBehaviour
     private const float defaultZoomLevel = 19;
 
     // [SerializeField]
-    private float interactDistance = 7000; // in meters
+    private float interactDistance = 40; // in meters
 
     // [SerializeField]
     private float maxRadius = 2000; // in meters
@@ -76,6 +81,12 @@ public class MapManager : MonoBehaviour
     // Pin Constants
     private const float minPinScale = 0.04f;
     private const float maxPinScale = 0.20f;
+    
+    // Fog of War
+    [SerializeField]
+    private GameObject fogOfWarPrefab;
+    public float fogOfWarSize = 100;
+
 
     public static MapManager Instance {
         get {
@@ -104,10 +115,9 @@ public class MapManager : MonoBehaviour
         mapRenderer = GetComponent<MapRenderer>();
         mapTouchInteractionHandler = GetComponent<MapTouchInteractionHandler>();
 
-        if (playerPinObject != null && playerRadiusObject != null) {
-            playerPin = playerPinObject.GetComponent<MapPin>();
-            playerRadiusPin = playerRadiusObject.GetComponent<MapPin>();
-        }
+        playerPin = playerPinObject.GetComponent<MapPin>();
+        playerPinObject.GetComponent<SetPlayerPin>().Set(GameState.Instance.MyPlayer.Id);
+        playerRadiusPin = playerRadiusObject.GetComponent<MapPin>();
 
         // Disable any popups
         if (outOfRadiusPopup != null)
@@ -123,34 +133,52 @@ public class MapManager : MonoBehaviour
 
 
     void Start() {
-        if (GameState.DEBUGMODE) {
+        if (GameState.MAPDEBUGMODE) {
             mapRenderer.Center = new LatLon(startingLatitude, startingLongitude);
             mapCenterSet = true;
         }
         encounterController = EncounterController.selfReference;
         DiscretiseMap();
+        PinFogOfWar();
         SpawnRandomEncounters();
         AddMediumEncounterPins();
+
+        foreach (var entry in GameState.Instance.PlayersDetails) {
+            if (entry.Key != GameState.Instance.MyPlayer.Id) {
+                GameObject otherPin = AddPin(playerPinPrefab, 0, 0);
+                otherPin.GetComponent<SetPlayerPin>().Set(entry.Key);
+                otherPlayerPins.Add(entry.Key, otherPin.GetComponent<MapPin>());
+            }
+        }
     }
     // Update is called once per frame
     void Update()
     {
+        if (GameState.MAPDEBUGMODE) {
+            location = mapRenderer.Center;
+            // Update player pin location
+            if (playerPin != null) {
+                playerPin.Location = location;
+                playerRadiusPin.Location = location;
+            }
+            KeepMapWithinRadius();
+            return;
+        }
+
         if (gpsManager.getLocationServiceStatus() == LocationServiceStatus.Running) {
             // Get GPS location
             location = gpsManager.GetLocation();
 
             // Set the map's center to the current location
-            if (!GameState.DEBUGMODE) {
-                if (!mapCenterSet || follow) {
-                    mapRenderer.Center = new LatLon(location.latitude, location.longitude);
-                    mapCenterSet = true;
-                }
+            if (!mapCenterSet || follow) {
+                mapRenderer.Center = location;
+                mapCenterSet = true;
             }
 
             // Update player pin location
             if (playerPin != null) {
-                playerPin.Location = new LatLon(location.latitude, location.longitude);
-                playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
+                playerPin.Location = location;
+                playerRadiusPin.Location = location;
             }
 
             // Keep map within radius
@@ -177,12 +205,57 @@ public class MapManager : MonoBehaviour
             case MapMessageType.FOUND_ENCOUNTERS:
                 // Add to list of found encounters
                 HashSet<string> newFoundEncounters = new HashSet<string>(mapMessage.foundEncounterIds);
+                // Add pins for the new found encounters
+                foreach (string id in newFoundEncounters) {
+                    if (GameState.Instance.foundMediumEncounters.Contains(id))
+                        continue;
+                    encounterController.CreateMonsterSpawn(id, GameState.Instance.mediumEncounterLocations[id], EncounterType.MEDIUM_BOSS);
+                }
                 GameState.Instance.foundMediumEncounters.UnionWith(newFoundEncounters);
-                // Add pins for the found encounters
+                break;
+            case MapMessageType.LEADER_SHARE_GEOLOCATION:
+                // Move pins for the player locations
+                Dictionary<string, LatLon> playerLocations = MapMessage.DictToLatLon(mapMessage.playerLocations);
+                gpsManager.UpdatePlayerLocations(playerLocations);
+
+                foreach (var entry in gpsManager.GetPlayerLocations()) {
+                    if (entry.Key != GameState.Instance.MyPlayer.Id) {
+                        otherPlayerPins[entry.Key].Location = entry.Value;
+                    }
+                }
+                break;
+
+            case MapMessageType.MEMBER_SHARE_GEOLOCATION:
+                gpsManager.UpdatePlayerLocations(mapMessage.sentFrom, MapMessage.DictToLatLon(mapMessage.myLocation));
                 break;
         }
         return CallbackStatus.PROCESSED;
-        
+    }
+
+    private int leaderFreq = 5;
+    private int count = 0;
+    public void SendMessages() {
+        if (GameState.Instance.MyPlayer.IsLeader) {
+            if (count < leaderFreq) {
+                count++;
+            } else {
+                count = 0;
+                gpsManager.ShareLocationsToPlayers();
+            }
+        } else {
+            gpsManager.ShareLocationToLeader();
+        }
+    }
+
+    /*** Fog of War ***/
+    public void PinFogOfWar() {
+        float fogRadius = maxRadius + 350;
+        for (float dx = -fogRadius; dx < fogRadius; dx += fogOfWarSize) {
+            for (float dy = -fogRadius; dy < fogRadius; dy += fogOfWarSize) {
+                (double, double) centre = AddMetersToCoordinate(startingLatitude, startingLongitude, dx, dy);
+                AddPin(fogOfWarPrefab, centre.Item1, centre.Item2, dontAlter: true);
+            }
+        }
     }
 
     /*** Random Encounter Generation ***/
@@ -229,13 +302,12 @@ public class MapManager : MonoBehaviour
     public void AddMediumEncounterPins() {
         foreach (var entry in GameState.Instance.mediumEncounterLocations) {
             Debug.Log("Adding pin for " + entry.Key);
-            Debug.Log(encounterController);
             encounterController.CreateMonsterSpawn(entry.Key, entry.Value, EncounterType.MEDIUM_BOSS);
         }
     }
 
     // Add Pin to some location
-    public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1) {
+    public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1, bool dontAlter = false) {
         GameObject pin = Instantiate(prefab, map.transform);
         // Add MapPin component to the pin if not already there
         if (!pin.TryGetComponent(out MapPin mapPinComponent)) {
@@ -245,10 +317,12 @@ public class MapManager : MonoBehaviour
 
         // Adjust scaling of the pin
         mapPinComponent.Altitude = 1;
-        mapPinComponent.ScaleCurve = AnimationCurve.Linear(minZoomLevel, minPinScale, maxZoomLevel, maxPinScale);
 
         // Set pin rotation to face the camera
-        pin.transform.LookAt(Camera.main.transform);
+        if (!dontAlter) {
+            mapPinComponent.ScaleCurve = AnimationCurve.Linear(minZoomLevel, minPinScale, maxZoomLevel, maxPinScale);
+            pin.transform.LookAt(Camera.main.transform);
+        }
 
         // Set any other properties of the pin
         if (pin.TryGetComponent(out SpriteButtonLocationBounded spriteButton)) {
@@ -261,7 +335,7 @@ public class MapManager : MonoBehaviour
 
     // Called when player clicks on the button.
     public void SnapBack() {
-        mapRenderer.Center = new LatLon(location.latitude, location.longitude);
+        mapRenderer.Center = location;
         follow = true;
     }
 
@@ -275,17 +349,20 @@ public class MapManager : MonoBehaviour
         double distance = DistanceBetweenCoordinates(startingLatitude, startingLongitude, 
                             mapRenderer.Center.LatitudeInDegrees, mapRenderer.Center.LongitudeInDegrees);
         if (distance > maxRadius) {
-            // Get angle between starting location and map center
-            double angle = Math.Atan2(mapRenderer.Center.LatitudeInDegrees - startingLatitude, 
-                                      mapRenderer.Center.LongitudeInDegrees - startingLongitude);
+            double farDistance = DistanceBetweenCoordinates(startingLatitude, startingLongitude, 
+                            mapRenderer.Center.LatitudeInDegrees, mapRenderer.Center.LongitudeInDegrees);
+            
+            double dx = startingLatitude - mapRenderer.Center.LatitudeInDegrees;
+            double dy = startingLongitude - mapRenderer.Center.LongitudeInDegrees;
             float maxRadiusDecreased = maxRadius - 1;
+            double ratio = maxRadiusDecreased / farDistance;
 
             TriggerOutOfRadius();
 
             // Move map back to the edge of the radius
-            (double, double) newCoords = AddMetersToCoordinate(startingLatitude, startingLongitude, 
-                                            maxRadiusDecreased * Math.Sin(angle), maxRadiusDecreased * Math.Cos(angle));
-            mapRenderer.Center = new LatLon(newCoords.Item1, newCoords.Item2);
+            double newX = startingLatitude - dx * ratio;
+            double newY = startingLongitude - dy * ratio;
+            mapRenderer.Center = new LatLon(newX, newY);
         }
     }
 
@@ -332,8 +409,8 @@ public class MapManager : MonoBehaviour
         double dLat = randRadius * Math.Sin(directionInRadians);
 
         // If latitude and longitude are not provided, use current location
-        latitude = (latitude == -1) ? location.latitude : latitude;
-        longitude = (longitude == -1) ? location.longitude : longitude;
+        latitude = (latitude == -1) ? location.LatitudeInDegrees : latitude;
+        longitude = (longitude == -1) ? location.LongitudeInDegrees : longitude;
 
         (double, double) newLocation = AddMetersToCoordinate(latitude, longitude, dLat, dLon);
         return AddPin(prefab, newLocation.Item1, newLocation.Item2);
@@ -357,13 +434,13 @@ public class MapManager : MonoBehaviour
     }
 
     public double GetDistanceToPlayer(double latitude, double longitude) {
-        return DistanceBetweenCoordinates(location.latitude, location.longitude, latitude, longitude);
+        return DistanceBetweenCoordinates(location.LatitudeInDegrees, location.LongitudeInDegrees, latitude, longitude);
     }
 
-    public bool WithinDistanceToPlayer(double latitude, double longitude) {
-        if (GameState.DEBUGMODE)
-            return true;
-        return GetDistanceToPlayer(latitude, longitude) <= interactDistance;
+    public bool WithinDistanceToPlayer(double latitude, double longitude, float distance = -1) {
+        if (distance == -1)
+            distance = interactDistance;
+        return GetDistanceToPlayer(latitude, longitude) <= distance;
     }
 
     /*** Map Interactions ***/
@@ -384,6 +461,9 @@ public class MapMessage : MessageInfo
     public MessageType messageType {get; set;}
     public List<string> foundEncounterIds;
     public Dictionary<string, Dictionary<string, double>> mediumEncounterLocations;
+    public Dictionary<string, Dictionary<string, double>> playerLocations;
+    public Dictionary<string, double> myLocation;
+    public string sentFrom;
 
     [JsonConstructor]
     public MapMessage(MapMessageType type, List<string> foundEncounterIds, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations) {
@@ -393,21 +473,42 @@ public class MapMessage : MessageInfo
         this.mediumEncounterLocations = mediumEncounterLocations;
     }
 
+    public MapMessage(Dictionary<string, LatLon> playerLocations) {
+        this.messageType = MessageType.MAP;
+        this.type = MapMessageType.LEADER_SHARE_GEOLOCATION;
+        this.playerLocations = LatLonToDict(playerLocations);
+    }
+
+    public MapMessage(LatLon myLocation) {
+        this.messageType = MessageType.MAP;
+        this.type = MapMessageType.MEMBER_SHARE_GEOLOCATION;
+        this.sentFrom = GameState.Instance.MyPlayer.Id;
+        this.myLocation = LatLonToDict(myLocation);
+    }
+
+    public static Dictionary<string, double> LatLonToDict(LatLon latLon) {
+        return new Dictionary<string, double> {
+            {"latitude", latLon.LatitudeInDegrees},
+            {"longitude", latLon.LongitudeInDegrees}
+        };
+    }
+
     public static Dictionary<string, Dictionary<string, double>> LatLonToDict(Dictionary<string, LatLon> latLonDict) {
         Dictionary<string, Dictionary<string, double>> dict = new();
         foreach (var entry in latLonDict) {
-            dict.Add(entry.Key, new Dictionary<string, double> {
-                {"latitude", entry.Value.LatitudeInDegrees},
-                {"longitude", entry.Value.LongitudeInDegrees}
-            });
+            dict.Add(entry.Key, LatLonToDict(entry.Value));
         }
         return dict;
+    }
+
+    public static LatLon DictToLatLon(Dictionary<string, double> dict) {
+        return new LatLon(dict["latitude"], dict["longitude"]);
     }
 
     public static Dictionary<string, LatLon> DictToLatLon(Dictionary<string, Dictionary<string, double>> dict) {
         Dictionary<string, LatLon> latLonDict = new();
         foreach (var entry in dict) {
-            latLonDict.Add(entry.Key, new LatLon(entry.Value["latitude"], entry.Value["longitude"]));
+            latLonDict.Add(entry.Key, DictToLatLon(entry.Value));
         }
         return latLonDict;
     }
@@ -420,6 +521,8 @@ public class MapMessage : MessageInfo
 
 public enum MapMessageType {
     FOUND_ENCOUNTERS,
-    MAP_INFO
+    MAP_INFO,
+    LEADER_SHARE_GEOLOCATION,
+    MEMBER_SHARE_GEOLOCATION
 }
  

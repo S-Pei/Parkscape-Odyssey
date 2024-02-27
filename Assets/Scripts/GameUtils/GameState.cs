@@ -8,6 +8,12 @@ using Microsoft.Geospatial;
 public class GameState {
     public static readonly bool DEBUGMODE = 
     #if UNITY_EDITOR 
+        false;
+    #else
+        false;
+    #endif
+    public static readonly bool MAPDEBUGMODE = 
+    #if UNITY_EDITOR 
         true;
     #else
         false;
@@ -164,6 +170,11 @@ public class GameState {
         foreach (CardName card in InitialCards) {
             AddCard(card);
         }
+    }
+
+    // Medium Encounters
+    public void AddFoundMediumEncounter(string encounterId) {
+        foundMediumEncounters.Add(encounterId);
     }
 
     public GameStateMessage ToMessage() {
