@@ -7,16 +7,11 @@ using System.Collections;
 public class GameManager : MonoBehaviour
 {
     private GameInterfaceManager gameInterfaceManager;
+    private DatabaseManager databaseManager;
 
     // Start is called before the first frame update
     void Start() {
-        DatabaseManager databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
-        if (databaseManager != null) {
-            Debug.Log("DatabaseManager found. Ready: " + databaseManager.FirebaseReady);
-        }
-        else {
-            Debug.LogError("DatabaseManager not found.");
-        }
+        databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
 
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();

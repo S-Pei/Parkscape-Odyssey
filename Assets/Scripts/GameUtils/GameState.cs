@@ -65,8 +65,6 @@ public class GameState {
 
         CheckNotInitialised();
 
-        StartFirebase();
-
         UnityEngine.Debug.Log("Finished executing StartFirebase().");
 
         RoomCode = roomCode;
