@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Linq;
 using Microsoft.Geospatial;
 
@@ -50,6 +51,7 @@ public class EncounterController : MonoBehaviour
     private List<Monster> monsters;
 
     private string encounterId = "";
+    private EncounterType encounterType;
     private bool isLeader = false;
 
     // p2p network
@@ -196,6 +198,7 @@ public class EncounterController : MonoBehaviour
         // only leader can start a medium encounter
         if (IsMediumEncounter(encounterId)) {
             // show pop up
+            encounterType = EncounterType.MEDIUM_BOSS;
             mediumEncounterMsgPopUp.ShowMediumEncounterMessagePopup();
             bool isLeader = GameState.Instance.isLeader;
             if (GameState.MAPDEBUGMODE) {
@@ -275,6 +278,10 @@ public class EncounterController : MonoBehaviour
 
         this.monsters = monsters;
         this.encounterId = encounterId;
+        this.encounterType = EncounterType.RANDOM_ENCOUNTER;
+
+        // Add self as a member of the party in the encounter lobby
+        partyMembers.Add(GameState.Instance.myID, GameState.Instance.PlayersDetails[GameState.Instance.myID].Name);
 
         // // Disable map interactions
         // MapManager.Instance.DisableMapInteraction();
@@ -284,6 +291,7 @@ public class EncounterController : MonoBehaviour
         randomEncounterFoundPopup.SetActive(false);
 
         this.encounterId = "";
+        partyMembers.Clear();
 
         // // Enable map interactions
         // MapManager.Instance.EnableMapInteraction();
@@ -298,6 +306,11 @@ public class EncounterController : MonoBehaviour
         SendStartEncounterMessage();
         inEncounterLobby = false;
         AcceptMessages = false;
+
+        if (encounterType == EncounterType.RANDOM_ENCOUNTER) {
+            SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
+            randomEncounterFoundPopup.SetActive(false);
+        }
     }
 
     private void MemberStartEncounter() {
@@ -426,6 +439,7 @@ public class EncounterController : MonoBehaviour
             List<Monster> monsters = ProcessEncounterMessageWithMonsterInfo(encounterMessage);
             SpawnEncounterLobby(encounterMessage.encounterId, monsters);
             inEncounterLobby = true;
+            encounterType = EncounterType.MEDIUM_BOSS;
             ListPartyMembers(encounterMessage.members);
         } else if (encounterMessage.sendTo != GameState.Instance.myID && inEncounterLobby) {
             ListPartyMembers(encounterMessage.members);

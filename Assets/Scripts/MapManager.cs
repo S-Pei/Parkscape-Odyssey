@@ -67,7 +67,7 @@ public class MapManager : MonoBehaviour
     private const float defaultZoomLevel = 19;
 
     // [SerializeField]
-    private float interactDistance = 40; // in meters
+    private float interactDistance = 3000; // in meters
 
     // [SerializeField]
     private float maxRadius = 2000; // in meters
@@ -315,11 +315,12 @@ public class MapManager : MonoBehaviour
         }
         mapPinComponent.Location = new LatLon(latitude, longitude);
 
-        // Adjust scaling of the pin
-        mapPinComponent.Altitude = 1;
 
         // Set pin rotation to face the camera
         if (!dontAlter) {
+            // Adjust scaling of the pin
+            mapPinComponent.Altitude = 3;
+            
             mapPinComponent.ScaleCurve = AnimationCurve.Linear(minZoomLevel, minPinScale, maxZoomLevel, maxPinScale);
             pin.transform.LookAt(Camera.main.transform);
         }

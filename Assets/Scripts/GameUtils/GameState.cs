@@ -8,7 +8,7 @@ using Microsoft.Geospatial;
 public class GameState {
     public static readonly bool DEBUGMODE = 
     #if UNITY_EDITOR 
-        false;
+        true;
     #else
         false;
     #endif
