@@ -13,7 +13,7 @@ public class MapManager : MonoBehaviour
     public static MapManager selfReference;
     private GPSManager gpsManager;
     private EncounterController encounterController;
-    private LocationInfo location;
+    private LatLon location;
     private bool permissionGranted = false;
     public GameObject map;
     private bool mapCenterSet = false;
@@ -67,7 +67,7 @@ public class MapManager : MonoBehaviour
     private const float defaultZoomLevel = 19;
 
     // [SerializeField]
-    private float interactDistance = 7000; // in meters
+    private float interactDistance = 40; // in meters
 
     // [SerializeField]
     private float maxRadius = 2000; // in meters
@@ -81,6 +81,12 @@ public class MapManager : MonoBehaviour
     // Pin Constants
     private const float minPinScale = 0.04f;
     private const float maxPinScale = 0.20f;
+    
+    // Fog of War
+    [SerializeField]
+    private GameObject fogOfWarPrefab;
+    public float fogOfWarSize = 100;
+
 
     public static MapManager Instance {
         get {
@@ -127,12 +133,13 @@ public class MapManager : MonoBehaviour
 
 
     void Start() {
-        if (GameState.DEBUGMODE) {
+        if (GameState.MAPDEBUGMODE) {
             mapRenderer.Center = new LatLon(startingLatitude, startingLongitude);
             mapCenterSet = true;
         }
         encounterController = EncounterController.selfReference;
         DiscretiseMap();
+        PinFogOfWar();
         SpawnRandomEncounters();
         AddMediumEncounterPins();
 
@@ -147,22 +154,31 @@ public class MapManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GameState.MAPDEBUGMODE) {
+            location = mapRenderer.Center;
+            // Update player pin location
+            if (playerPin != null) {
+                playerPin.Location = location;
+                playerRadiusPin.Location = location;
+            }
+            KeepMapWithinRadius();
+            return;
+        }
+
         if (gpsManager.getLocationServiceStatus() == LocationServiceStatus.Running) {
             // Get GPS location
             location = gpsManager.GetLocation();
 
             // Set the map's center to the current location
-            if (!GameState.DEBUGMODE) {
-                if (!mapCenterSet || follow) {
-                    mapRenderer.Center = new LatLon(location.latitude, location.longitude);
-                    mapCenterSet = true;
-                }
+            if (!mapCenterSet || follow) {
+                mapRenderer.Center = location;
+                mapCenterSet = true;
             }
 
             // Update player pin location
             if (playerPin != null) {
-                playerPin.Location = new LatLon(location.latitude, location.longitude);
-                playerRadiusPin.Location = new LatLon(location.latitude, location.longitude);
+                playerPin.Location = location;
+                playerRadiusPin.Location = location;
             }
 
             // Keep map within radius
@@ -189,8 +205,13 @@ public class MapManager : MonoBehaviour
             case MapMessageType.FOUND_ENCOUNTERS:
                 // Add to list of found encounters
                 HashSet<string> newFoundEncounters = new HashSet<string>(mapMessage.foundEncounterIds);
+                // Add pins for the new found encounters
+                foreach (string id in newFoundEncounters) {
+                    if (GameState.Instance.foundMediumEncounters.Contains(id))
+                        continue;
+                    encounterController.CreateMonsterSpawn(id, GameState.Instance.mediumEncounterLocations[id], EncounterType.MEDIUM_BOSS);
+                }
                 GameState.Instance.foundMediumEncounters.UnionWith(newFoundEncounters);
-                // Add pins for the found encounters
                 break;
             case MapMessageType.LEADER_SHARE_GEOLOCATION:
                 // Move pins for the player locations
@@ -223,6 +244,17 @@ public class MapManager : MonoBehaviour
             }
         } else {
             gpsManager.ShareLocationToLeader();
+        }
+    }
+
+    /*** Fog of War ***/
+    public void PinFogOfWar() {
+        float fogRadius = maxRadius + 350;
+        for (float dx = -fogRadius; dx < fogRadius; dx += fogOfWarSize) {
+            for (float dy = -fogRadius; dy < fogRadius; dy += fogOfWarSize) {
+                (double, double) centre = AddMetersToCoordinate(startingLatitude, startingLongitude, dx, dy);
+                AddPin(fogOfWarPrefab, centre.Item1, centre.Item2, dontAlter: true);
+            }
         }
     }
 
@@ -270,13 +302,12 @@ public class MapManager : MonoBehaviour
     public void AddMediumEncounterPins() {
         foreach (var entry in GameState.Instance.mediumEncounterLocations) {
             Debug.Log("Adding pin for " + entry.Key);
-            Debug.Log(encounterController);
             encounterController.CreateMonsterSpawn(entry.Key, entry.Value, EncounterType.MEDIUM_BOSS);
         }
     }
 
     // Add Pin to some location
-    public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1) {
+    public GameObject AddPin(GameObject prefab, double latitude = -1, double longitude = -1, bool dontAlter = false) {
         GameObject pin = Instantiate(prefab, map.transform);
         // Add MapPin component to the pin if not already there
         if (!pin.TryGetComponent(out MapPin mapPinComponent)) {
@@ -286,10 +317,12 @@ public class MapManager : MonoBehaviour
 
         // Adjust scaling of the pin
         mapPinComponent.Altitude = 1;
-        mapPinComponent.ScaleCurve = AnimationCurve.Linear(minZoomLevel, minPinScale, maxZoomLevel, maxPinScale);
 
         // Set pin rotation to face the camera
-        pin.transform.LookAt(Camera.main.transform);
+        if (!dontAlter) {
+            mapPinComponent.ScaleCurve = AnimationCurve.Linear(minZoomLevel, minPinScale, maxZoomLevel, maxPinScale);
+            pin.transform.LookAt(Camera.main.transform);
+        }
 
         // Set any other properties of the pin
         if (pin.TryGetComponent(out SpriteButtonLocationBounded spriteButton)) {
@@ -302,7 +335,7 @@ public class MapManager : MonoBehaviour
 
     // Called when player clicks on the button.
     public void SnapBack() {
-        mapRenderer.Center = new LatLon(location.latitude, location.longitude);
+        mapRenderer.Center = location;
         follow = true;
     }
 
@@ -316,17 +349,20 @@ public class MapManager : MonoBehaviour
         double distance = DistanceBetweenCoordinates(startingLatitude, startingLongitude, 
                             mapRenderer.Center.LatitudeInDegrees, mapRenderer.Center.LongitudeInDegrees);
         if (distance > maxRadius) {
-            // Get angle between starting location and map center
-            double angle = Math.Atan2(mapRenderer.Center.LatitudeInDegrees - startingLatitude, 
-                                      mapRenderer.Center.LongitudeInDegrees - startingLongitude);
+            double farDistance = DistanceBetweenCoordinates(startingLatitude, startingLongitude, 
+                            mapRenderer.Center.LatitudeInDegrees, mapRenderer.Center.LongitudeInDegrees);
+            
+            double dx = startingLatitude - mapRenderer.Center.LatitudeInDegrees;
+            double dy = startingLongitude - mapRenderer.Center.LongitudeInDegrees;
             float maxRadiusDecreased = maxRadius - 1;
+            double ratio = maxRadiusDecreased / farDistance;
 
             TriggerOutOfRadius();
 
             // Move map back to the edge of the radius
-            (double, double) newCoords = AddMetersToCoordinate(startingLatitude, startingLongitude, 
-                                            maxRadiusDecreased * Math.Sin(angle), maxRadiusDecreased * Math.Cos(angle));
-            mapRenderer.Center = new LatLon(newCoords.Item1, newCoords.Item2);
+            double newX = startingLatitude - dx * ratio;
+            double newY = startingLongitude - dy * ratio;
+            mapRenderer.Center = new LatLon(newX, newY);
         }
     }
 
@@ -373,8 +409,8 @@ public class MapManager : MonoBehaviour
         double dLat = randRadius * Math.Sin(directionInRadians);
 
         // If latitude and longitude are not provided, use current location
-        latitude = (latitude == -1) ? location.latitude : latitude;
-        longitude = (longitude == -1) ? location.longitude : longitude;
+        latitude = (latitude == -1) ? location.LatitudeInDegrees : latitude;
+        longitude = (longitude == -1) ? location.LongitudeInDegrees : longitude;
 
         (double, double) newLocation = AddMetersToCoordinate(latitude, longitude, dLat, dLon);
         return AddPin(prefab, newLocation.Item1, newLocation.Item2);
@@ -398,13 +434,13 @@ public class MapManager : MonoBehaviour
     }
 
     public double GetDistanceToPlayer(double latitude, double longitude) {
-        return DistanceBetweenCoordinates(location.latitude, location.longitude, latitude, longitude);
+        return DistanceBetweenCoordinates(location.LatitudeInDegrees, location.LongitudeInDegrees, latitude, longitude);
     }
 
-    public bool WithinDistanceToPlayer(double latitude, double longitude) {
-        if (GameState.DEBUGMODE)
-            return true;
-        return GetDistanceToPlayer(latitude, longitude) <= interactDistance;
+    public bool WithinDistanceToPlayer(double latitude, double longitude, float distance = -1) {
+        if (distance == -1)
+            distance = interactDistance;
+        return GetDistanceToPlayer(latitude, longitude) <= distance;
     }
 
     /*** Map Interactions ***/

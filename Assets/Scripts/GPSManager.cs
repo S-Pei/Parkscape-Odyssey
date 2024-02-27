@@ -113,8 +113,8 @@ IEnumerator GPSLoc() {
             int editorMaxWait = 30;
             while (UnityEngine.Input.location.status == LocationServiceStatus.Stopped && editorMaxWait > 0) {
                 yield return new WaitForSecondsRealtime(1);
-                Debug.Log("Editor Wait: " + editorMaxWait);
-                Debug.Log("Editor Location Service Status: " + UnityEngine.Input.location.status);
+                // Debug.Log("Editor Wait: " + editorMaxWait);
+                // Debug.Log("Editor Location Service Status: " + UnityEngine.Input.location.status);
                 editorMaxWait--;
             }
         #endif
@@ -156,8 +156,8 @@ IEnumerator GPSLoc() {
 
     }
 
-    public LocationInfo GetLocation() {
-        return location;
+    public LatLon GetLocation() {
+        return new LatLon(location.latitude, location.longitude);
     }
 
     public Dictionary<string, LatLon> GetPlayerLocations() {
@@ -191,7 +191,7 @@ IEnumerator GPSLoc() {
             // Hardcoded for now
             List<LatLon> encounterLocations = new List<LatLon>();
             encounterLocations.Add(new LatLon(51.496451, -0.176775));
-            encounterLocations.Add(new LatLon(51.39355, -0.1924046));
+            encounterLocations.Add(new LatLon(51.506061, -0.174226));
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.39355, -0.1924046));
 
@@ -215,8 +215,7 @@ IEnumerator GPSLoc() {
         if (GameState.Instance.MyPlayer.IsLeader)
             return;
         Debug.Log("Sending location to leader");
-        LocationInfo location = GetLocation();
-        network.broadcast(new MapMessage(new LatLon(location.latitude, location.longitude)).toJson());
+        network.broadcast(new MapMessage(GetLocation()).toJson());
     }
 
     public void ShareLocationsToPlayers() {

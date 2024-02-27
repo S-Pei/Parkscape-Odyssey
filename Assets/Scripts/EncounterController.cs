@@ -71,6 +71,12 @@ public class EncounterController : MonoBehaviour
     private float MAX_SPAWN_AREA_X = 350f;
     private float MAX_SPAWN_AREA_Y = 700f;
 
+    // Medium encounter message popup
+    private MediumEncounterMsgPopUp mediumEncounterMsgPopUp;
+    // FOR DEBUGGING ONLY
+    [SerializeField]
+    private bool debugIsLeader;
+
     void Awake() {
         if (!selfReference) {
 			selfReference = this;
@@ -83,12 +89,9 @@ public class EncounterController : MonoBehaviour
         // Setup p2p network
         msgFreq = GameState.Instance.maxPlayerCount;
         network = NetworkManager.Instance.NetworkUtils;
-        // InvokeRepeating("HandleMessages", 0.0f, baseFreq);
         encounterUIManager = GetComponent<EncounterUIManager>();
         monsterController = monsterManager.GetComponent<MonsterController>();
-
-        // CreateMonsterSpawn(); // TEMPORARY
-        // CreateMonsterSpawn(); // TEMPORARY
+        mediumEncounterMsgPopUp = MediumEncounterMsgPopUp.selfReference;
     }
 
     // Location dependent encounter spawn, so need to have location initialized, or provide one.
@@ -107,6 +110,9 @@ public class EncounterController : MonoBehaviour
             monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 50, 20, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees); 
         } else {
             monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 0, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees);
+            monsterSpawn.GetComponent<SpriteButtonLocationBounded>().onFound = () => {
+                GameState.Instance.AddFoundMediumEncounter(encounterId);
+            };
         }
         monsterSpawn.GetComponent<EncounterIconChanger>().SetEncounterType(type);
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
@@ -184,6 +190,18 @@ public class EncounterController : MonoBehaviour
 
     // Called from encounter spawn manager when leader initiates the encounter lobby
     public void CreateEncounterLobby(string encounterId, List<Monster> monsters) {
+        // only leader can start a medium encounter
+        if (IsMediumEncounter(encounterId)) {
+            // show pop up
+            mediumEncounterMsgPopUp.ShowMediumEncounterMessagePopup();
+            bool isLeader = GameState.Instance.isLeader;
+            if (GameState.MAPDEBUGMODE) {
+                isLeader = debugIsLeader;
+            }
+            if (!isLeader) {
+                return;
+            }
+        }
         isLeader = true;
         Debug.Log($"Spawning encounter lobby: {monsters[0].Health}");
         SpawnEncounterLobby(encounterId, monsters);
@@ -291,6 +309,10 @@ public class EncounterController : MonoBehaviour
         partyMembers.Clear();
         encounterId = "";
         AcceptMessages = true;
+    }
+
+    public bool IsMediumEncounter(string encounterId) {
+        return GameState.Instance.mediumEncounterLocations.ContainsKey(encounterId);
     }
 
     // ------------------------------ P2P NETWORK ------------------------------
