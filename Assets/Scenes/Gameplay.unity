@@ -827,6 +827,19 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 2300982725612656966}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &243403150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243403145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 896d4e73c0d77c24d82bd9b13af73052, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  direction: {x: 0, y: 0, z: 1}
 --- !u!1 &269280362
 GameObject:
   m_ObjectHideFlags: 0
@@ -5470,7 +5483,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _opacity: 1
-  ImagePath: Assets/Images/Map/Plain_Tile.png
+  image: {fileID: 2800000, guid: df142fb321002f0488314cc4427368d8, type: 3}
 --- !u!1 &1940498430
 GameObject:
   m_ObjectHideFlags: 0
@@ -5766,7 +5779,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4537654781663483535, guid: c239eae2cb28e8542979d642dd3e0895,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 243403150}
   m_SourcePrefab: {fileID: 100100000, guid: c239eae2cb28e8542979d642dd3e0895, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

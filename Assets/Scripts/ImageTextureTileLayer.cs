@@ -2,16 +2,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Geospatial;
 using Microsoft.Maps.Unity;
+using UnityEngine;
 
 public class ImageTextureTileLayer : TextureTileLayer {
-    public string ImagePath;
+    public Texture2D image;
+    private byte[] imageData;
+
+    void Start() {
+        imageData = ImageConversion.EncodeToPNG(image);
+    }
+
     public override async Task<TextureTile?> GetTexture(TileId tileId, CancellationToken cancellationToken = default) {
-        // Load image data from local file.
-        var imageData = await Task.Run(() => {
-            var path = ImagePath;
-            var bytes = System.IO.File.ReadAllBytes(path);
-            return bytes;
-        });
+        // Load image data from Unity UI image.
         return TextureTile.FromImageData(imageData);
     }
 }

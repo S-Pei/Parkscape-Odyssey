@@ -88,6 +88,7 @@ public class GameState {
             }
         }
 
+        isLeader = true;
         this.myID = myID;
         Initialized = true;
         InitialiseCards();
@@ -211,6 +212,7 @@ public class GameState {
         // Initialise other fields
         RoomCode = roomCode;
         this.myID = myID;
+        isLeader = false;
         
         Initialized = true;
         InitialiseCards();

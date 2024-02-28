@@ -143,7 +143,6 @@ IEnumerator GPSLoc() {
 }
 
     private void UpdateGPSData() {
-
         if (Input.location.status == LocationServiceStatus.Running) {
             // Access granted and location value could be retrieved
             location = Input.location.lastData;
@@ -254,5 +253,12 @@ IEnumerator GPSLoc() {
                 playerLocations[entry.Key] = new LatLon(0, 0);
             }
         }
+    }
+
+    public LatLon GetPlayerLocation(string playerId) {
+        if (playerLocations.ContainsKey(playerId)) {
+            return playerLocations[playerId];
+        }
+        return new LatLon(0, 0);
     }
 }
