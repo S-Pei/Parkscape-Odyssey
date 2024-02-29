@@ -7,18 +7,18 @@ public enum QuestType {
 public class Quest
 {
     // name of object to find
-    private string label;
-    private Texture2D referenceImage;
-    private float[] featureVector;
-    private bool isCompleted;
-    private QuestType questType;
+    public string Label { get; private set; }
+    public Texture2D ReferenceImage { get; private set; }
+    public double[] FeatureVector { get; private set; }
+    public bool IsCompleted { get; private set; }
+    public QuestType QuestType { get; private set; }
 
-    public Quest(QuestType questType, string label, Texture2D referenceImage, float[] featureVector)
+    public Quest(QuestType questType, string label, Texture2D referenceImage, double[] featureVector)
     {
-        this.questType = questType;
-        this.label = label;
-        this.referenceImage = referenceImage;
-        this.featureVector = featureVector;
-        this.isCompleted = false;
+        QuestType = questType;
+        Label = label;
+        ReferenceImage = referenceImage;
+        FeatureVector = featureVector;
+        IsCompleted = false;
     }
 }
