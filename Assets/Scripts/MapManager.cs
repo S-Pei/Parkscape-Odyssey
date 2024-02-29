@@ -145,7 +145,7 @@ public class MapManager : MonoBehaviour
 
         foreach (var entry in GameState.Instance.PlayersDetails) {
             if (entry.Key != GameState.Instance.MyPlayer.Id) {
-                GameObject otherPin = AddPin(playerPinPrefab, 0, 0);
+                GameObject otherPin = AddPin(playerPinPrefab, 0, 0, true);
                 otherPin.GetComponent<SetPlayerPin>().Set(entry.Key);
                 otherPlayerPins.Add(entry.Key, otherPin.GetComponent<MapPin>());
             }
@@ -227,6 +227,7 @@ public class MapManager : MonoBehaviour
 
             case MapMessageType.MEMBER_SHARE_GEOLOCATION:
                 gpsManager.UpdatePlayerLocations(mapMessage.sentFrom, MapMessage.DictToLatLon(mapMessage.myLocation));
+                otherPlayerPins[mapMessage.sentFrom].Location = GPSManager.Instance.GetPlayerLocation(mapMessage.sentFrom);
                 break;
         }
         return CallbackStatus.PROCESSED;
@@ -249,6 +250,9 @@ public class MapManager : MonoBehaviour
 
     /*** Fog of War ***/
     public void PinFogOfWar() {
+        if (fogOfWarSize < 0)
+            return;
+
         float fogRadius = maxRadius + 350;
         for (float dx = -fogRadius; dx < fogRadius; dx += fogOfWarSize) {
             for (float dy = -fogRadius; dy < fogRadius; dy += fogOfWarSize) {
