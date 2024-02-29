@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Linq;
 using Microsoft.Geospatial;
 
@@ -34,6 +35,9 @@ public class EncounterController : MonoBehaviour
     private GameObject encounterFoundPopup;
 
     [SerializeField]
+    private GameObject randomEncounterFoundPopup;
+
+    [SerializeField]
     private GameObject gameplayCanvas;
 
     [SerializeField]
@@ -47,6 +51,7 @@ public class EncounterController : MonoBehaviour
     private List<Monster> monsters;
 
     private string encounterId = "";
+    private EncounterType encounterType;
     private bool isLeader = false;
 
     // p2p network
@@ -71,6 +76,12 @@ public class EncounterController : MonoBehaviour
     private float MAX_SPAWN_AREA_X = 350f;
     private float MAX_SPAWN_AREA_Y = 700f;
 
+    // Medium encounter message popup
+    private MediumEncounterMsgPopUp mediumEncounterMsgPopUp;
+    // FOR DEBUGGING ONLY
+    [SerializeField]
+    private bool debugIsLeader;
+
     void Awake() {
         if (!selfReference) {
 			selfReference = this;
@@ -83,12 +94,9 @@ public class EncounterController : MonoBehaviour
         // Setup p2p network
         msgFreq = GameState.Instance.maxPlayerCount;
         network = NetworkManager.Instance.NetworkUtils;
-        // InvokeRepeating("HandleMessages", 0.0f, baseFreq);
         encounterUIManager = GetComponent<EncounterUIManager>();
         monsterController = monsterManager.GetComponent<MonsterController>();
-
-        // CreateMonsterSpawn(); // TEMPORARY
-        // CreateMonsterSpawn(); // TEMPORARY
+        mediumEncounterMsgPopUp = MediumEncounterMsgPopUp.selfReference;
     }
 
     // Location dependent encounter spawn, so need to have location initialized, or provide one.
@@ -107,10 +115,13 @@ public class EncounterController : MonoBehaviour
             monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 50, 20, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees); 
         } else {
             monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 0, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees);
+            monsterSpawn.GetComponent<SpriteButtonLocationBounded>().onFound = () => {
+                GameState.Instance.AddFoundMediumEncounter(encounterId);
+            };
         }
         monsterSpawn.GetComponent<EncounterIconChanger>().SetEncounterType(type);
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
-        encounterSpawnManager.EncounterSpawnInit(encounterId, monsters);
+        encounterSpawnManager.EncounterSpawnInit(encounterId, monsters, type);
 
         encountersSpawned.Add(monsterSpawn);
         Debug.Log($"Created encounter spawn: {encounterId}");
@@ -184,6 +195,19 @@ public class EncounterController : MonoBehaviour
 
     // Called from encounter spawn manager when leader initiates the encounter lobby
     public void CreateEncounterLobby(string encounterId, List<Monster> monsters) {
+        // only leader can start a medium encounter
+        if (IsMediumEncounter(encounterId)) {
+            // show pop up
+            encounterType = EncounterType.MEDIUM_BOSS;
+            mediumEncounterMsgPopUp.ShowMediumEncounterMessagePopup();
+            bool isLeader = GameState.Instance.isLeader;
+            if (GameState.MAPDEBUGMODE) {
+                isLeader = debugIsLeader;
+            }
+            if (!isLeader) {
+                return;
+            }
+        }
         isLeader = true;
         Debug.Log($"Spawning encounter lobby: {monsters[0].Health}");
         SpawnEncounterLobby(encounterId, monsters);
@@ -249,6 +273,30 @@ public class EncounterController : MonoBehaviour
         }
     }
 
+    public void ShowRandomEncounterPopup(string encounterId, List<Monster> monsters) {
+        randomEncounterFoundPopup.SetActive(true);
+
+        this.monsters = monsters;
+        this.encounterId = encounterId;
+        this.encounterType = EncounterType.RANDOM_ENCOUNTER;
+
+        // Add self as a member of the party in the encounter lobby
+        partyMembers.Add(GameState.Instance.myID, GameState.Instance.PlayersDetails[GameState.Instance.myID].Name);
+
+        // // Disable map interactions
+        // MapManager.Instance.DisableMapInteraction();
+    }
+
+    public void CloseRandomEncounterPopup() {
+        randomEncounterFoundPopup.SetActive(false);
+
+        this.encounterId = "";
+        partyMembers.Clear();
+
+        // // Enable map interactions
+        // MapManager.Instance.EnableMapInteraction();
+    }
+
     public void LeaderStartEncounter() {
         // Save monster details for entering encounter
         Debug.Log($"isInEncounter: {GameState.Instance.IsInEncounter}");
@@ -258,6 +306,11 @@ public class EncounterController : MonoBehaviour
         SendStartEncounterMessage();
         inEncounterLobby = false;
         AcceptMessages = false;
+
+        if (encounterType == EncounterType.RANDOM_ENCOUNTER) {
+            SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
+            randomEncounterFoundPopup.SetActive(false);
+        }
     }
 
     private void MemberStartEncounter() {
@@ -291,6 +344,10 @@ public class EncounterController : MonoBehaviour
         partyMembers.Clear();
         encounterId = "";
         AcceptMessages = true;
+    }
+
+    public bool IsMediumEncounter(string encounterId) {
+        return GameState.Instance.mediumEncounterLocations.ContainsKey(encounterId);
     }
 
     // ------------------------------ P2P NETWORK ------------------------------
@@ -382,6 +439,7 @@ public class EncounterController : MonoBehaviour
             List<Monster> monsters = ProcessEncounterMessageWithMonsterInfo(encounterMessage);
             SpawnEncounterLobby(encounterMessage.encounterId, monsters);
             inEncounterLobby = true;
+            encounterType = EncounterType.MEDIUM_BOSS;
             ListPartyMembers(encounterMessage.members);
         } else if (encounterMessage.sendTo != GameState.Instance.myID && inEncounterLobby) {
             ListPartyMembers(encounterMessage.members);

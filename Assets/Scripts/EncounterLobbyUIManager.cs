@@ -18,11 +18,31 @@ public class EncounterLobbyUIManager : MonoBehaviour
 
     [SerializeField]
     private GameObject startEncounterButton;
+    [SerializeField]
+    private GameObject mediumEncounterMessagePopupLeader;
+    // FOR DEBUGGING ONLY
+    [SerializeField]
+    private int memberCountDebug;
     
     private string encounterId;
     private List<Monster> monsters;
 
     private EncounterController encounterController;
+    private bool isMediumEncounter = false;
+
+    void Update() {
+        int expectedCount = GameState.Instance.PlayersDetails.Count;
+        int memberCount = partyMembers.Count;
+        if (GameState.MAPDEBUGMODE) {
+            expectedCount = 2;
+            memberCount = memberCountDebug;
+        }
+        // leader can start game if all players joined
+        if (GameState.Instance.isLeader && isMediumEncounter && memberCount == expectedCount) {
+            mediumEncounterMessagePopupLeader.SetActive(false);
+            startEncounterButton.SetActive(true);
+        }
+    }
 
     public void ListPartyMembers(List<string> members) {
         for (int i = 0; i < partyMemberSlots.Count; i++) {
@@ -38,8 +58,13 @@ public class EncounterLobbyUIManager : MonoBehaviour
         this.monsters = monsters;
 
         encounterController = GameObject.FindGameObjectWithTag("EncounterManager").GetComponent<EncounterController>();
-
+        this.isMediumEncounter = encounterController.IsMediumEncounter(encounterId);
         DisplayMonsterDetails();
+
+        // Only leader can start medium encounter when all players joined
+        if (isMediumEncounter) {
+            startEncounterButton.SetActive(false);
+        }
 
         // Add self to party members
         if (isLeader) {
@@ -70,6 +95,10 @@ public class EncounterLobbyUIManager : MonoBehaviour
         encounterController.LeaderStartEncounter();
         SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
         Destroy(gameObject);
+    }
+
+    public void ShowLeaderMediumEncounterMessagePopup() {
+        mediumEncounterMessagePopupLeader.SetActive(true);
     }
 
     public void ExitEncounterLobby() {

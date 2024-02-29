@@ -14,11 +14,15 @@ public class GPSManager : MonoBehaviour
     private NetworkUtils network;
     private bool permissionGranted = false;
 
+    private Dictionary<string, LatLon> playerLocations = new();
+    private Dictionary<string, float> playerLocationTimes = new();
+    private const float staleTime = 10f;
+
     public static GPSManager Instance { 
         get {
             if (instance == null) {
                 // To make sure that script is persistent across scenes
-                GameObject go = new GameObject("GPSManager");
+                GameObject go = new("GPSManager");
                 instance = go.AddComponent<GPSManager>();
                 DontDestroyOnLoad(go);
             }
@@ -109,8 +113,8 @@ IEnumerator GPSLoc() {
             int editorMaxWait = 30;
             while (UnityEngine.Input.location.status == LocationServiceStatus.Stopped && editorMaxWait > 0) {
                 yield return new WaitForSecondsRealtime(1);
-                Debug.Log("Editor Wait: " + editorMaxWait);
-                Debug.Log("Editor Location Service Status: " + UnityEngine.Input.location.status);
+                // Debug.Log("Editor Wait: " + editorMaxWait);
+                // Debug.Log("Editor Location Service Status: " + UnityEngine.Input.location.status);
                 editorMaxWait--;
             }
         #endif
@@ -139,7 +143,6 @@ IEnumerator GPSLoc() {
 }
 
     private void UpdateGPSData() {
-
         if (Input.location.status == LocationServiceStatus.Running) {
             // Access granted and location value could be retrieved
             location = Input.location.lastData;
@@ -152,8 +155,12 @@ IEnumerator GPSLoc() {
 
     }
 
-    public LocationInfo GetLocation() {
-        return location;
+    public LatLon GetLocation() {
+        return new LatLon(location.latitude, location.longitude);
+    }
+
+    public Dictionary<string, LatLon> GetPlayerLocations() {
+        return playerLocations;
     }
 
     private void OnDestroy()
@@ -183,7 +190,7 @@ IEnumerator GPSLoc() {
             // Hardcoded for now
             List<LatLon> encounterLocations = new List<LatLon>();
             encounterLocations.Add(new LatLon(51.496451, -0.176775));
-            encounterLocations.Add(new LatLon(51.39355, -0.1924046));
+            encounterLocations.Add(new LatLon(51.506061, -0.174226));
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.39355, -0.1924046));
 
@@ -200,5 +207,58 @@ IEnumerator GPSLoc() {
             string encounterId = Guid.NewGuid().ToString();
             GameState.Instance.mediumEncounterLocations.Add(encounterId, location);
         }
+    }
+
+    // Geolocation sharing
+    public void ShareLocationToLeader() {
+        if (GameState.Instance.MyPlayer.IsLeader)
+            return;
+        Debug.Log("Sending location to leader");
+        network.broadcast(new MapMessage(GetLocation()).toJson());
+    }
+
+    public void ShareLocationsToPlayers() {
+        if (!GameState.Instance.MyPlayer.IsLeader)
+            return;
+        Debug.Log("Sending locations to players");
+        UpdatePlayerLocations(GameState.Instance.MyPlayer.Id, new LatLon(location.latitude, location.longitude));
+
+        // Remove stale locations
+        foreach (KeyValuePair<string, float> locationTime in playerLocationTimes) {
+            if (Time.time - locationTime.Value > staleTime) {
+                playerLocations.Remove(locationTime.Key);
+                playerLocationTimes.Remove(locationTime.Key);
+            }
+        }
+        network.broadcast(new MapMessage(playerLocations).toJson());
+    }
+
+    public void UpdatePlayerLocations(string playerId, LatLon location) {
+        if (playerLocations.ContainsKey(playerId)) {
+            playerLocations[playerId] = location;
+            playerLocationTimes[playerId] = Time.time;
+        } else {
+            playerLocations.Add(playerId, location);
+            playerLocationTimes.Add(playerId, Time.time);
+        }
+    }
+
+    public void UpdatePlayerLocations(Dictionary<string, LatLon> locations) {
+        foreach (KeyValuePair<string, LatLon> location in locations) {
+            UpdatePlayerLocations(location.Key, location.Value);
+        }
+        // Check if some locations are not included. If so, send them away.
+        foreach (var entry in playerLocations) {
+            if (entry.Key != GameState.Instance.MyPlayer.Id && !locations.ContainsKey(entry.Key)) {
+                playerLocations[entry.Key] = new LatLon(0, 0);
+            }
+        }
+    }
+
+    public LatLon GetPlayerLocation(string playerId) {
+        if (playerLocations.ContainsKey(playerId)) {
+            return playerLocations[playerId];
+        }
+        return new LatLon(0, 0);
     }
 }

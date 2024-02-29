@@ -81,6 +81,7 @@ public class NetworkManager : MonoBehaviour {
         if  (BattleManager.selfReference != null) {
             battleManager = BattleManager.selfReference;
         }
+
         if (MapManager.selfReference != null) {
             mapManager = MapManager.selfReference;
         }
@@ -199,6 +200,10 @@ public class NetworkManager : MonoBehaviour {
         }
         if (battleManager != null) {
             battleManager.SendMessages(connectedPlayers, disconnectedPlayers);
+        }
+
+        if (mapManager != null) {
+            mapManager.SendMessages();
         }
     }
 
