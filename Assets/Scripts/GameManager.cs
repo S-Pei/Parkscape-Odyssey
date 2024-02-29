@@ -15,15 +15,6 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject mainCamera;
 
-    [SerializeField]
-    private GameObject arSession;
-    
-    [SerializeField]
-    private GameObject xrInteractionManager;
-    
-    [SerializeField]
-    private GameObject xrOrigin;
-
     private Boolean inARMode = false;
 
     // Start is called before the first frame update
@@ -90,9 +81,7 @@ public class GameManager : MonoBehaviour
 
     private void OpenARSession() {
         mainCamera.SetActive(false);
-        arSession.SetActive(true);
-        xrInteractionManager.SetActive(true);
-        xrOrigin.SetActive(true);
+        ARManager.Instance.StartAR();
 
         // Disable map interactions
         mapManager.DisableMapInteraction();
@@ -101,9 +90,7 @@ public class GameManager : MonoBehaviour
     }
 
     private void CloseARSession() {
-        arSession.SetActive(false);
-        xrInteractionManager.SetActive(false);
-        xrOrigin.SetActive(false);
+        ARManager.Instance.StopAR();
         mainCamera.SetActive(true);
 
         // Enable map interactions
