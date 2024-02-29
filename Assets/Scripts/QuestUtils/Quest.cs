@@ -1,3 +1,4 @@
+using Microsoft.Geospatial;
 using UnityEngine;
 
 public class Quest
@@ -5,10 +6,10 @@ public class Quest
     // name of object to find
     private string label;
     private Texture2D referenceImage;
-    private double[] featureVector;
+    private float[] featureVector;
     private bool isCompleted;
 
-    public Quest(string label, Texture2D referenceImage, double[] featureVector)
+    public Quest(string label, Texture2D referenceImage, float[] featureVector)
     {
         this.label = label;
         this.referenceImage = referenceImage;
