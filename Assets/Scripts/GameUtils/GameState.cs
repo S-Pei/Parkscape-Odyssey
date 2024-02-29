@@ -49,7 +49,7 @@ public class GameState {
     public bool IsInEncounter = false;
     public int Score = 0;
 
-    private readonly List<CardName> InitialCards = new() { 
+    private List<CardName> InitialCards = new List<CardName> {
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
         CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
     };
@@ -69,7 +69,10 @@ public class GameState {
 
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
+
         CheckNotInitialised();
+
+        UnityEngine.Debug.Log("Finished executing StartFirebase().");
 
         RoomCode = roomCode;
 

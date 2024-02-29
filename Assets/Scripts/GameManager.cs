@@ -7,9 +7,12 @@ using System.Collections;
 public class GameManager : MonoBehaviour
 {
     private GameInterfaceManager gameInterfaceManager;
+    private DatabaseManager databaseManager;
 
     // Start is called before the first frame update
     void Start() {
+        databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
+
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
     }
