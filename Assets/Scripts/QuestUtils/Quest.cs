@@ -4,16 +4,16 @@ using UnityEngine;
 public class Quest
 {
     // name of object to find
-    private string label;
-    private Texture2D referenceImage;
-    private float[] featureVector;
-    private bool isCompleted;
+    public string Label { get; private set; }
+    public Texture2D ReferenceImage { get; private set; }
+    public double[] FeatureVector { get; private set; }
+    public bool IsCompleted { get; private set; }
 
-    public Quest(string label, Texture2D referenceImage, float[] featureVector)
+    public Quest(string label, Texture2D referenceImage, double[] featureVector)
     {
-        this.label = label;
-        this.referenceImage = referenceImage;
-        this.featureVector = featureVector;
-        this.isCompleted = false;
+        Label = label;
+        ReferenceImage = referenceImage;
+        FeatureVector = featureVector;
+        IsCompleted = false;
     }
 }
