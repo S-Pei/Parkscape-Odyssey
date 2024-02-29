@@ -1,5 +1,8 @@
-using Microsoft.Geospatial;
 using UnityEngine;
+
+public enum QuestType {
+    FIND
+}
 
 public class Quest
 {
@@ -8,9 +11,11 @@ public class Quest
     private Texture2D referenceImage;
     private float[] featureVector;
     private bool isCompleted;
+    private QuestType questType;
 
-    public Quest(string label, Texture2D referenceImage, float[] featureVector)
+    public Quest(QuestType questType, string label, Texture2D referenceImage, float[] featureVector)
     {
+        this.questType = questType;
         this.label = label;
         this.referenceImage = referenceImage;
         this.featureVector = featureVector;
