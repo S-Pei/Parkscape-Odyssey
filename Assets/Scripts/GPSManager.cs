@@ -191,6 +191,14 @@ IEnumerator GPSLoc() {
             List<LatLon> encounterLocations = new List<LatLon>();
             encounterLocations.Add(new LatLon(51.496451, -0.176775));
             encounterLocations.Add(new LatLon(51.506061, -0.174226));
+
+            Debug.LogWarning("Getting locationQuests from the database");
+
+            // Synchronously wait for the list of locationQuests to be fetched from the database
+            List<LocationQuest> locationQuests = DatabaseManager.Instance.GetLocationQuests().Result;
+
+            Debug.LogWarning("LocationQuests: " + locationQuests.Count);
+
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.39355, -0.1924046));
 

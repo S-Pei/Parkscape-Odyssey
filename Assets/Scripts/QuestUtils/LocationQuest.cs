@@ -1,8 +1,10 @@
-public class LocationQuest : LocationQuest {
-    private LatLon location;
+using Microsoft.Geospatial;
+using UnityEngine;
 
-    public LocationQuest(string label, Texture2D referenceImage, double[] featureVector, LatLon location) : base(label, referenceImage, featureVector)
-    {
-        this.location = location;
+public class LocationQuest : Quest {
+    public LatLon Location { get; private set; }
+
+    public LocationQuest(string label, Texture2D referenceImage, double[] featureVector, LatLon location) : base(label, referenceImage, featureVector) {
+        Location = location;
     }
 }
