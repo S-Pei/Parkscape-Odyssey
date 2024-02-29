@@ -12,6 +12,12 @@ public class GameState {
     #else
         false;
     #endif
+    public static readonly bool MAPDEBUGMODE = 
+    #if UNITY_EDITOR 
+        true;
+    #else
+        false;
+    #endif
 
     private static readonly Lazy<GameState> LazyGameState = new(() => new GameState());
 
@@ -24,6 +30,7 @@ public class GameState {
                 {"3", "Player 3"},
                 {"4", "Player 4"},
             });
+            gameState.isLeader = true;
         }
         return gameState; } }
 
@@ -85,6 +92,7 @@ public class GameState {
             }
         }
 
+        isLeader = true;
         this.myID = myID;
         Initialized = true;
         InitialiseCards();
@@ -168,6 +176,11 @@ public class GameState {
         }
     }
 
+    // Medium Encounters
+    public void AddFoundMediumEncounter(string encounterId) {
+        foundMediumEncounters.Add(encounterId);
+    }
+
     public GameStateMessage ToMessage() {
         CheckInitialised();
         Dictionary<string, string> playerRoles = new();
@@ -203,6 +216,7 @@ public class GameState {
         // Initialise other fields
         RoomCode = roomCode;
         this.myID = myID;
+        isLeader = false;
         
         Initialized = true;
         InitialiseCards();

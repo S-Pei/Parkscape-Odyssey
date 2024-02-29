@@ -196,7 +196,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3637592451827347815}
         m_TargetAssemblyTypeName: EncounterSpawnManager, NewAssembly
-        m_MethodName: CreateEncounterLobby
+        m_MethodName: EncounterOnClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -207,9 +207,11 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   Disabled: 0
+  encounterId: 
   known: 0
   PinState: 1
   repeat: 1
+  isFog: 0
 --- !u!114 &5448648371334243828
 MonoBehaviour:
   m_ObjectHideFlags: 0
