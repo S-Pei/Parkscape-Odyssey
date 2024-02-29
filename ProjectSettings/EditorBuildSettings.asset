@@ -18,6 +18,8 @@ EditorBuildSettings:
     path: Assets/Scenes/Battle.unity
     guid: 14a49a93db24a8d41b65be883640d81a
   m_configObjects:
+    Niantic.Lightship.AR.LightshipSettings: {fileID: 11400000, guid: 60a773846fa364d9c992a86acc7de55a,
+      type: 2}
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 6ee72d15cf39dd748a13eac57397b9af,
       type: 2}
     UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: 0465d33c6aee55f44b0237db8b0e0259,

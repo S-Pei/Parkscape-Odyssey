@@ -86,16 +86,20 @@ public class LobbyManager : MonoBehaviour {
             return;
 
         // Create a list of all the players id
+        Debug.Log("Creating list of player IDs");
         playerIDs = new(players.Keys);
         playerIDs.Remove(myID);
 
         // Initialise the game state.
+        Debug.Log("Set game state, should be null gamestate");
         GameState gameState = GameState.Instance;
 
         // Game state already initialised if in debug mode
-        if (GameState.DEBUGMODE) { 
+        Debug.Log("Initializing gamestate");
+        if (!GameState.DEBUGMODE) { 
             gameState.Initialize(myID, roomCode, players);
         }
+        Debug.Log("Initializing gamestate");
 
         GameState.Instance.MyPlayer.IsLeader = true;
 
