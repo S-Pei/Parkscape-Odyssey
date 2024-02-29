@@ -28,18 +28,6 @@ public class GameState {
                 {"3", "Player 3"},
                 {"4", "Player 4"},
             });
-
-            // Debug.LogWarning("Creating users/alovelace in GameState initialisation.");
-            // DocumentReference docRef = FirebaseFirestore.DefaultInstance.Collection("users").Document("alovelace");
-            // Dictionary<string, object> user = new Dictionary<string, object>
-            // {
-            //         { "First", "Ada" },
-            //         { "Last", "Lovelace" },
-            //         { "Born", 1815 },
-            // };
-            // docRef.SetAsync(user).ContinueWithOnMainThread(task => {
-            //         // Debug.Log("Added data to the alovelace document in the users collection.");
-            // });
         }
         return gameState; } }
 

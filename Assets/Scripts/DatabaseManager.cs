@@ -12,8 +12,10 @@ public class DatabaseManager : MonoBehaviour
 {
     public bool FirebaseReady { get; private set; } = false;
 
+    public static DatabaseManager Instance { get; private set; }
+
     public Firebase.FirebaseApp App { get; private set; }
-    private FirebaseFirestore db;
+    public FirebaseFirestore Database { get; private set; };
 
     void Awake() {
         // Make sure we only ever have one instance of this object
@@ -22,6 +24,8 @@ public class DatabaseManager : MonoBehaviour
         if (objs.Length > 1) {
             Debug.Log("Found more than one database object - destroying this one.");
             Destroy(this.gameObject);
+        } else {
+            Instance = this;
         }
     }
 
@@ -65,59 +69,28 @@ public class DatabaseManager : MonoBehaviour
 
         DontDestroyOnLoad(this.gameObject);
 
-        db = FirebaseFirestore.DefaultInstance;
+        Database = FirebaseFirestore.DefaultInstance;
 
         SceneManager.LoadScene("Main Menu");
     }
 
     public void GetLocations() {
-        // Debug.Log("Jajajajaj");
-        // Debug.LogWarning("Creating users/alovelace.");
-        // DocumentReference docRef = db.Collection("users").Document("alovelace");
-        // Dictionary<string, object> user = new Dictionary<string, object>
-        // {
-        //         { "First", "Ada" },
-        //         { "Last", "Lovelace" },
-        //         { "Born", 1815 },
-        // };
-        // docRef.SetAsync(user).ContinueWithOnMainThread(task => {
-        //         Debug.Log("Added data to the alovelace document in the users collection.");
-        // });
-        // CollectionReference allLocationsQuery = Db.Collection("/locations");
-        // Debug.LogWarning("Getting locations from Firebase.");
+        Debug.Log("Getting locations from the database.");
+        Query locationsQuery = Database.Collection("locations");
 
-        // allLocationsQuery.GetSnapshotAsync().ContinueWithOnMainThread(task => {
-        //     QuerySnapshot allLocationsQuerySnapshot = task.Result;
-        //     Debug.LogWarning("Number of locations: " + allLocationsQuerySnapshot.Count);
-        //     foreach (DocumentSnapshot documentSnapshot in allLocationsQuerySnapshot.Documents) {
-        //         Debug.LogWarning("Document data for document " + documentSnapshot.Id + ":");
-        //         Dictionary<string, object> city = documentSnapshot.ToDictionary();
-        //         foreach (KeyValuePair<string, object> pair in city)
-        //         {
-        //         Debug.LogWarning(pair.Key + " : " + pair.Value);
-        //         }
-        //     }
-        // });
-        // // yield return null;
+        locationsQuery.GetSnapshotAsync().ContinueWithOnMainThread(task => {
+        QuerySnapshot locationsQuerySnapshot = task.Result;
 
-        Debug.Log("HEHEa");
-        DocumentReference docRef = FirebaseFirestore.DefaultInstance.Collection("users").Document("alovelace");
-        Dictionary<string, object> user = new Dictionary<string, object>
-        {
-                { "First", "Ada" },
-                { "Last", "Lovelace" },
-                { "Born", 1815 },
-        };
-        docRef.SetAsync(user);
-        // .ContinueWithOnMainThread(task => {
-            // DocumentReference addedDocRef = task.Result;
-            // Debug.Log("HEHE");
-            // Debug.Log(String.Format("Added document with ID: {0}.", addedDocRef.Id));
-        // });
-        // docRef.SetAsync(user).ContinueWithOnMainThread(task => {
-        //         // Debug.Log("Added data to the alovelace document in the users collection.");
-        // });
+        foreach (DocumentSnapshot documentSnapshot in locationsQuerySnapshot.Documents) {
+            Debug.Log("Document data for document: " + documentSnapshot.Id);
+            Dictionary<string, object> city = documentSnapshot.ToDictionary();
+            foreach (KeyValuePair<string, object> pair in city) {
+            Debug.Log(pair.Key + ": " + pair.Value);
+            }
+        }
+        });
     }
+
 }
 
 
