@@ -4,7 +4,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Linq;
+using Microsoft.Geospatial;
+
+public enum EncounterType {
+    RANDOM_ENCOUNTER,
+    MEDIUM_BOSS
+}
 
 
 public class EncounterController : MonoBehaviour
@@ -28,7 +35,13 @@ public class EncounterController : MonoBehaviour
     private GameObject encounterFoundPopup;
 
     [SerializeField]
+    private GameObject randomEncounterFoundPopup;
+
+    [SerializeField]
     private GameObject gameplayCanvas;
+
+    [SerializeField]
+    private GameObject mapRenderer;
 
     private string leaderId;
 
@@ -36,8 +49,9 @@ public class EncounterController : MonoBehaviour
 
     // current encounter monster details
     private List<Monster> monsters;
-    private List<List<SkillName>> skillSequences;
+
     private string encounterId = "";
+    private EncounterType encounterType;
     private bool isLeader = false;
 
     // p2p network
@@ -62,6 +76,12 @@ public class EncounterController : MonoBehaviour
     private float MAX_SPAWN_AREA_X = 350f;
     private float MAX_SPAWN_AREA_Y = 700f;
 
+    // Medium encounter message popup
+    private MediumEncounterMsgPopUp mediumEncounterMsgPopUp;
+    // FOR DEBUGGING ONLY
+    [SerializeField]
+    private bool debugIsLeader;
+
     void Awake() {
         if (!selfReference) {
 			selfReference = this;
@@ -74,47 +94,51 @@ public class EncounterController : MonoBehaviour
         // Setup p2p network
         msgFreq = GameState.Instance.maxPlayerCount;
         network = NetworkManager.Instance.NetworkUtils;
-        // InvokeRepeating("HandleMessages", 0.0f, baseFreq);
         encounterUIManager = GetComponent<EncounterUIManager>();
         monsterController = monsterManager.GetComponent<MonsterController>();
-
-        CreateMonsterSpawn(); // TEMPORARY
-        CreateMonsterSpawn(); // TEMPORARY
+        mediumEncounterMsgPopUp = MediumEncounterMsgPopUp.selfReference;
     }
 
-    private void CreateMonsterSpawn() {
+    // Location dependent encounter spawn, so need to have location initialized, or provide one.
+    public void CreateMonsterSpawn(string encounterId, LatLon location, EncounterType type) {
         // Generate monsters for the encounter.
-        List<Monster> monsters = GenerateEncounterMonsters();
+        List<Monster> monsters = GenerateEncounterMonsters(type);
 
         // Generates skill sequences for the monsters.
         List<List<SkillName>> skillSequences = GenerateMonsterSkillSequences(monsters);
 
-        // Generate unique id for the encounter.
-        string encounterId = Guid.NewGuid().ToString();
-
-        // Create a new enemy spawn
-        GameObject monsterSpawn = Instantiate(encounterSpawn, interfacePanel.transform);
+        // Generate unique id for the encounter. (not needed for medium encounters)
+        // string encounterId = Guid.NewGuid().ToString();
+        GameObject monsterSpawn = null;
+        Debug.Log("Location: (" + location.LatitudeInDegrees + ", " + location.LongitudeInDegrees + ")");
+        if (type == EncounterType.RANDOM_ENCOUNTER) {
+            monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 50, 20, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees); 
+        } else {
+            monsterSpawn = mapRenderer.GetComponent<MapManager>().AddPinNearLocation(encounterSpawn, 0, latitude: location.LatitudeInDegrees, longitude: location.LongitudeInDegrees);
+            monsterSpawn.GetComponent<SpriteButtonLocationBounded>().onFound = () => {
+                GameState.Instance.AddFoundMediumEncounter(encounterId);
+            };
+        }
+        monsterSpawn.GetComponent<EncounterIconChanger>().SetEncounterType(type);
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
-        encounterSpawnManager.EncounterSpawnInit(encounterId, monsters, skillSequences);
+        encounterSpawnManager.EncounterSpawnInit(encounterId, monsters, type);
 
-        // TODO: Set the position of the monster to predetermined position with an algorithm.
-        Vector3 randomPos = new Vector3(
-            UnityEngine.Random.Range(-MAX_SPAWN_AREA_X, MAX_SPAWN_AREA_X), 
-            UnityEngine.Random.Range(-MAX_SPAWN_AREA_Y, MAX_SPAWN_AREA_Y),
-            0);
-        monsterSpawn.transform.localPosition = randomPos;
         encountersSpawned.Add(monsterSpawn);
         Debug.Log($"Created encounter spawn: {encounterId}");
     }
 
-    private List<Monster> GenerateEncounterMonsters() {
+    private List<Monster> GenerateEncounterMonsters(EncounterType type) {
         List<Monster> monsters = new List<Monster>();
 
         // Select a random number between 1 and maxPlayerCount to determine the number of monsters in the encounter.
         int numMonsters = UnityEngine.Random.Range(1, GameState.Instance.maxPlayerCount);
 
+        MonsterName monsterName = MonsterName.DRAGON;
+        if (type == EncounterType.RANDOM_ENCOUNTER) {
+            monsterName = MonsterName.GOBLIN;
+        }
         // Select a type of monster for the encounter.
-        MonsterName monsterName = (MonsterName) UnityEngine.Random.Range(0, Enum.GetValues(typeof(MonsterName)).Length);
+        // MonsterName monsterName = (MonsterName) UnityEngine.Random.Range(0, Enum.GetValues(typeof(MonsterName)).Length);
 
         // Create the monsters.
         for (int i = 0; i < numMonsters; i++) {
@@ -141,9 +165,8 @@ public class EncounterController : MonoBehaviour
     }
 
     // Shows encounter lobby on the UI
-    public void SpawnEncounterLobby(string encounterId, List<Monster> monsters, List<List<SkillName>> skillSequences) {
+    public void SpawnEncounterLobby(string encounterId, List<Monster> monsters) {
         this.monsters = monsters;
-        this.skillSequences = skillSequences;
         this.encounterId = encounterId;
 
         GameObject encounterLobby = Instantiate(encounterLobbyOverlay);
@@ -171,16 +194,32 @@ public class EncounterController : MonoBehaviour
     }
 
     // Called from encounter spawn manager when leader initiates the encounter lobby
-    public void CreateEncounterLobby(string encounterId, List<Monster> monsters, List<List<SkillName>> skillSequences) {
+    public void CreateEncounterLobby(string encounterId, List<Monster> monsters) {
+        // only leader can start a medium encounter
+        if (IsMediumEncounter(encounterId)) {
+            // show pop up
+            encounterType = EncounterType.MEDIUM_BOSS;
+            mediumEncounterMsgPopUp.ShowMediumEncounterMessagePopup();
+            bool isLeader = GameState.Instance.isLeader;
+            if (GameState.MAPDEBUGMODE) {
+                isLeader = debugIsLeader;
+            }
+            if (!isLeader) {
+                return;
+            }
+        }
         isLeader = true;
         Debug.Log($"Spawning encounter lobby: {monsters[0].Health}");
-        SpawnEncounterLobby(encounterId, monsters, skillSequences);
+        SpawnEncounterLobby(encounterId, monsters);
 
         // Add self as a member of the party in the encounter lobby
         partyMembers.Add(GameState.Instance.myID, GameState.Instance.PlayersDetails[GameState.Instance.myID].Name);
         
         // Broadcast to all players that an encounter has been found.
         BroadcastFoundEncounterMessage();
+
+        // Disable map interactions
+        MapManager.Instance.DisableMapInteraction();
 
         inEncounterLobby = true;
     }
@@ -190,6 +229,9 @@ public class EncounterController : MonoBehaviour
         // AcceptMessages = true;
         Debug.Log("Accepting join encounter");
         CloseEncounterFoundPopup(accept:true);
+
+        // Disable map interactions
+        MapManager.Instance.DisableMapInteraction();
 
         // Send a message to the leader to request to join encounter.
         SendJoinEncounterMessage();
@@ -231,47 +273,81 @@ public class EncounterController : MonoBehaviour
         }
     }
 
+    public void ShowRandomEncounterPopup(string encounterId, List<Monster> monsters) {
+        randomEncounterFoundPopup.SetActive(true);
+
+        this.monsters = monsters;
+        this.encounterId = encounterId;
+        this.encounterType = EncounterType.RANDOM_ENCOUNTER;
+
+        // Add self as a member of the party in the encounter lobby
+        partyMembers.Add(GameState.Instance.myID, GameState.Instance.PlayersDetails[GameState.Instance.myID].Name);
+
+        // // Disable map interactions
+        // MapManager.Instance.DisableMapInteraction();
+    }
+
+    public void CloseRandomEncounterPopup() {
+        randomEncounterFoundPopup.SetActive(false);
+
+        this.encounterId = "";
+        partyMembers.Clear();
+
+        // // Enable map interactions
+        // MapManager.Instance.EnableMapInteraction();
+    }
+
     public void LeaderStartEncounter() {
         // Save monster details for entering encounter
-
         Debug.Log($"isInEncounter: {GameState.Instance.IsInEncounter}");
-        GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
+        GameState.Instance.StartEncounter(monsters, partyMembers);
         Debug.Log("Leader Starting encounter with monsters: " + monsters[0].name + " " + monsters[0].Health);
-
-        // Close the encounter spawn
-        CloseEncounterSpawn();
 
         SendStartEncounterMessage();
         inEncounterLobby = false;
         AcceptMessages = false;
+
+        if (encounterType == EncounterType.RANDOM_ENCOUNTER) {
+            SceneManager.LoadScene("Battle", LoadSceneMode.Additive);
+            randomEncounterFoundPopup.SetActive(false);
+        }
     }
 
     private void MemberStartEncounter() {
-        GameState.Instance.StartEncounter(monsters, skillSequences, partyMembers);
+        GameState.Instance.StartEncounter(monsters, partyMembers);
         Debug.Log("Member Starting encounter");
         GameObject.FindGameObjectWithTag("EncounterLobby").GetComponent<EncounterLobbyUIManager>().StartEncounter();
         inEncounterLobby = false;
         AcceptMessages = false;
     }
 
-    private void CloseEncounterSpawn() {
+    public void KillMonster() {
         GameObject encounter = encountersSpawned.Find((spawn) => spawn.GetComponent<EncounterSpawnManager>().GetEncounterId() == encounterId);
         if (encounter != null) {
             encountersSpawned.Remove(encounter);
-            Destroy(encounter);
+            // Instead of destroying the encounter, we can just disable it.
+            encounter.GetComponent<EncounterIconChanger>().KillSprite();
         }
     }
 
     public void ExitEncounterLobby() {
+        // Enable map interactions.
+        MapManager.Instance.EnableMapInteraction();
         inEncounterLobby = false;
         encounterId = "";
         partyMembers.Clear();
     }
 
-    public void OnFinishEncounter() {
+    public void OnFinishEncounter(bool win) {
+        if (win)
+            KillMonster();
         partyMembers.Clear();
         encounterId = "";
         AcceptMessages = true;
+    }
+
+    public bool IsMediumEncounter(string encounterId) {
+        return GameState.Instance.mediumEncounterLocations.ContainsKey(encounterId);
     }
 
     // ------------------------------ P2P NETWORK ------------------------------
@@ -329,7 +405,7 @@ public class EncounterController : MonoBehaviour
     }
 
     private void SendStartEncounterMessage() {
-        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.START_ENCOUNTER, encounterId : encounterId);
+        EncounterMessage encounterMessage = new EncounterMessage(EncounterMessageType.START_ENCOUNTER, encounterId: encounterId);
         network.broadcast(encounterMessage.toJson());
     }
 
@@ -341,6 +417,7 @@ public class EncounterController : MonoBehaviour
         List<int> defenseAmount = new List<int>();
         List<int> baseDamage = new List<int>();
         List<EnemyLevel> levels = new List<EnemyLevel>();
+        List<List<SkillName>> skills = new();
         foreach (Monster monster in monsters) {
             monsterNames.Add(monster.name);
             health.Add(monster.Health);
@@ -348,19 +425,21 @@ public class EncounterController : MonoBehaviour
             defenseAmount.Add(monster.defenseAmount);
             baseDamage.Add(monster.BaseDamage);
             levels.Add(monster.level);
+            skills.Add(monster.skills.Select(skill => skill.Name).ToList());
         }
         Debug.Log($"Responding to: {toSend}");
         EncounterMessage encounterMessage 
           = new EncounterMessage(EncounterMessageType.JOINED_ENCOUNTER_CONFIRMATION, partyMembers,
-                                monsterNames, health, defense, defenseAmount, baseDamage, skillSequences, levels, encounterId : encounterId, sendTo:toSend);
+                                monsterNames, health, defense, defenseAmount, baseDamage, skills, levels, encounterId : encounterId, sendTo:toSend);
         network.broadcast(encounterMessage.toJson());
     }
 
     private void StopSendingJoinEncounterMessagesAndShowLobby(EncounterMessage encounterMessage) {
         if (encounterMessage.sendTo == GameState.Instance.myID && !inEncounterLobby) {
             List<Monster> monsters = ProcessEncounterMessageWithMonsterInfo(encounterMessage);
-            SpawnEncounterLobby(encounterMessage.encounterId, monsters, encounterMessage.skills);
+            SpawnEncounterLobby(encounterMessage.encounterId, monsters);
             inEncounterLobby = true;
+            encounterType = EncounterType.MEDIUM_BOSS;
             ListPartyMembers(encounterMessage.members);
         } else if (encounterMessage.sendTo != GameState.Instance.myID && inEncounterLobby) {
             ListPartyMembers(encounterMessage.members);
@@ -477,9 +556,5 @@ public class EncounterMessage : MessageInfo
 
     public string toJson() {
         return JsonConvert.SerializeObject(this);
-    }
-
-    public string processMessageInfo() {
-        return "";
     }
 }

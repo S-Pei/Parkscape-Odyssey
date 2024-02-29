@@ -10,4 +10,5 @@ public enum MessageType {
     ENCOUNTERMESSAGE,
     BATTLEMESSAGE,
     TRADE,
+    MAP,
 }

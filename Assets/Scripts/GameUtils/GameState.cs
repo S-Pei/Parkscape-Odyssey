@@ -1,9 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
+using Microsoft.Maps.Unity;
+using Microsoft.Geospatial;
 
 public class GameState {
-    private static readonly bool DEBUGMODE = 
+    public static readonly bool DEBUGMODE = 
+    #if UNITY_EDITOR 
+        true;
+    #else
+        false;
+    #endif
+    public static readonly bool MAPDEBUGMODE = 
     #if UNITY_EDITOR 
         true;
     #else
@@ -21,6 +30,7 @@ public class GameState {
                 {"3", "Player 3"},
                 {"4", "Player 4"},
             });
+            gameState.isLeader = true;
         }
         return gameState; } }
 
@@ -39,7 +49,7 @@ public class GameState {
     public bool IsInEncounter = false;
     public int Score = 0;
 
-    private readonly List<CardName> InitialCards = new() { 
+    private List<CardName> InitialCards = new List<CardName> {
         CardName.BASE_ATK, CardName.BASE_ATK, CardName.BASE_ATK, 
         CardName.BASE_DEF, CardName.BASE_DEF, CardName.BASE_DEF
     };
@@ -48,13 +58,21 @@ public class GameState {
 
     // ENCOUNTER
     public List<Monster> encounterMonsters;
-    public List<List<SkillName>> skillSequences;
 
     public Dictionary<string, string> partyMembers;
 
+    // MAP
+    // Medium Encounter Locations broadcasted by the leader/ web authoring tool in the beginning of the game
+    public Dictionary<string, LatLon> mediumEncounterLocations = new();
+    // Medium Encounter IDs found by the player, to be shared with other players
+    public HashSet<string> foundMediumEncounters = new();
+
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
+
         CheckNotInitialised();
+
+        UnityEngine.Debug.Log("Finished executing StartFirebase().");
 
         RoomCode = roomCode;
 
@@ -74,6 +92,7 @@ public class GameState {
             }
         }
 
+        isLeader = true;
         this.myID = myID;
         Initialized = true;
         InitialiseCards();
@@ -157,6 +176,11 @@ public class GameState {
         }
     }
 
+    // Medium Encounters
+    public void AddFoundMediumEncounter(string encounterId) {
+        foundMediumEncounters.Add(encounterId);
+    }
+
     public GameStateMessage ToMessage() {
         CheckInitialised();
         Dictionary<string, string> playerRoles = new();
@@ -192,6 +216,7 @@ public class GameState {
         // Initialise other fields
         RoomCode = roomCode;
         this.myID = myID;
+        isLeader = false;
         
         Initialized = true;
         InitialiseCards();
@@ -227,19 +252,40 @@ public class GameState {
 
 
     // ------------------------------- ENCOUNTER -------------------------------
-    public void StartEncounter(List<Monster> monsters, List<List<SkillName>> skillSequences, Dictionary<string, string> partyMembers) {
+    public void StartEncounter(List<Monster> monsters, Dictionary<string, string> partyMembers) {
         CheckInitialised();
         if (IsInEncounter) {
             return;
         }
         encounterMonsters = monsters;
-        this.skillSequences = skillSequences;
         this.partyMembers = partyMembers;
         IsInEncounter = true;
     }
 
     public void ExitEncounter() {
         IsInEncounter = false;
+    }
+
+
+    // --------------------------------  BATTLE --------------------------------
+    public void ApplyBattleLossPenalty() {
+        // Get all available card ids
+        List<int> cardIds = MyCards.Keys.ToList();
+        
+        // randomly select half of the ids in cardsIds
+        int halfCount = cardIds.Count / 2;
+        List<int> selectedIds = new();
+        Random random = new();
+        for (int i = 0; i < halfCount; i++)
+        {
+            int randomIndex = random.Next(cardIds.Count);
+            selectedIds.Add(cardIds[randomIndex]);
+            cardIds.RemoveAt(randomIndex);
+        }
+
+        foreach (int id in selectedIds) {
+            RemoveCard(id);
+        }
     }
 }
 
@@ -252,10 +298,6 @@ public class GameStateMessage : MessageInfo {
         this.playerRoles = playerRoles;
         this.playerNames = playerNames;
         this.messageType = MessageType.GAMESTATE;
-    }
-
-    public string processMessageInfo() {
-        throw new NotImplementedException();
     }
 
     public static GameStateMessage fromJson(string json) {

@@ -16,6 +16,7 @@ public class Player
     public int Defence  { get; private set; }
     public string Description { get; }
     public Sprite Icon { get; set; }
+    public bool IsLeader { get; set; }
 
     // Multipliers
     public float AttackMultiplier { get; set; }
@@ -55,10 +56,17 @@ public class Player
         int healthToDecrease = Math.Max(dmg - Defence, 0);
         Defence = Math.Max(0, Defence - dmg);
         CurrentHealth -= healthToDecrease;
+        if (CurrentHealth < 0) {
+            CurrentHealth = 0;
+        }
     }
 
     public void Heal(int amount) {
         CurrentHealth += amount;
+    }
+
+    public void Revive() {
+        CurrentHealth = MaxHealth / 2;
     }
 
     public bool IsDead() {
