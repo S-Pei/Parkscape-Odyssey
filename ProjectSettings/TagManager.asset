@@ -15,6 +15,7 @@ TagManager:
   - Database
   - EncounterLobby
   - MonsterManager
+  - Map
   layers:
   - Default
   - TransparentFX
