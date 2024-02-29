@@ -67,7 +67,7 @@ public class MapManager : MonoBehaviour
     private const float defaultZoomLevel = 19;
 
     // [SerializeField]
-    private float interactDistance = 3000; // in meters
+    private float interactDistance = 40; // in meters
 
     // [SerializeField]
     private float maxRadius = 2000; // in meters
