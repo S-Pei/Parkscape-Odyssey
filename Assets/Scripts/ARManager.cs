@@ -5,9 +5,6 @@ using UnityEngine;
 public class ARManager : MonoBehaviour
 {
     public static ARManager selfReference;
-
-    [SerializeField]
-    private GameObject arSession;
     
     [SerializeField]
     private GameObject xrInteractionManager;
@@ -30,14 +27,12 @@ public class ARManager : MonoBehaviour
 
     public void StartAR() {
         Debug.Log("Starting AR session.");
-        arSession.SetActive(true);
         xrInteractionManager.SetActive(true);
         xrOrigin.SetActive(true);
     }
 
     public void StopAR() {
         Debug.Log("Stopping AR session.");
-        arSession.SetActive(false);
         xrInteractionManager.SetActive(false);
         xrOrigin.SetActive(false);
     }

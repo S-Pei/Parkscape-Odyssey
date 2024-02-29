@@ -4005,7 +4005,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31dcaadd6b4c144cba73857db2455a3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  arSession: {fileID: 800065300}
   xrInteractionManager: {fileID: 1675376057}
   xrOrigin: {fileID: 778045201}
 --- !u!1 &894881984
@@ -4803,6 +4802,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mainCamera: {fileID: 2047468664}
+  arSession: {fileID: 800065300}
 --- !u!114 &1068634071
 MonoBehaviour:
   m_ObjectHideFlags: 0
