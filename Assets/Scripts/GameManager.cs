@@ -10,8 +10,6 @@ public class GameManager : MonoBehaviour
     private GameInterfaceManager gameInterfaceManager;
     private DatabaseManager databaseManager;
 
-    private MapManager mapManager;
-
     [SerializeField]
     private GameObject mainCamera;
 
@@ -23,8 +21,6 @@ public class GameManager : MonoBehaviour
 
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
-
-        mapManager = GameObject.FindWithTag("Map").GetComponent<MapManager>();
     }
 
     // Update is called once per frame
@@ -84,7 +80,7 @@ public class GameManager : MonoBehaviour
         ARManager.Instance.StartAR();
 
         // Disable map interactions
-        mapManager.DisableMapInteraction();
+        MapManager.Instance.DisableMapInteraction();
 
         inARMode = true;
     }
@@ -94,7 +90,7 @@ public class GameManager : MonoBehaviour
         mainCamera.SetActive(true);
 
         // Enable map interactions
-        mapManager.EnableMapInteraction();
+        MapManager.Instance.EnableMapInteraction();
 
         inARMode = false;
     }
