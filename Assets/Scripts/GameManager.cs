@@ -2,12 +2,25 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System;
+using TMPro;
 
 
 public class GameManager : MonoBehaviour
 {
     private GameInterfaceManager gameInterfaceManager;
     private DatabaseManager databaseManager;
+
+    [SerializeField]
+    private GameObject mainCamera;
+
+    [SerializeField]
+    private GameObject arSession;
+
+    [SerializeField]
+    private GameObject debugLogger;
+
+    private Boolean inARMode = false;
 
     // Start is called before the first frame update
     void Start() {
@@ -62,4 +75,41 @@ public class GameManager : MonoBehaviour
     public void OpenQuests() {
         gameInterfaceManager.OpenQuests();
     }
+
+    //------------------------------- AR CAMERA -------------------------------
+    public void ToggleARCamera() {
+        if (inARMode) {
+            CloseARSession();
+        } else {
+            OpenARSession();
+        }
+    }
+
+    private void OpenARSession() {
+        mainCamera.SetActive(false);
+        ARManager.Instance.StartAR();
+
+        // Disable map interactions
+        MapManager.Instance.DisableMapInteraction();
+
+        inARMode = true;
+    }
+
+    private void CloseARSession() {
+        ARManager.Instance.StopAR();
+        mainCamera.SetActive(true);
+
+        // Enable map interactions
+        MapManager.Instance.EnableMapInteraction();
+
+        inARMode = false;
+    }
+
+
+    // ------------------------------ BUILD DEBUG ------------------------------
+    public void LogTxt(string text) {
+        debugLogger.GetComponent<TextMeshProUGUI>().text += "\n";
+        debugLogger.GetComponent<TextMeshProUGUI>().text += text;
+    }
+
 }
