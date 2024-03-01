@@ -8787,8 +8787,8 @@ MonoBehaviour:
   _clippingDistanceLayer: 23
   _textureTileLayers:
     _list:
-    - {fileID: 1920711994}
     - {fileID: 1920711989}
+    - {fileID: 1920711994}
   _elevationTileLayers:
     _list: []
   _hideTileLayerComponents: 1
