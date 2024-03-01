@@ -27,13 +27,11 @@ public class ARManager : MonoBehaviour
 
     public void StartAR() {
         Debug.Log("Starting AR session.");
-        xrInteractionManager.SetActive(true);
         xrOrigin.SetActive(true);
     }
 
     public void StopAR() {
         Debug.Log("Stopping AR session.");
-        xrInteractionManager.SetActive(false);
         xrOrigin.SetActive(false);
     }
 

@@ -80,7 +80,6 @@ public class GameManager : MonoBehaviour
 
     private void OpenARSession() {
         mainCamera.SetActive(false);
-        arSession.SetActive(true);
         ARManager.Instance.StartAR();
 
         // Disable map interactions
@@ -91,7 +90,6 @@ public class GameManager : MonoBehaviour
 
     private void CloseARSession() {
         ARManager.Instance.StopAR();
-        arSession.SetActive(false);
         mainCamera.SetActive(true);
 
         // Enable map interactions
