@@ -12,6 +12,9 @@ public class ARManager : MonoBehaviour
     [SerializeField]
     private GameObject xrOrigin;
 
+    [SerializeField]
+    private List<GameObject> arSpawnLocations;
+
     public static ARManager Instance {
         get {
             if (selfReference == null) {
@@ -28,15 +31,34 @@ public class ARManager : MonoBehaviour
     public void StartAR() {
         Debug.Log("Starting AR session.");
         xrOrigin.SetActive(true);
+        SpawnAllLocations();
     }
 
     public void StopAR() {
         Debug.Log("Stopping AR session.");
+        DeSpawnAllLocations();
         xrOrigin.SetActive(false);
     }
 
     public Texture2D TakeScreenCapture() {
         Debug.Log("Taking a screen capture.");
         return ScreenCapture.CaptureScreenshotAsTexture();
+    }
+
+    public void SpawnAllLocations() {
+        foreach (GameObject arLocation in arSpawnLocations) {
+            GameObject spawnedARLocation = Instantiate(arLocation, xrOrigin.transform);
+            spawnedARLocation.transform.SetParent(xrOrigin.transform);
+        }
+    }
+
+    public void DeSpawnAllLocations() {
+        var i = 0;
+        foreach (Transform child in xrOrigin.transform) {
+            if (i != 0) {
+                Destroy(child.gameObject);
+            }
+            i++;
+        }
     }
 }
