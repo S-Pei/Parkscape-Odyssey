@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 
 
-public class KNNSearch : MonoBehaviour
+public class VecSearch : MonoBehaviour
 {
     [SerializeField]
     private TextMeshProUGUI resultText;
@@ -23,7 +23,7 @@ public class KNNSearch : MonoBehaviour
     private int vectorsCount = 100000;
     private int k = 5;
     private static readonly System.Random _rand = new System.Random();
-    private double[][] featureVectors;
+    private float[][] featureVectors;
     private string[] labels;
 
     // Start is called before the first frame updatesimi
@@ -52,9 +52,12 @@ public class KNNSearch : MonoBehaviour
         string testJsonString = LoadJsonFile("Assets/Resources/test_metadata_1.json");
         var queryFeatureVector = parseTestJson(testJsonString);
 
-        // Initialize KNN with training data
-        KNN.Instance.Initialize(featureVectors, labels);
-        resultText.text = KNN.Instance.Search(queryFeatureVector, 10);
+        // Initialize Approximate NN with training data
+        ApproxNN.Instance.Initialize(featureVectors, labels);
+        string result = ApproxNN.Instance.Search(queryFeatureVector, 5); 
+        Debug.Log("Search result: " + result);
+        resultText.text = result;
+        ApproxNN.Instance.Save("Assets/Resources/");
     }
 
     Texture2D LoadImage(string path)
@@ -109,7 +112,7 @@ public class KNNSearch : MonoBehaviour
     private void parseMetadataJson(string jsonString) {
         List<TrainingData> metadata = JsonConvert.DeserializeObject<List<TrainingData>>(jsonString);
         int length = metadata.Count;
-        double[][] featureVectors = new double[length][];
+        float[][] featureVectors = new float[length][];
         string[] labels = new string[length];
         for (int i = 0; i < length; i++)
         {
@@ -121,8 +124,8 @@ public class KNNSearch : MonoBehaviour
         this.labels = labels;
     }
 
-    private double[] parseTestJson(string jsonString) {
-        Dictionary<string, double[]> testData = JsonConvert.DeserializeObject<Dictionary<string, double[]>>(jsonString);
+    private float[] parseTestJson(string jsonString) {
+        Dictionary<string, float[]> testData = JsonConvert.DeserializeObject<Dictionary<string, float[]>>(jsonString);
         return testData["feature_vector"];
     }
 }
@@ -130,9 +133,9 @@ public class KNNSearch : MonoBehaviour
 [System.Serializable]
 public class TrainingData
 {
-    public double[] feature_vector;
+    public float[] feature_vector;
     public string label;
-    public TrainingData(double[] feature_vector, string label)
+    public TrainingData(float[] feature_vector, string label)
     {
         this.feature_vector = feature_vector;
         this.label = label;
