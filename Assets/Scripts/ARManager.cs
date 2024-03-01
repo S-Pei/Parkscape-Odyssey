@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Niantic.Lightship.AR.LocationAR;
 using UnityEngine;
 
 public class ARManager : MonoBehaviour
@@ -11,6 +13,9 @@ public class ARManager : MonoBehaviour
     
     [SerializeField]
     private GameObject xrOrigin;
+
+    [SerializeField]
+    private GameObject arCamera;
 
     [SerializeField]
     private List<GameObject> arSpawnLocations;
@@ -30,14 +35,14 @@ public class ARManager : MonoBehaviour
 
     public void StartAR() {
         Debug.Log("Starting AR session.");
-        xrOrigin.SetActive(true);
-        SpawnAllLocations();
+        arCamera.SetActive(true);
+        // SpawnAllLocations();
     }
 
     public void StopAR() {
         Debug.Log("Stopping AR session.");
-        DeSpawnAllLocations();
-        xrOrigin.SetActive(false);
+        // DeSpawnAllLocations();
+        arCamera.SetActive(false);
     }
 
     public Texture2D TakeScreenCapture() {
