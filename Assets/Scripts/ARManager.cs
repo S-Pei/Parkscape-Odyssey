@@ -138,6 +138,23 @@ public class ARManager : MonoBehaviour
         return ScreenCapture.CaptureScreenshotAsTexture();
     }
 
+    // Onclick button for taking images
+    public void TakeQuestImage() {
+        Texture2D screenCapture = TakeScreenCapture();
+        gameManager.LogTxt("Screen capture taken.");
+        // Attempt Basic Quests
+        // Attempt Location Quests if basic quests not fulfilled
+        foreach (LocationQuest locationQuest in GameState.Instance.locationQuests) {
+            if (locationQuest.IsOnGoing()) {
+                if (locationQuest.AttemptQuest(screenCapture)) {
+                    QuestManager.Instance.GetNextLocationQuest();
+                    gameManager.LogTxt("Location quest completed: " + locationQuest.Label);
+                    return;
+                }
+            }
+        }
+    }
+
     // NOT USED FOR NOW
     // public void SpawnAllLocations() {
     //     foreach (GameObject arLocation in arSpawnLocations) {
