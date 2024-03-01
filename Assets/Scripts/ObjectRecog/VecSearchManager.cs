@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 
 
-public class VecSearch : MonoBehaviour
+public class VecSearchManager : MonoBehaviour
 {
     [SerializeField]
     private TextMeshProUGUI resultText;
@@ -26,38 +26,61 @@ public class VecSearch : MonoBehaviour
     private float[][] featureVectors;
     private string[] labels;
 
+    private static VecSearchManager instance;
+
+    public static VecSearchManager Instance { 
+        get {
+            if (instance == null) {
+                // To make sure that script is persistent across scenes
+                GameObject go = new GameObject("VecSearchManager");
+                instance = go.AddComponent<VecSearchManager>();
+                DontDestroyOnLoad(go);
+            }
+            return instance;
+        }
+    }
+
     // Start is called before the first frame updatesimi
     void Start()
     {
-        Texture2D imageFromFile = LoadImage("Assets/Resources/peter_pan_test_img.jpeg");
-        imageFromFile = ResizeImage(imageFromFile, 224, 224);
+        // Initialize mobilenet encoder
         m_RuntimeModel = ModelLoader.Load(modelAsset);
-        var input_names = m_RuntimeModel.inputs;
-        var output_names = m_RuntimeModel.outputs;
-        Debug.Log("Input names: " + string.Join(", ", input_names));
-        Debug.Log("Output names: " + string.Join(", ", output_names));
-        Tensor input = new Tensor(imageFromFile, channels: 3);
-        Debug.Log("Input shape: " + input.shape);
+        Initialize();
+        Texture2D imageFromFile = LoadImage("Assets/Resources/peter_pan_test_img.jpeg");
+        string[] outputs = ClassifyImage(imageFromFile);
+        Debug.Log(string.Join(", ", outputs));
+    }
+
+    // Initialize Approximate NN with training data
+    public void Initialize() {
+        // TODO: CHANGE AFTER PERSISTENT STORAGE
+        // Initialize Approximate NN with training data
+        string jsonString = LoadJsonFile("Assets/Resources/metadata.json");
+        parseMetadataJson(jsonString);
+        ApproxNN.Instance.Initialize(featureVectors, labels);
+        ApproxNN.Instance.Save("Assets/Resources/");
+    }
+
+    // Classify input image
+    public string[] ClassifyImage(Texture2D image)
+    {
+        image = ResizeImage(image, 224, 224);
+        var input = new Tensor(image, channels: 3);
         var worker = WorkerFactory.CreateWorker(WorkerFactory.Type.ComputePrecompiled, m_RuntimeModel);
         worker.Execute(input);
         Tensor output = worker.PeekOutput();
-        Debug.Log("Output shape: " + output.shape);
-        Debug.Log("Output: " + output);
-        string outputStr = string.Join(", ", output.ToReadOnlyArray());
-        resultText.text = outputStr;
-        worker.Dispose();
-        
-        string jsonString = LoadJsonFile("Assets/Resources/metadata.json");
-        parseMetadataJson(jsonString);
-        string testJsonString = LoadJsonFile("Assets/Resources/test_metadata_1.json");
-        var queryFeatureVector = parseTestJson(testJsonString);
 
-        // Initialize Approximate NN with training data
-        ApproxNN.Instance.Initialize(featureVectors, labels);
-        string result = ApproxNN.Instance.Search(queryFeatureVector, 5); 
-        Debug.Log("Search result: " + result);
-        resultText.text = result;
-        ApproxNN.Instance.Save("Assets/Resources/");
+        // transform tensor into float32 vector
+        Debug.Log(output.dataType);
+        output.PrintDataPart(size:10);
+        float[] queryFeatureVector = output.data.Download(output.shape);
+        Debug.Log("Feature vector: " + string.Join(", ", queryFeatureVector));
+
+        // perform similarity search
+        string[] results = ApproxNN.Instance.Search(queryFeatureVector, 5); 
+        Debug.Log("Search result: " + string.Join(", ", results));
+        worker.Dispose();
+        return results;
     }
 
     Texture2D LoadImage(string path)

@@ -15,12 +15,11 @@ public class Quest
     public int Progress { get; private set; }
     public int Target { get; private set; }
 
-    public Quest(QuestType questType, string label, int target, Texture2D referenceImage, double[] featureVector)
+    public Quest(QuestType questType, string label, int target, Texture2D referenceImage)
     {
         QuestType = questType;
         Label = label;
         ReferenceImage = referenceImage;
-        FeatureVector = featureVector;
         IsCompleted = false;
         Progress = 0;
         Target = target;

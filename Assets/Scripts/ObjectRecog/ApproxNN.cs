@@ -35,6 +35,11 @@ public class ApproxNN : MonoBehaviour
             throw new ArgumentException("Number of training data points must match number of labels.");
         }
 
+        var normalizedInputs = input.Select(NormalizeVector).ToArray();
+
+        this.vectors = normalizedInputs;
+        this.labels = labels;
+
         // Construct initial world
         var parameters = new SmallWorld<float[], float>.Parameters()
             {
@@ -42,20 +47,23 @@ public class ApproxNN : MonoBehaviour
                 LevelLambda = 1 / Math.Log(15),
             };
         this.world = new SmallWorld<float[], float>(CosineDistance.NonOptimized, DefaultRandomGenerator.Instance, parameters);
-        this.world.AddItems(input);
+        this.world.AddItems(normalizedInputs);
         Debug.Log("World constructed");
-
-        this.vectors = input;
-        this.labels = labels;
     }
 
     /*** Performs KNN search and outputs label ***/
-    public string Search(float[] query, int k = 3)
+    public string[] Search(float[] query, int k = 3)
     {
-        var results = this.world.KNNSearch(query, k);
+        float[] normalizedQuery = NormalizeVector(query);
+        var results = this.world.KNNSearch(normalizedQuery, k);
+        // var threshold = 1.0f;
+        // var filteredResults = results.Where(r => r.Distance < threshold).ToArray();
         var indices = results.Select(r => r.Id).ToArray();
         var labels = indices.Select(i => this.labels[i]).ToArray();
-        return string.Join(", ", labels);
+
+        Debug.Log(string.Join(", ", results.Select(r => r.Distance)));
+        return labels;
+        // return string.Join(", ", labels);
         // var bestResult = results.OrderBy(r => r.Distance).First();
         // Debug.Log("Search result: " + bestResult.ToString());
         // return bestResult.ToString();
@@ -86,11 +94,16 @@ public class ApproxNN : MonoBehaviour
         MemoryStream labelsStream = new MemoryStream(File.ReadAllBytes($"{path}.{LabelsPathSuffix}"));
         labels = (string[])formatter.Deserialize(labelsStream);
 
-        using (var f = File.OpenRead($"{path}.{GraphpathSuffix}"))
+        using (var f = File.OpenRead($"{path}/{GraphpathSuffix}"))
         {
             world = SmallWorld<float[], float>.DeserializeGraph(vectors, CosineDistance.NonOptimized, DefaultRandomGenerator.Instance, f);
         }
 
         Debug.Log("World loaded");
+    }
+
+    private float[] NormalizeVector(float[] vector) {
+        double l2Norm = Math.Sqrt(vector.Sum(x => x * x));
+        return vector.Select(x => (float)(x / l2Norm)).ToArray();
     }
 }
