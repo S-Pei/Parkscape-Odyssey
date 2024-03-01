@@ -1612,7 +1612,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 442138510}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1068634070}
+        m_TargetAssemblyTypeName: GameManager, NewAssembly
+        m_MethodName: OpenQuests
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &442138510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3615,6 +3627,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inventoryObject: {fileID: 1691955519}
   playerViewPrefab: {fileID: 167937073287580874, guid: f0c34cec1873ba741b43650dff9cf8ce,
+    type: 3}
+  questsOverlayPrefab: {fileID: 1972587500945695886, guid: 98de0e55f32efc04782e539b2463ae09,
     type: 3}
   playerIcon: {fileID: 1441628310}
   playerIcons:

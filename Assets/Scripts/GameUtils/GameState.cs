@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
+using log4net.Core;
 
 public class GameState {
     public static readonly bool DEBUGMODE = 
@@ -67,6 +68,10 @@ public class GameState {
     // Medium Encounter IDs found by the player, to be shared with other players
     public HashSet<string> foundMediumEncounters = new();
 
+    // Quests
+    public List<BasicQuest> basicQuests = new();
+    public List<LocationQuest> locationQuests = new();
+
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
 
@@ -96,6 +101,7 @@ public class GameState {
         this.myID = myID;
         Initialized = true;
         InitialiseCards();
+        InitialiseQuests();
     }
 
     // Method to specify the initial state of the game.
@@ -107,6 +113,7 @@ public class GameState {
 
         Initialized = true;
         InitialiseCards();
+        InitialiseQuests();
     }
 
     // This method returns a reference to a player with the given name.
@@ -220,6 +227,7 @@ public class GameState {
         
         Initialized = true;
         InitialiseCards();
+        InitialiseQuests();
     }
 
     public void UpdateFromMessage(GameStateMessage message) {
@@ -286,6 +294,12 @@ public class GameState {
         foreach (int id in selectedIds) {
             RemoveCard(id);
         }
+    }
+
+    // --------------------------------  QUESTS --------------------------------
+    public void InitialiseQuests() {
+        basicQuests = QuestFactory.CreateInitialBasicQuests();
+        locationQuests = QuestFactory.CreateInitialLocationQuests();
     }
 }
 

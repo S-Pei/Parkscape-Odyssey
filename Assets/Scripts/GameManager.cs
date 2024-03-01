@@ -11,10 +11,9 @@ public class GameManager : MonoBehaviour
 
     // Start is called before the first frame update
     void Start() {
-        databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
-
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
+        databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
     }
 
     // Update is called once per frame
@@ -58,5 +57,9 @@ public class GameManager : MonoBehaviour
 
     public void OpenPlayerView() {
         gameInterfaceManager.OpenPlayerView();
+    }
+
+    public void OpenQuests() {
+        gameInterfaceManager.OpenQuests();
     }
 }
