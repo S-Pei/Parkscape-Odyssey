@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System;
+using TMPro;
 
 
 public class GameManager : MonoBehaviour
@@ -15,6 +16,9 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private GameObject arSession;
+
+    [SerializeField]
+    private GameObject debugLogger;
 
     private Boolean inARMode = false;
 
@@ -97,4 +101,12 @@ public class GameManager : MonoBehaviour
 
         inARMode = false;
     }
+
+
+    // ------------------------------ BUILD DEBUG ------------------------------
+    public void LogTxt(string text) {
+        debugLogger.GetComponent<TextMeshProUGUI>().text += "\n";
+        debugLogger.GetComponent<TextMeshProUGUI>().text += text;
+    }
+
 }
