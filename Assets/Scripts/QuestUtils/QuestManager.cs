@@ -58,4 +58,33 @@ public class QuestManager : MonoBehaviour
             Debug.Log("No more location quests");
         }
     }
+
+    // ----------------------------- REWARDS ------------------------------
+    // Checks if any basic quests have been completed.
+    public bool CheckBasicQuests(string label) {
+        foreach (BasicQuest quest in GameState.Instance.basicQuests) {
+            if (quest.IsOnGoing() && quest.Label == label) {
+                quest.IncrementProgress();
+                if (quest.IsCompleted()) {
+                    return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // Checks if any location quests have been completed.
+    public bool CheckLocationQuests(Texture2D image) {
+        foreach (LocationQuest quest in GameState.Instance.locationQuests) {
+            // Only one ongoing location quest at a time
+            if (quest.IsOnGoing() && quest.AttemptQuest(image)) {
+                if (quest.IsCompleted()) {
+                    return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
 }
