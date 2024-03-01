@@ -1,6 +1,9 @@
 using UnityEngine;
+using Firebase.Extensions;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
 using System;
@@ -184,7 +187,7 @@ IEnumerator GPSLoc() {
 
     // ENCOUNTER SPAWNING
     // Leader gets medium encounter locations from web authoring tool
-    public void GetMediumEncounters() {
+    public async Task GetMediumEncounters() {
         if (GameState.Instance.MyPlayer.IsLeader) {
             // TODO: get list from web authoring tool
             // Hardcoded for now
@@ -192,21 +195,25 @@ IEnumerator GPSLoc() {
             encounterLocations.Add(new LatLon(51.496451, -0.176775));
             encounterLocations.Add(new LatLon(51.506061, -0.174226));
 
-            Debug.LogWarning("Getting locationQuests from the database");
+            Debug.LogWarning("2. Getting locationQuests from the database");
 
             // Synchronously wait for the list of locationQuests to be fetched from the database
-            List<LocationQuest> locationQuests = DatabaseManager.Instance.GetLocationQuests().Result;
+            List<LocationQuest> locationQuests = await DatabaseManager.Instance.GetLocationQuestsAsync();
 
-            Debug.LogWarning("LocationQuests: " + locationQuests.Count);
+            Debug.LogWarning("8. LocationQuests: " + locationQuests.Count);
+
+            foreach (LocationQuest locationQuest in locationQuests) {
+                Debug.LogWarning("9. LocationQuest: " + locationQuest.Label + ", " + locationQuest.Location + ", " + $"[{string.Join(",", locationQuest.FeatureVector)}]");
+                encounterLocations.Add(locationQuest.Location);
+            }
 
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.39355, -0.1924046));
 
-            Debug.Log("Sending encounter info to players in lobby");
             // Send medium encounters to players
             SetMediumEncounterID(encounterLocations);
-            Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
-            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
+            
+            return;
         }
     }
 

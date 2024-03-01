@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 
 using Microsoft.Geospatial;
 
@@ -28,7 +29,7 @@ public class DatabaseManager : MonoBehaviour
         GameObject[] objs = GameObject.FindGameObjectsWithTag("Database");
 
         if (objs.Length > 1) {
-            Debug.Log("Found more than one database object - destroying this one.");
+            Debug.Log("Found more than one database object - destroying the new one.");
             Destroy(this.gameObject);
         } else {
             Instance = this;
@@ -81,89 +82,94 @@ public class DatabaseManager : MonoBehaviour
     }
 
     // Get all the location quests from the database and return them asynchronously
-    public async Task<List<LocationQuest>> GetLocationQuests() {
-        Debug.Log("Getting locations from the database.");
-        Query locationQuestsQuery = Database.Collection("locationQuests");
+    public async Task<List<LocationQuest>> GetLocationQuestsAsync() {
+        try {
+            Query locationQuestsQuery = Database.Collection("locationQuests");
 
-        // Wait up to 10 seconds to get the locationQuests from the database
-        await Task.WhenAny(
-            // First get the locationQuests collection from the database
-            locationQuestsQuery.GetSnapshotAsync().ContinueWithOnMainThread(async task => {
-                QuerySnapshot snapshot = task.Result;
+            // First get the locationQuests collection from the database asynchronously
+            // 'await' will return control to the caller while the query is in progress
+            QuerySnapshot snapshot = await locationQuestsQuery.GetSnapshotAsync();
+            Debug.LogWarning("3. Got location quests from the database.");
+            
+            
+            // Keep track of the asynchronous tasks we are about to start
+            // so we can wait for them all to complete
+            var tasks = new List<Task<LocationQuest>>();
 
-                // Keep track of the asynchronous tasks we are about to start
-                // so we can wait for them all to complete
-                var tasks = new List<Task<LocationQuest>>();
+            // Start a Task for each location quest fetch
+            foreach (DocumentSnapshot locationQuestDocument in snapshot.Documents) {
+                Debug.LogWarning("4. Getting location quest from " + locationQuestDocument.Id);
+                tasks.Add(GetLocationQuest(locationQuestDocument));
+            }
 
-                // Convert each document in the query to a LocationQuest object asynchronously
-                foreach (DocumentSnapshot locationQuestDocument in snapshot.Documents) {
-                    tasks.Add(GetLocationQuest(locationQuestDocument));
+            // Create a list to store the results
+            List<LocationQuest> locationQuests = new List<LocationQuest>();
+
+            // Pause this method until all the tasks complete, then add the results to the list
+            foreach (LocationQuest locationQuest in await Task.WhenAll(tasks)) {
+                if (locationQuest != null) {
+                    Debug.LogWarning("7. Added location quest: " + locationQuest.Label);
+                    locationQuests.Add(locationQuest);
+                } else {
+                    Debug.LogWarning("7. Location quest was null");
                 }
+            }
 
-                // Create a list to store the results
-                List<LocationQuest> locationQuests = new List<LocationQuest>();
-
-                // Wait for all the tasks to complete, and add the results to the list
-                foreach (LocationQuest locationQuest in await Task.WhenAll(tasks)) {
-                    if (locationQuest != null) {
-                        Debug.LogWarning("Added location quest: " + locationQuest.Label);
-                        locationQuests.Add(locationQuest);
-                    }
-                }
-
-                // Return the list of LocationQuest objects
-                return locationQuests;
-            }),
-            Task.Delay(10000)
-        );
-
-        return new List<LocationQuest>();
+            // Return the list of LocationQuest objects
+            return locationQuests;
+        } catch (AggregateException ex) {
+            foreach (var innerException in ex.InnerExceptions) {
+                Debug.LogException(innerException);
+            }
+            return new List<LocationQuest>();
+        }
     }
 
-    public async Task<LocationQuest> GetLocationQuest(DocumentSnapshot locationQuestDocument) {
-        // Fetch the reference image from Firebase Storage
-        StorageReference storageReference = FirebaseStorage
-            .DefaultInstance
-            .GetReferenceFromUrl(
-                locationQuestDocument.GetValue<string>("imageUrl")
-        );
+    private async Task<LocationQuest> GetLocationQuest(DocumentSnapshot locationQuestDocument) {
+        try {
+            // Fetch the reference image from Firebase Storage
+            Debug.LogWarning("5. Getting image from " + locationQuestDocument.GetValue<string>("imageUrl"));
+            StorageReference storageReference = FirebaseStorage
+                .DefaultInstance
+                .GetReferenceFromUrl(
+                    locationQuestDocument.GetValue<string>("imageUrl")
+            );
 
-        // Maximum image size is 1MB
-        const long maxAllowedSize = 1 * 1024 * 1024;
-        
-        // Wait for the image download and then convert it to a Texture2D
-        await storageReference.GetBytesAsync(maxAllowedSize).ContinueWithOnMainThread(task => {
-            if (task.IsFaulted || task.IsCanceled) {
-                Debug.LogException(task.Exception);
-                return null;
-            } else {
-                // Convert the downloaded byte array to a Texture2D
-                byte[] fileContents = task.Result;
-                Texture2D texture = new Texture2D(2, 2);
-                texture.LoadImage(fileContents);
+            // Maximum image size is 1MB
+            const long maxAllowedSize = 1 * 1024 * 1024;
+            
+            // Wait for the image download and then convert it to a Texture2D
+            byte[] fileContents = await storageReference.GetBytesAsync(maxAllowedSize);
+            Debug.LogWarning("6. Got image from " + locationQuestDocument.Id);
 
-                // Extract the other fields from the document to construct a LocationQuest object
-                Dictionary<string, object> locationQuestData = locationQuestDocument.ToDictionary();
+            // Convert the downloaded byte array to a Texture2D
+            Texture2D texture = new Texture2D(2, 2);
+            texture.LoadImage(fileContents);
 
-                string label = locationQuestDocument.Id;
-                
-                string featureVectorString = (string) locationQuestData["featureVector"];
-                double[] featureVector = featureVectorString
-                    .TrimStart('[')
-                    .TrimEnd(']')
-                    .Split(',')
-                    .Select(double.Parse)
-                    .ToArray();
-                
-                GeoPoint geoPoint = (GeoPoint) locationQuestData["location"];
-                LatLon location = new LatLon(geoPoint.Latitude, geoPoint.Longitude);
-                
-                // Create the LocationQuest object and add it to the list (passed by reference)
-                return new LocationQuest(label, texture, featureVector, location);
+            // Extract the other fields from the document to construct a LocationQuest object
+            Dictionary<string, object> locationQuestData = locationQuestDocument.ToDictionary();
+
+            string label = locationQuestDocument.Id;
+            
+            string featureVectorString = (string) locationQuestData["featureVector"];
+            double[] featureVector = featureVectorString
+                .TrimStart('[')
+                .TrimEnd(']')
+                .Split(',')
+                .Select(double.Parse)
+                .ToArray();
+            
+            GeoPoint geoPoint = (GeoPoint) locationQuestData["location"];
+            LatLon location = new LatLon(geoPoint.Latitude, geoPoint.Longitude);
+            
+            // Create the LocationQuest object and add it to the list (passed by reference)
+            return new LocationQuest(label, texture, featureVector, location);
+        } catch (AggregateException ex) {
+            foreach (var innerException in ex.InnerExceptions) {
+                Debug.LogException(innerException);
             }
-        });
-
-        return null;
+            return null;
+        }
     }
 
 }

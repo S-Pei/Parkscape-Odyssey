@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
@@ -99,15 +101,57 @@ public class LobbyManager : MonoBehaviour {
 
         GameState.Instance.MyPlayer.IsLeader = true;
 
-        Debug.Log("Getting medium encounters");
-        // Get and broadcast medium encounter positions
-        gpsManager.GetMediumEncounters();
-        // Debugging
-        foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations)
-        {
-            Debug.Log("Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
-        }
+        StartCoroutine(GetMediumEncountersAndStartGame());
 
+        // Debug.LogWarning("1. Getting medium encounters");
+        // // Get and broadcast medium encounter positions
+        // gpsManager.GetMediumEncounters().ContinueWith(task => {
+        //     Debug.LogWarning("11. Got medium encounters");
+        //     // Debugging
+        //     foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations) {
+        //         Debug.LogWarning("12. Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
+        //     }
+            
+        //     if (players.Count > 1) {
+        //         // send map info
+        //         // members
+        //         // receive map info
+        //         // receive start game
+        //         // start game
+        //         LeaderSendStartGameMessage();
+        //     }
+        //     StartGame();
+        // });
+        
+        // Show the loading screen while waiting for the medium encounters
+    }
+
+    private IEnumerator GetMediumEncountersAndStartGame() {
+        // Load the loading scene additively so that this GameObject doesn't
+        // get destroyed automatically
+        SceneManager.LoadScene("Initialisation", LoadSceneMode.Additive);
+
+        Debug.LogWarning("1. Getting medium encounters");
+        // Get and broadcast medium encounter positions asynchronously
+        Task initialiseMediumEncounters = gpsManager.GetMediumEncounters();
+
+        // Wait until medium encounters are initialised
+        while (!initialiseMediumEncounters.IsCompleted) {
+            yield return null;
+        }
+        // yield return new WaitUntil(() => initialiseMediumEncounters.IsCompleted);
+
+        Debug.LogWarning("10. Sending encounter info to players in lobby");
+        Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
+        network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
+
+        
+        Debug.LogWarning("11. Got medium encounters");
+        // Debugging
+        foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations) {
+            Debug.LogWarning("12. Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
+        }
+        
         if (players.Count > 1) {
             // send map info
             // members
@@ -116,8 +160,18 @@ public class LobbyManager : MonoBehaviour {
             // start game
             LeaderSendStartGameMessage();
         }
-        StartGame();
 
+        // Get count of loaded Scenes and last index
+        // (corresponding to the loading scene)
+        var lastSceneIndex = SceneManager.sceneCount - 1;
+
+        // Get last Scene by index in all loaded Scenes
+        var lastLoadedScene = SceneManager.GetSceneAt(lastSceneIndex);
+
+        // Unload Scene
+        SceneManager.UnloadSceneAsync(lastLoadedScene);
+        
+        StartGame();
     }
 
     private void LeaderSendStartGameMessage() {
@@ -171,6 +225,7 @@ public class LobbyManager : MonoBehaviour {
 
     // Common method to start the game for both leader and non-leader.
     private void StartGame() {
+        Debug.LogWarning("13. Starting game");
         AcceptMessages = false;
         GameState.Instance.isLeader = isLeader;
         // Load the game scene.
