@@ -109,4 +109,7 @@ public class GameManager : MonoBehaviour
         debugLogger.GetComponent<TextMeshProUGUI>().text += text;
     }
 
+    public void RelogTxt(string text) {
+        debugLogger.GetComponent<TextMeshProUGUI>().text = text;
+    }
 }

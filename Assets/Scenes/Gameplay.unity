@@ -904,6 +904,7 @@ GameObject:
   - component: {fileID: 186993366}
   - component: {fileID: 186993365}
   - component: {fileID: 186993367}
+  - component: {fileID: 186993368}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1200,6 +1201,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _targetFrameRate: 20
+--- !u!114 &186993368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 186993358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d16415185305a499182ddf0ba0e65ac4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _objectDetectionManager: {fileID: 186993367}
+  gameManagerObj: {fileID: 1068634069}
 --- !u!23 &225970402
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -8089,7 +8104,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ef50f6f9318ded40b230c1eefb7f968, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _percentUtilization: 0.5
+  _percentUtilization: 0.75
   _maxCacheSizeInBytes: 2147483648
 --- !u!65 &1920711984
 BoxCollider:
@@ -8251,8 +8266,8 @@ MonoBehaviour:
   _clippingDistanceLayer: 23
   _textureTileLayers:
     _list:
-    - {fileID: 1920711989}
     - {fileID: 1920711994}
+    - {fileID: 1920711989}
   _elevationTileLayers:
     _list: []
   _hideTileLayerComponents: 1
@@ -8324,7 +8339,7 @@ MonoBehaviour:
   mapBlocker: {fileID: 1574329129}
   fogOfWarPrefab: {fileID: 8517273884755218086, guid: 4e4b2db8f1d0b4d47aeb906ff19c4151,
     type: 3}
-  fogOfWarSize: 100
+  fogOfWarSize: -1
 --- !u!114 &1920711994
 MonoBehaviour:
   m_ObjectHideFlags: 2

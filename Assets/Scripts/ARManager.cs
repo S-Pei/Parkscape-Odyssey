@@ -68,7 +68,7 @@ public class ARManager : MonoBehaviour
         if (currCheckLoctionFreq == 0) {
             LatLon latlon = GPSManager.Instance.GetLocation();
             // gameManager.LogTxt("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
-            Debug.Log("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
+            // Debug.Log("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
 
             double minDistance = 100000;
             ARLocation closestLocation = null;
@@ -79,7 +79,7 @@ public class ARManager : MonoBehaviour
                     closestLocation = location;
                 }
             }
-            gameManager.LogTxt("Closest location: " + closestLocation.name);
+            // gameManager.LogTxt("Closest location: " + closestLocation.name);
             if (activeLocation == null || activeLocation.name != closestLocation.name) {
                 ARLocationManager locationManager = xrOrigin.GetComponent<ARLocationManager>();
 
@@ -88,7 +88,7 @@ public class ARManager : MonoBehaviour
                 locationManager.StartTracking();
                 activeLocation = closestLocation;
 
-                gameManager.LogTxt($"New active location: {activeLocation.name}");
+                // gameManager.LogTxt($"New active location: {activeLocation.name}");
             }
 
             currCheckLoctionFreq = checkLocationFreq;
