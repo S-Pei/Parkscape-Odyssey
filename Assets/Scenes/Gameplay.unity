@@ -1473,7 +1473,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 800065304}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: ARManager, NewAssembly
         m_MethodName: TakeScreenCapture
         m_Mode: 1
@@ -7580,8 +7580,8 @@ MonoBehaviour:
   _clippingDistanceLayer: 23
   _textureTileLayers:
     _list:
-    - {fileID: 1920711994}
     - {fileID: 1920711989}
+    - {fileID: 1920711994}
   _elevationTileLayers:
     _list: []
   _hideTileLayerComponents: 1

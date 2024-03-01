@@ -15,9 +15,9 @@
       "hash": "3405952a03c1555affc2bf11071ad634592e84ce"
     },
     "com.nianticlabs.lightship": {
-      "version": "https://github.com/niantic-lightship/ardk-upm.git",
+      "version": "file:/Users/huanswen/Downloads/ardk-upm-3.3.0.tgz",
       "depth": 0,
-      "source": "git",
+      "source": "local-tarball",
       "dependencies": {
         "com.unity.editorcoroutines": "1.0.0",
         "com.unity.xr.arfoundation": "5.1.0",
@@ -27,8 +27,7 @@
         "com.unity.xr.core-utils": "2.1.0",
         "com.unity.xr.management": "4.0.1",
         "com.unity.nuget.newtonsoft-json": "3.2.1"
-      },
-      "hash": "7cc172749e6577d934f1af4719c2de9fb78a205f"
+      }
     },
     "com.unity.2d.animation": {
       "version": "9.0.4",
