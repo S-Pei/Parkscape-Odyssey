@@ -17,6 +17,12 @@ public class LocationQuest : Quest {
         };
     }
 
+    public void AttemptQuest(Texture2D image) {
+        if (ImageIsCorrect(image)) {
+            IncrementProgress();
+        }
+    }
+
     // Check if the image taken is the correct object
     public bool ImageIsCorrect(Texture2D image) {
         string[] searchResults = VecSearchManager.Instance.ClassifyImage(image);

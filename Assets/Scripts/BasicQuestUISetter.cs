@@ -27,7 +27,7 @@ public class BasicQuestUISetter : MonoBehaviour {
         progressBar.GetComponent<Slider>().value = quest.Progress;
         progressValueText.GetComponent<TMP_Text>().text = quest.Progress.ToString();
         progressTargetText.GetComponent<TMP_Text>().text = quest.Target.ToString();
-        completedOverlay.SetActive(quest.IsCompleted);
+        completedOverlay.SetActive(quest.IsCompleted());
     }
 
     private Sprite CreateRefSprite(Texture2D refImage) {
