@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using UnityEngine;
 
+/*** SELF IMPLEMENTED KNN (NOT USED AT THE MOMENT) ***/
 public class KNN : MonoBehaviour
 {
 
