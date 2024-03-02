@@ -101,51 +101,39 @@ public class LobbyManager : MonoBehaviour {
 
         GameState.Instance.MyPlayer.IsLeader = true;
 
-        StartCoroutine(GetMediumEncountersAndStartGame());
-
-        // Debug.LogWarning("1. Getting medium encounters");
-        // // Get and broadcast medium encounter positions
-        // gpsManager.GetMediumEncounters().ContinueWith(task => {
-        //     Debug.LogWarning("11. Got medium encounters");
-        //     // Debugging
-        //     foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations) {
-        //         Debug.LogWarning("12. Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
-        //     }
-            
-        //     if (players.Count > 1) {
-        //         // send map info
-        //         // members
-        //         // receive map info
-        //         // receive start game
-        //         // start game
-        //         LeaderSendStartGameMessage();
-        //     }
-        //     StartGame();
-        // });
-        
-        // Show the loading screen while waiting for the medium encounters
+        StartCoroutine(InitialiseMediumEncountersAndStartGame());
     }
 
-    private IEnumerator GetMediumEncountersAndStartGame() {
-        // Load the loading scene additively so that this GameObject doesn't
-        // get destroyed automatically
+    // Try to get new medium encounters from the database and start the game.
+    //
+    // This is a coroutine instead of an async function because the latter
+    // makes no guarantees of continuing on the main thread (so loading scenes
+    // may not work properly). Internally, it awaits the completion of async
+    // functions before starting the game on the main thread.
+    private IEnumerator InitialiseMediumEncountersAndStartGame() {
+        // Display the loading scene while waiting for async DB operations
+        // to complete. The scene is loaded additively so that this GameObject
+        // doesn't get destroyed
         SceneManager.LoadScene("Initialisation", LoadSceneMode.Additive);
 
+        // Get medium encounter positions asynchronously
         Debug.LogWarning("1. Getting medium encounters");
-        // Get and broadcast medium encounter positions asynchronously
         Task initialiseMediumEncounters = gpsManager.GetMediumEncounters();
-
-        // Wait until medium encounters are initialised
+        
+        // Wait for the task to complete
+        // Internally, GetMediumEncounters has a timeout for its Firebase
+        // operations, so the task will always complete
         while (!initialiseMediumEncounters.IsCompleted) {
             yield return null;
         }
-        // yield return new WaitUntil(() => initialiseMediumEncounters.IsCompleted);
+        // Unload the loading scene
+        SceneManager.UnloadSceneAsync("Initialisation");
 
         Debug.LogWarning("10. Sending encounter info to players in lobby");
+
         Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
         network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
 
-        
         Debug.LogWarning("11. Got medium encounters");
         // Debugging
         foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations) {

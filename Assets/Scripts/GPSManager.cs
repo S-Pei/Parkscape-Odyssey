@@ -198,7 +198,7 @@ IEnumerator GPSLoc() {
             Debug.LogWarning("2. Getting locationQuests from the database");
 
             // Synchronously wait for the list of locationQuests to be fetched from the database
-            List<LocationQuest> locationQuests = await DatabaseManager.Instance.GetLocationQuestsAsync();
+            List<LocationQuest> locationQuests = await DatabaseUtils.GetLocationQuestsWithTimeout(10);
 
             Debug.LogWarning("8. LocationQuests: " + locationQuests.Count);
 
