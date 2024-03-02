@@ -30,6 +30,11 @@ public class ARManager : MonoBehaviour
     [SerializeField]
     private List<(LatLon latlon, ARLocation location)> arSpawnLocations = new();
 
+    [SerializeField]
+    private GameObject scannerLinePrefab;
+    [SerializeField]
+    private GameObject canvas;
+
     private List<LatLon> latlons = new() {
         new LatLon(51.493553, -0.192372),
         new LatLon(51.493492, -0.192765),
@@ -152,6 +157,8 @@ public class ARManager : MonoBehaviour
 
     // Onclick button for taking images
     public void TakeQuestImage() {
+        // Trigger Scanning animation
+        TriggerScannerEffect();
         Texture2D screenCapture = TakeScreenCapture();
         gameManager.LogTxt("Screen capture taken.");
         // Attempt Basic Quests
@@ -175,6 +182,12 @@ public class ARManager : MonoBehaviour
             }
         }
         // FUTURE: Save images.
+    }
+
+    private void TriggerScannerEffect() {
+        Debug.Log("Triggering scanner effect.");
+        Instantiate(scannerLinePrefab, canvas.transform);
+        Debug.Log("Instantiated scanner line.");
     }
 
     // NOT USED FOR NOW
