@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Geospatial;
 using Niantic.Lightship.AR.LocationAR;
-using PlasticGui.WorkspaceWindow.QueryViews.Labels;
 using UnityEngine;
 
 public class ARManager : MonoBehaviour
@@ -43,6 +41,8 @@ public class ARManager : MonoBehaviour
 
     private ARLocation activeLocation;
 
+    private ObjectDetectionManager objectDetectionManager;
+
     private int checkLocationFreq = 100;
     private int currCheckLoctionFreq = 0;
 
@@ -62,6 +62,7 @@ public class ARManager : MonoBehaviour
     public void Start() {
         arLocationManager = xrOrigin.GetComponent<ARLocationManager>();
         gameManager = gameManagerObj.GetComponent<GameManager>();
+        objectDetectionManager = GetComponent<ObjectDetectionManager>();
 
         ARLocation[] arLocations = arLocationManager.ARLocations;
         int i = 0;
@@ -154,7 +155,8 @@ public class ARManager : MonoBehaviour
         Texture2D screenCapture = TakeScreenCapture();
         gameManager.LogTxt("Screen capture taken.");
         // Attempt Basic Quests
-        List<string> labels = new();
+        List<string> labels = objectDetectionManager.GetLabels();
+        gameManager.LogTxt("Labels: " + string.Join(", ", labels));
         BasicQuest basicQuest = QuestManager.Instance.CheckBasicQuests(labels);
         if (basicQuest != null) {
             gameManager.LogTxt("Basic quest :" + basicQuest.Label + " progress: " + basicQuest.Progress);
