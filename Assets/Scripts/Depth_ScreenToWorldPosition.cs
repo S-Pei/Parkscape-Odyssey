@@ -18,12 +18,16 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private GameManager gameManager;
 
 
+    // FISHING
+    [SerializeField]
+    private GameObject overlayCamera;
+
+
     void Start() 
     {
         semanticQuerying = segmentationManager.GetComponent<SemanticQuerying>();
         gameManager = gameManagerObj.GetComponent<GameManager>();
     }
-
 
     XRCpuImage? depthimage;
     void Update()
@@ -67,12 +71,26 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
 
                 // Get semantics of screen position touched
                 string channelName = semanticQuerying.GetPositionChannel((int) screenPosition.x, (int) screenPosition.y);
-                gameManager.LogTxt($"SEMANTICS: Touched on a {channelName}");
+                if (channelName == "ground") {
+                    ShowFishingRod();
+                } else {
+                    CloseFishingRod();
+                }
+                
+                gameManager.LogTxt("Screen width: " + Screen.width + " Screen height: " + Screen.height);
+                gameManager.LogTxt($"Screen position: {screenPosition.x}, {screenPosition.y}");
 
                 //spawn a thing on the depth map
-                Instantiate(_prefabToSpawn, worldPosition, Quaternion.identity);
-
+                // Instantiate(_prefabToSpawn, worldPosition, Quaternion.identity);
             }
         }
+    }
+
+    private void ShowFishingRod() {
+        overlayCamera.SetActive(true);
+    }
+
+    private void CloseFishingRod() {
+        overlayCamera.SetActive(false);
     }
 }
