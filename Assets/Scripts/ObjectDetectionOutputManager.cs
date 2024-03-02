@@ -68,7 +68,7 @@ public class ObjectDetectionOutputManager : MonoBehaviour
         }
 
         //Output our string
-        gameManager.RelogTxt(resultString);
+        // gameManager.RelogTxt(resultString);
     }
 
 

@@ -902,7 +902,6 @@ GameObject:
   - component: {fileID: 186993361}
   - component: {fileID: 186993360}
   - component: {fileID: 186993366}
-  - component: {fileID: 186993365}
   - component: {fileID: 186993367}
   - component: {fileID: 186993368}
   m_Layer: 0
@@ -1127,23 +1126,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!114 &186993365
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 186993358}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b15f82cc229284894964d2d30806969d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_HumanSegmentationStencilMode: 0
-  m_HumanSegmentationDepthMode: 0
-  m_EnvironmentDepthMode: 1
-  m_EnvironmentDepthTemporalSmoothing: 1
-  m_OcclusionPreferenceMode: 0
 --- !u!114 &186993366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4030,6 +4012,8 @@ GameObject:
   - component: {fileID: 778045203}
   - component: {fileID: 778045202}
   - component: {fileID: 778045205}
+  - component: {fileID: 778045207}
+  - component: {fileID: 778045206}
   m_Layer: 0
   m_Name: XR Origin (XR Rig)
   m_TagString: Untagged
@@ -4105,6 +4089,41 @@ MonoBehaviour:
   _InterpolationEnabled: 0
   ContinuousLocalizationRateSeconds: 0
   _autoTrack: 0
+--- !u!114 &778045206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 778045201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b965e1df80157499c88347cbb8488cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _occMan: {fileID: 778045207}
+  _camera: {fileID: 186993364}
+  _prefabToSpawn: {fileID: 2066896392038628118, guid: 45288819fde2143449a96207b14db0bb,
+    type: 3}
+  segmentationManager: {fileID: 1785995203}
+  gameManagerObj: {fileID: 1068634069}
+--- !u!114 &778045207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 778045201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b15f82cc229284894964d2d30806969d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HumanSegmentationStencilMode: 0
+  m_HumanSegmentationDepthMode: 0
+  m_EnvironmentDepthMode: 1
+  m_EnvironmentDepthTemporalSmoothing: 1
+  m_OcclusionPreferenceMode: 0
 --- !u!1 &792842107
 GameObject:
   m_ObjectHideFlags: 0
