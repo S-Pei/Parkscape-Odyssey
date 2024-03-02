@@ -21,12 +21,17 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     // FISHING
     [SerializeField]
     private GameObject overlayCamera;
+    private LineRenderer fishingRod;
+    private Vector3? fishingAnchorPosition = null;
 
 
     void Start() 
     {
         semanticQuerying = segmentationManager.GetComponent<SemanticQuerying>();
         gameManager = gameManagerObj.GetComponent<GameManager>();
+
+        fishingRod = overlayCamera.GetComponent<LineRenderer>();
+        fishingRod.positionCount = 2;
     }
 
     XRCpuImage? depthimage;
@@ -50,6 +55,22 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
             return;
         }
 
+        // Sample eye depth
+        var uvt = new Vector2(1 / 2, 1 / 2);
+        var eyeDeptht = depthimage.Value.Sample<float>(uvt, displayMat);
+
+        if (fishingAnchorPosition != null) {
+            var centerWorldPosition =
+                _camera.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, eyeDeptht));
+
+            gameManager.RelogTxt("x: " + centerWorldPosition.x + ", y: " + centerWorldPosition.y + ", z: " + centerWorldPosition.z);
+
+            fishingRod.SetPosition(0, fishingAnchorPosition.Value);
+            fishingRod.SetPosition(1, centerWorldPosition);
+        }
+
+        
+
 #if UNITY_EDITOR
         if (Input.GetMouseButtonDown(0))
         {
@@ -68,6 +89,7 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                 // Get world position
                 var worldPosition =
                     _camera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, eyeDepth));
+                fishingAnchorPosition = worldPosition;
 
                 // Get semantics of screen position touched
                 string channelName = semanticQuerying.GetPositionChannel((int) screenPosition.x, (int) screenPosition.y);
@@ -77,8 +99,12 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                     CloseFishingRod();
                 }
                 
-                gameManager.LogTxt("Screen width: " + Screen.width + " Screen height: " + Screen.height);
-                gameManager.LogTxt($"Screen position: {screenPosition.x}, {screenPosition.y}");
+                // gameManager.LogTxt("Screen width: " + Screen.width + " Screen height: " + Screen.height);
+                // gameManager.LogTxt($"Screen position: {screenPosition.x}, {screenPosition.y}");
+
+                // Get overlay world position
+                // var overlayWorldPosition =
+                //     overlayCamera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, eyeDepth));
 
                 //spawn a thing on the depth map
                 // Instantiate(_prefabToSpawn, worldPosition, Quaternion.identity);
