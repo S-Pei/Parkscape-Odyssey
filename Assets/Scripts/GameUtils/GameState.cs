@@ -4,7 +4,6 @@ using System.Linq;
 using Newtonsoft.Json;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
-using log4net.Core;
 using UnityEngine;
 
 public class GameState {
