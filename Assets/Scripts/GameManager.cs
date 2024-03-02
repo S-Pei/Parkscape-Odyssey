@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour
 
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
+        databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
     }
 
     // Update is called once per frame
@@ -76,6 +77,10 @@ public class GameManager : MonoBehaviour
 
     public void OpenPlayerView() {
         gameInterfaceManager.OpenPlayerView();
+    }
+
+    public void OpenQuests() {
+        gameInterfaceManager.OpenQuests();
     }
 
     //------------------------------- AR CAMERA -------------------------------

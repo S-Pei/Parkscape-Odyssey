@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Geospatial;
 using Niantic.Lightship.AR.LocationAR;
@@ -42,6 +41,8 @@ public class ARManager : MonoBehaviour
 
     private ARLocation activeLocation;
 
+    private ObjectDetectionManager objectDetectionManager;
+
     private int checkLocationFreq = 100;
     private int currCheckLoctionFreq = 0;
 
@@ -61,6 +62,7 @@ public class ARManager : MonoBehaviour
     public void Start() {
         arLocationManager = xrOrigin.GetComponent<ARLocationManager>();
         gameManager = gameManagerObj.GetComponent<GameManager>();
+        objectDetectionManager = GetComponent<ObjectDetectionManager>();
 
         ARLocation[] arLocations = arLocationManager.ARLocations;
         int i = 0;
@@ -146,6 +148,33 @@ public class ARManager : MonoBehaviour
     public Texture2D TakeScreenCapture() {
         Debug.Log("Taking a screen capture.");
         return ScreenCapture.CaptureScreenshotAsTexture();
+    }
+
+    // Onclick button for taking images
+    public void TakeQuestImage() {
+        Texture2D screenCapture = TakeScreenCapture();
+        gameManager.LogTxt("Screen capture taken.");
+        // Attempt Basic Quests
+        List<string> labels = objectDetectionManager.GetLabels();
+        gameManager.LogTxt("Labels: " + string.Join(", ", labels));
+        BasicQuest basicQuest = QuestManager.Instance.CheckBasicQuests(labels);
+        if (basicQuest != null) {
+            gameManager.LogTxt("Basic quest :" + basicQuest.Label + " progress: " + basicQuest.Progress);
+            if (basicQuest.IsCompleted()) {
+                gameManager.LogTxt("Basic quest completed.");
+            }
+            
+        } else {
+            gameManager.LogTxt("No basic quest progress.");
+            // Attempt Location Quests if basic quests not fulfilled
+            LocationQuest locationQuest = QuestManager.Instance.CheckLocationQuests(screenCapture);
+            if (locationQuest != null) {
+                gameManager.LogTxt("Location quest :" + locationQuest.Label + " progress: " + locationQuest.Progress);
+            } else {
+                gameManager.LogTxt("No location quest progress.");
+            }
+        }
+        // FUTURE: Save images.
     }
 
     // NOT USED FOR NOW

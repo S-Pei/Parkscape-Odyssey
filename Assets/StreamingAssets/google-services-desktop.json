@@ -8,22 +8,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:665812741473:ios:c87ac78cafac087df66920",
+        "mobilesdk_app_id": "1:665812741473:android:21a98167c8588ec3f66920",
         "android_client_info": {
           "package_name": "com.unity.path2power"
         }
       },
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyA81AcMhMx_pks59DMHXJ-vr9JRwsxJta0"
+          "current_key": "AIzaSyAOntnNSaaElj4hG52xMBioxgsN9xa2tvQ"
         }
       ],
       "services": {
-        "analytics_service": {
-          "status": 0
-        },
         "appinvite_service": {
-          "status": 1
+          "other_platform_oauth_client": []
         }
       }
     }

@@ -903,7 +903,6 @@ GameObject:
   - component: {fileID: 186993360}
   - component: {fileID: 186993366}
   - component: {fileID: 186993367}
-  - component: {fileID: 186993368}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1183,20 +1182,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _targetFrameRate: 20
---- !u!114 &186993368
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 186993358}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d16415185305a499182ddf0ba0e65ac4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _objectDetectionManager: {fileID: 186993367}
-  gameManagerObj: {fileID: 1068634069}
 --- !u!23 &225970402
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1570,9 +1555,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 800065304}
         m_TargetAssemblyTypeName: ARManager, NewAssembly
-        m_MethodName: TakeScreenCapture
+        m_MethodName: TakeQuestImage
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2165,7 +2150,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 442138510}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1068634070}
+        m_TargetAssemblyTypeName: GameManager, NewAssembly
+        m_MethodName: OpenQuests
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &442138510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4271,6 +4268,7 @@ GameObject:
   - component: {fileID: 800065302}
   - component: {fileID: 800065301}
   - component: {fileID: 800065304}
+  - component: {fileID: 800065305}
   m_Layer: 0
   m_Name: AR Session
   m_TagString: Untagged
@@ -4338,6 +4336,20 @@ MonoBehaviour:
   arCamera: {fileID: 1013616508}
   semanticsRawImage: {fileID: 1603612469}
   semanticsLabel: {fileID: 1830828539}
+--- !u!114 &800065305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800065300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d16415185305a499182ddf0ba0e65ac4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _objectDetectionManager: {fileID: 186993367}
+  gameManagerObj: {fileID: 1068634069}
 --- !u!1 &854803279
 GameObject:
   m_ObjectHideFlags: 0
@@ -5304,6 +5316,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inventoryObject: {fileID: 1691955519}
   playerViewPrefab: {fileID: 167937073287580874, guid: f0c34cec1873ba741b43650dff9cf8ce,
+    type: 3}
+  questsOverlayPrefab: {fileID: 1972587500945695886, guid: 98de0e55f32efc04782e539b2463ae09,
     type: 3}
   playerIcon: {fileID: 1441628310}
   playerIcons:
@@ -7693,7 +7707,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1499650145}
   m_HandleRect: {fileID: 1499650144}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:

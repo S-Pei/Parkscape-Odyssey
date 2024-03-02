@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
+using UnityEngine;
 
 public class GameState {
     public static readonly bool DEBUGMODE = 
@@ -67,6 +68,10 @@ public class GameState {
     // Medium Encounter IDs found by the player, to be shared with other players
     public HashSet<string> foundMediumEncounters = new();
 
+    // Quests
+    public List<BasicQuest> basicQuests = new();
+    public List<LocationQuest> locationQuests = new();
+
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
 
@@ -78,7 +83,7 @@ public class GameState {
 
         // Random roles for each player.
         List<string> roles = PlayerFactory.GetRoles();
-        Random random = new Random();
+        System.Random random = new System.Random();
         foreach (string id in players.Keys) {
             string name = players[id];
             string role = roles[random.Next(roles.Count)];
@@ -275,7 +280,7 @@ public class GameState {
         // randomly select half of the ids in cardsIds
         int halfCount = cardIds.Count / 2;
         List<int> selectedIds = new();
-        Random random = new();
+        System.Random random = new();
         for (int i = 0; i < halfCount; i++)
         {
             int randomIndex = random.Next(cardIds.Count);
@@ -286,6 +291,12 @@ public class GameState {
         foreach (int id in selectedIds) {
             RemoveCard(id);
         }
+    }
+
+    // --------------------------------  QUESTS --------------------------------
+    public void InitialiseQuests(List<Texture2D> referenceImages) {
+        basicQuests = QuestFactory.CreateInitialBasicQuests();
+        locationQuests = QuestFactory.CreateInitialLocationQuests(referenceImages);
     }
 }
 
