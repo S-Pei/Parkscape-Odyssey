@@ -1493,7 +1493,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 0cf86eb0d1f0349f3b9efda11d150915, type: 3}
+  m_Sprite: {fileID: 21300000, guid: cc2729c5b0ad9fa4d9b7155ee7a04d0c, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5327,6 +5327,10 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 1283fe6019f8736478b3c6c981f4957a, type: 3}
   - {fileID: 21300000, guid: cb00a2d9ed507a54ca72bde8f9412e7b, type: 3}
   - {fileID: 21300000, guid: 31b261af4f8666f40877b8fe968abda1, type: 3}
+  arCameraToggle: {fileID: 1538298428}
+  arCameraIcon: {fileID: 21300000, guid: b740fc0353d9a4a49926e7342ceea45c, type: 3}
+  mapIcon: {fileID: 21300000, guid: a5b4e1619c919c94fa7dd3818b2684c6, type: 3}
+  scanImageButton: {fileID: 250430936}
 --- !u!4 &1068634072
 Transform:
   m_ObjectHideFlags: 0
@@ -7323,7 +7327,7 @@ GameObject:
   - component: {fileID: 1538298430}
   - component: {fileID: 1538298432}
   m_Layer: 5
-  m_Name: Ar Camera Button
+  m_Name: AR Camera / Maps Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7707,7 +7711,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1499650145}
   m_HandleRect: {fileID: 1499650144}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:

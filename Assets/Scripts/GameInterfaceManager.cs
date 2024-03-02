@@ -23,6 +23,18 @@ public class GameInterfaceManager : MonoBehaviour
     [SerializeField]
     private List<Sprite> playerIcons;
 
+    [SerializeField]
+    private GameObject arCameraToggle;
+
+    [SerializeField]
+    private Sprite arCameraIcon;
+
+    [SerializeField]
+    private Sprite mapIcon;
+
+    [SerializeField]
+    private GameObject scanImageButton;
+
     private Dictionary<string, int> roleToIcon = new Dictionary<string, int>()
         {
             { "Rogue", 0 },
@@ -40,6 +52,7 @@ public class GameInterfaceManager : MonoBehaviour
         foreach (Player p in otherPlayers) {
             p.Icon = GetIcon(p.Role);
         }
+        scanImageButton.SetActive(false);
     }
 
     // Open with actual inventory stored in GameManager
@@ -111,5 +124,15 @@ public class GameInterfaceManager : MonoBehaviour
     private void CloseQuests() {
         MapManager.Instance.EnableMapInteraction();
         Destroy(questsOverlay);
+    }
+
+    public void SetARCameraToggle(bool ARMode) {
+        if (ARMode) {
+            arCameraToggle.GetComponent<Image>().sprite = arCameraIcon;
+            scanImageButton.SetActive(true);
+        } else {
+            arCameraToggle.GetComponent<Image>().sprite = mapIcon;
+            scanImageButton.SetActive(false);
+        }
     }
 }

@@ -87,8 +87,10 @@ public class GameManager : MonoBehaviour
     public void ToggleARCamera() {
         if (inARMode) {
             CloseARSession();
+            gameInterfaceManager.SetARCameraToggle(false);
         } else {
             OpenARSession();
+            gameInterfaceManager.SetARCameraToggle(true);
         }
     }
 
