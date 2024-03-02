@@ -24,6 +24,9 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private LineRenderer fishingRod;
     private Vector3? fishingAnchorPosition = null;
 
+    [SerializeField]
+    private GameObject waterRippleEffect;
+    private bool isFishing = false;
 
     void Start() 
     {
@@ -55,15 +58,13 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
             return;
         }
 
-        // Sample eye depth
-        var uvt = new Vector2(1 / 2, 1 / 2);
-        var eyeDeptht = depthimage.Value.Sample<float>(uvt, displayMat);
+        if (fishingAnchorPosition != null && isFishing) {
+            // Sample eye depth
+            var uvt = new Vector2(1 / 2, 1 / 2);
+            var eyeDeptht = depthimage.Value.Sample<float>(uvt, displayMat);
 
-        if (fishingAnchorPosition != null) {
             var centerWorldPosition =
                 _camera.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, eyeDeptht));
-
-            gameManager.RelogTxt("x: " + centerWorldPosition.x + ", y: " + centerWorldPosition.y + ", z: " + centerWorldPosition.z);
 
             fishingRod.SetPosition(0, fishingAnchorPosition.Value);
             fishingRod.SetPosition(1, centerWorldPosition);
@@ -94,9 +95,12 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                 // Get semantics of screen position touched
                 string channelName = semanticQuerying.GetPositionChannel((int) screenPosition.x, (int) screenPosition.y);
                 if (channelName == "ground") {
-                    ShowFishingRod();
+                    ShowFishingLayer();
+                    waterRippleEffect.transform.position = worldPosition;
+                    isFishing = true;
                 } else {
-                    CloseFishingRod();
+                    CloseFishingLayer();
+                    isFishing = false;
                 }
                 
                 // gameManager.LogTxt("Screen width: " + Screen.width + " Screen height: " + Screen.height);
@@ -105,18 +109,17 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                 // Get overlay world position
                 // var overlayWorldPosition =
                 //     overlayCamera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, eyeDepth));
-
-                //spawn a thing on the depth map
-                // Instantiate(_prefabToSpawn, worldPosition, Quaternion.identity);
             }
         }
     }
 
-    private void ShowFishingRod() {
+    private void ShowFishingLayer() {
         overlayCamera.SetActive(true);
+        waterRippleEffect.SetActive(true);
     }
 
-    private void CloseFishingRod() {
+    private void CloseFishingLayer() {
         overlayCamera.SetActive(false);
+        waterRippleEffect.SetActive(false);
     }
 }
