@@ -23,6 +23,12 @@ public class ARManager : MonoBehaviour
     private GameObject arCamera;
 
     [SerializeField]
+    private GameObject semanticsRawImage;
+
+    [SerializeField]
+    private GameObject semanticsLabel;
+
+    [SerializeField]
     private List<(LatLon latlon, ARLocation location)> arSpawnLocations = new();
 
     private List<LatLon> latlons = new() {
@@ -116,11 +122,15 @@ public class ARManager : MonoBehaviour
     public void StartAR() {
         Debug.Log("Starting AR session.");
         arCamera.SetActive(true);
+        semanticsRawImage.SetActive(true);
+        semanticsLabel.SetActive(true);
     }
 
     public void StopAR() {
         Debug.Log("Stopping AR session.");
         arCamera.SetActive(false);
+        semanticsRawImage.SetActive(false);
+        semanticsLabel.SetActive(false);
     }
 
     private ARLocation[] GetAllSpawnLocations() {
