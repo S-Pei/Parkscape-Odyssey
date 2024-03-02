@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Geospatial;
 using Niantic.Lightship.AR.LocationAR;
+using PlasticGui.WorkspaceWindow.QueryViews.Labels;
 using UnityEngine;
 
 public class ARManager : MonoBehaviour
@@ -143,16 +144,25 @@ public class ARManager : MonoBehaviour
         Texture2D screenCapture = TakeScreenCapture();
         gameManager.LogTxt("Screen capture taken.");
         // Attempt Basic Quests
-        // Attempt Location Quests if basic quests not fulfilled
-        foreach (LocationQuest locationQuest in GameState.Instance.locationQuests) {
-            if (locationQuest.IsOnGoing()) {
-                if (locationQuest.AttemptQuest(screenCapture)) {
-                    QuestManager.Instance.GetNextLocationQuest();
-                    gameManager.LogTxt("Location quest completed: " + locationQuest.Label);
-                    return;
-                }
+        List<string> labels = new();
+        BasicQuest basicQuest = QuestManager.Instance.CheckBasicQuests(labels);
+        if (basicQuest != null) {
+            gameManager.LogTxt("Basic quest :" + basicQuest.Label + " progress: " + basicQuest.Progress);
+            if (basicQuest.IsCompleted()) {
+                gameManager.LogTxt("Basic quest completed.");
+            }
+            
+        } else {
+            gameManager.LogTxt("No basic quest progress.");
+            // Attempt Location Quests if basic quests not fulfilled
+            LocationQuest locationQuest = QuestManager.Instance.CheckLocationQuests(screenCapture);
+            if (locationQuest != null) {
+                gameManager.LogTxt("Location quest :" + locationQuest.Label + " progress: " + locationQuest.Progress);
+            } else {
+                gameManager.LogTxt("No location quest progress.");
             }
         }
+        // FUTURE: Save images.
     }
 
     // NOT USED FOR NOW

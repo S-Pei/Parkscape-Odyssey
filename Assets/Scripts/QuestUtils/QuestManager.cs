@@ -64,30 +64,27 @@ public class QuestManager : MonoBehaviour
 
     // ----------------------------- REWARDS ------------------------------
     // Checks if any basic quests have been completed.
-    public bool CheckBasicQuests(string label) {
+    public BasicQuest CheckBasicQuests(List<string> labels) {
         foreach (BasicQuest quest in GameState.Instance.basicQuests) {
-            if (quest.IsOnGoing() && quest.Label == label) {
+            if (quest.IsOnGoing() && labels.Contains(quest.Label)) {
                 quest.IncrementProgress();
-                if (quest.IsCompleted()) {
-                    return true;
-                }
-                return false;
+                return quest;
             }
         }
-        return false;
+        return null;
     }
 
-    // Checks if any location quests have been completed.
-    public bool CheckLocationQuests(Texture2D image) {
+    // Checks if any location quests have been completed, returns a quest if progressed or completed.
+    public LocationQuest CheckLocationQuests(Texture2D image) {
         foreach (LocationQuest quest in GameState.Instance.locationQuests) {
             // Only one ongoing location quest at a time
             if (quest.IsOnGoing() && quest.AttemptQuest(image)) {
                 if (quest.IsCompleted()) {
-                    return true;
+                    GetNextLocationQuest();
                 }
-                return false;
+                return quest;
             }
         }
-        return false;
+        return null;
     }
 }
