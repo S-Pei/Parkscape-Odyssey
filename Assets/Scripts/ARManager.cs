@@ -24,6 +24,12 @@ public class ARManager : MonoBehaviour
     private GameObject arCamera;
 
     [SerializeField]
+    private GameObject semanticsRawImage;
+
+    [SerializeField]
+    private GameObject semanticsLabel;
+
+    [SerializeField]
     private List<(LatLon latlon, ARLocation location)> arSpawnLocations = new();
 
     private List<LatLon> latlons = new() {
@@ -69,7 +75,7 @@ public class ARManager : MonoBehaviour
         if (currCheckLoctionFreq == 0) {
             LatLon latlon = GPSManager.Instance.GetLocation();
             // gameManager.LogTxt("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
-            Debug.Log("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
+            // Debug.Log("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
 
             double minDistance = 100000;
             ARLocation closestLocation = null;
@@ -80,7 +86,7 @@ public class ARManager : MonoBehaviour
                     closestLocation = location;
                 }
             }
-            gameManager.LogTxt("Closest location: " + closestLocation.name);
+            // gameManager.LogTxt("Closest location: " + closestLocation.name);
             if (activeLocation == null || activeLocation.name != closestLocation.name) {
                 ARLocationManager locationManager = xrOrigin.GetComponent<ARLocationManager>();
 
@@ -89,7 +95,7 @@ public class ARManager : MonoBehaviour
                 locationManager.StartTracking();
                 activeLocation = closestLocation;
 
-                gameManager.LogTxt($"New active location: {activeLocation.name}");
+                // gameManager.LogTxt($"New active location: {activeLocation.name}");
             }
 
             currCheckLoctionFreq = checkLocationFreq;
@@ -117,11 +123,15 @@ public class ARManager : MonoBehaviour
     public void StartAR() {
         Debug.Log("Starting AR session.");
         arCamera.SetActive(true);
+        semanticsRawImage.SetActive(true);
+        semanticsLabel.SetActive(true);
     }
 
     public void StopAR() {
         Debug.Log("Stopping AR session.");
         arCamera.SetActive(false);
+        semanticsRawImage.SetActive(false);
+        semanticsLabel.SetActive(false);
     }
 
     private ARLocation[] GetAllSpawnLocations() {
