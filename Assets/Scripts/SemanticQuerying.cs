@@ -51,7 +51,7 @@ public class SemanticQuerying : MonoBehaviour
 
     void Update()
     {
-        if (!_semanticMan.subsystem.running)
+        if (_semanticMan.subsystem == null || !_semanticMan.subsystem.running)
         {
             return;
         }
