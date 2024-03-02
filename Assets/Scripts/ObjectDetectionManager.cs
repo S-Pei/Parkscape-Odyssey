@@ -73,7 +73,7 @@ public class ObjectDetectionManager : MonoBehaviour
         }
 
         //Output our string
-        gameManager.RelogTxt(resultString);
+        // gameManager.RelogTxt(resultString);
     }
     private void OnDestroy()
     {

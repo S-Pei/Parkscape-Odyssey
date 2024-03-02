@@ -96,7 +96,7 @@ public class ARManager : MonoBehaviour
                 locationManager.StartTracking();
                 activeLocation = closestLocation;
 
-                // gameManager.LogTxt($"New active location: {activeLocation.name}");
+                gameManager.LogTxt($"New active location: {activeLocation.name}");
             }
 
             currCheckLoctionFreq = checkLocationFreq;
