@@ -17,8 +17,8 @@ public class ObjectDetectionManager : MonoBehaviour
     private GameObject gameManagerObj;
     private GameManager gameManager;
 
-    private Dictionary<string, int> objectDetectionTimes = new();
-    private const int detectionTTL = 60;
+    private Dictionary<string, float> objectDetectionTimes = new();
+    private const float detectionTTL = 3f;  // seconds
 
     private void Start()
     {
@@ -72,11 +72,6 @@ public class ObjectDetectionManager : MonoBehaviour
             }
         }
 
-        //Iterate through our detection times and increment them.
-        foreach (var pair in objectDetectionTimes) {
-            objectDetectionTimes[pair.Key]++;
-        }
-
         //Output our string
         gameManager.RelogTxt(resultString);
     }
@@ -91,23 +86,27 @@ public class ObjectDetectionManager : MonoBehaviour
         List<string> labels = new();
         foreach (var pair in objectDetectionTimes)
         {
-            if (pair.Value <= detectionTTL)
-            {
+            if (Time.time - pair.Value <= detectionTTL) { // if the object was detected within the last 3 seconds
                 labels.Add(pair.Key);
             }
         }
         return labels;
     }
 
+    public List<string> GetAllLabels()
+    {
+        return objectDetectionTimes.Keys.ToList();
+    }
+
     private void AddToDetectionTimes(string label)
     {
         if (objectDetectionTimes.ContainsKey(label))
         {
-            objectDetectionTimes[label] = 0;
+            objectDetectionTimes[label] = Time.time;
         }
         else
         {
-            objectDetectionTimes.Add(label, 0);
+            objectDetectionTimes.Add(label, Time.time);
         }
     }
 }
