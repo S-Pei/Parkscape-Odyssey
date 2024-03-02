@@ -32,7 +32,7 @@ public class SemanticQuerying : MonoBehaviour
             return;
         }
 
-        //get the semantic texture
+        // get the semantic texture
         Matrix4x4 mat = Matrix4x4.identity;
         var texture = _semanticMan.GetSemanticChannelTexture(_channel, out mat);
 
@@ -69,7 +69,7 @@ public class SemanticQuerying : MonoBehaviour
                     if (_timer > 0.05f)
                     {
                         string channelName = GetPositionChannel((int)pos.x, (int)pos.y);
-                        _text.text = channelName;
+                        // _text.text = channelName;
                         _timer = 0.0f;
                     }
                 }
