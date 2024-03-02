@@ -46,7 +46,7 @@ public class VecSearchManager : MonoBehaviour
         // Initialize mobilenet encoder
         m_RuntimeModel = ModelLoader.Load(modelAsset);
         Initialize();
-        Texture2D imageFromFile = LoadImage("Assets/Resources/peter_pan_test_img.jpeg");
+        Texture2D imageFromFile = LoadImage("Assets/Resources/speke-monument.jpg");
         string[] outputs = ClassifyImage(imageFromFile);
         Debug.Log(string.Join(", ", outputs));
     }
@@ -71,8 +71,6 @@ public class VecSearchManager : MonoBehaviour
         Tensor output = worker.PeekOutput();
 
         // transform tensor into float32 vector
-        Debug.Log(output.dataType);
-        output.PrintDataPart(size:10);
         float[] queryFeatureVector = output.data.Download(output.shape);
         Debug.Log("Feature vector: " + string.Join(", ", queryFeatureVector));
 
