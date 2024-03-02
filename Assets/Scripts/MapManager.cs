@@ -333,7 +333,7 @@ public class MapManager : MonoBehaviour
         if (pin.TryGetComponent(out SpriteButtonLocationBounded spriteButton)) {
             spriteButton.SetLocation(latitude, longitude);
         }
-        Debug.Log("Pin added at " + latitude + ", " + longitude);
+        // Debug.Log("Pin added at " + latitude + ", " + longitude);
 
         return pin;
     }

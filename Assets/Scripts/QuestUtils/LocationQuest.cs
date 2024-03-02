@@ -17,10 +17,12 @@ public class LocationQuest : Quest {
         };
     }
 
-    public void AttemptQuest(Texture2D image) {
+    public bool AttemptQuest(Texture2D image) {
         if (ImageIsCorrect(image)) {
             IncrementProgress();
+            return true;
         }
+        return false;
     }
 
     // Check if the image taken is the correct object

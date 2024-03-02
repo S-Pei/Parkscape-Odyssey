@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
-using log4net.Core;
+using UnityEngine;
 
 public class GameState {
     public static readonly bool DEBUGMODE = 
@@ -83,7 +83,7 @@ public class GameState {
 
         // Random roles for each player.
         List<string> roles = PlayerFactory.GetRoles();
-        Random random = new Random();
+        System.Random random = new System.Random();
         foreach (string id in players.Keys) {
             string name = players[id];
             string role = roles[random.Next(roles.Count)];
@@ -101,7 +101,6 @@ public class GameState {
         this.myID = myID;
         Initialized = true;
         InitialiseCards();
-        InitialiseQuests();
     }
 
     // Method to specify the initial state of the game.
@@ -113,7 +112,6 @@ public class GameState {
 
         Initialized = true;
         InitialiseCards();
-        InitialiseQuests();
     }
 
     // This method returns a reference to a player with the given name.
@@ -227,7 +225,6 @@ public class GameState {
         
         Initialized = true;
         InitialiseCards();
-        InitialiseQuests();
     }
 
     public void UpdateFromMessage(GameStateMessage message) {
@@ -283,7 +280,7 @@ public class GameState {
         // randomly select half of the ids in cardsIds
         int halfCount = cardIds.Count / 2;
         List<int> selectedIds = new();
-        Random random = new();
+        System.Random random = new();
         for (int i = 0; i < halfCount; i++)
         {
             int randomIndex = random.Next(cardIds.Count);
@@ -297,9 +294,9 @@ public class GameState {
     }
 
     // --------------------------------  QUESTS --------------------------------
-    public void InitialiseQuests() {
+    public void InitialiseQuests(List<Texture2D> referenceImages) {
         basicQuests = QuestFactory.CreateInitialBasicQuests();
-        locationQuests = QuestFactory.CreateInitialLocationQuests();
+        locationQuests = QuestFactory.CreateInitialLocationQuests(referenceImages);
     }
 }
 
