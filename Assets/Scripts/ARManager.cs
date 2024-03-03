@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Geospatial;
 using Niantic.Lightship.AR.LocationAR;
+using Niantic.Lightship.AR.PersistentAnchors;
 using UnityEngine;
 
 public class ARManager : MonoBehaviour
@@ -61,6 +62,9 @@ public class ARManager : MonoBehaviour
 
     public void Start() {
         arLocationManager = xrOrigin.GetComponent<ARLocationManager>();
+        arLocationManager.enabled = true;
+        arLocationManager.locationTrackingStateChanged += LocationTrackedUpdated;
+
         gameManager = gameManagerObj.GetComponent<GameManager>();
         objectDetectionManager = GetComponent<ObjectDetectionManager>();
 
@@ -72,37 +76,42 @@ public class ARManager : MonoBehaviour
         }
     }
 
+    private void LocationTrackedUpdated(ARLocationTrackedEventArgs args) {
+        var result = args.ARLocation;
+        gameManager.LogTxt($"Location: {result.name}");
+    }
+
     public void Update() {
-        if (currCheckLoctionFreq == 0) {
-            LatLon latlon = GPSManager.Instance.GetLocation();
-            // gameManager.LogTxt("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
-            // Debug.Log("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
+        // if (currCheckLoctionFreq == 0) {
+        //     LatLon latlon = GPSManager.Instance.GetLocation();
+        //     // gameManager.LogTxt("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
+        //     // Debug.Log("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
 
-            double minDistance = 100000;
-            ARLocation closestLocation = null;
-            foreach ((LatLon locationLatLon, ARLocation location) in arSpawnLocations) {
-                double distance = distanceToSpawnLocation(latlon, locationLatLon);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestLocation = location;
-                }
-            }
-            // gameManager.LogTxt("Closest location: " + closestLocation.name);
-            if (activeLocation == null || activeLocation.name != closestLocation.name) {
-                ARLocationManager locationManager = xrOrigin.GetComponent<ARLocationManager>();
+        //     double minDistance = 100000;
+        //     ARLocation closestLocation = null;
+        //     foreach ((LatLon locationLatLon, ARLocation location) in arSpawnLocations) {
+        //         double distance = distanceToSpawnLocation(latlon, locationLatLon);
+        //         if (distance < minDistance) {
+        //             minDistance = distance;
+        //             closestLocation = location;
+        //         }
+        //     }
+        //     // gameManager.LogTxt("Closest location: " + closestLocation.name);
+        //     if (activeLocation == null || activeLocation.name != closestLocation.name) {
+        //         ARLocationManager locationManager = xrOrigin.GetComponent<ARLocationManager>();
 
-                locationManager.StopTracking();
-                locationManager.SetARLocations(closestLocation);
-                locationManager.StartTracking();
-                activeLocation = closestLocation;
+        //         locationManager.StopTracking();
+        //         locationManager.SetARLocations(closestLocation);
+        //         locationManager.StartTracking();
+        //         activeLocation = closestLocation;
 
-                gameManager.LogTxt($"New active location: {activeLocation.name}");
-            }
+        //         gameManager.LogTxt($"New active location: {activeLocation.name}");
+        //     }
 
-            currCheckLoctionFreq = checkLocationFreq;
-        } else {
-            currCheckLoctionFreq--;
-        }
+        //     currCheckLoctionFreq = checkLocationFreq;
+        // } else {
+        //     currCheckLoctionFreq--;
+        // }
     }
 
     // public void ActivateTestLocation() {

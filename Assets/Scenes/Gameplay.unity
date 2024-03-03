@@ -2344,7 +2344,7 @@ GameObject:
   - component: {fileID: 462106108}
   m_Layer: 0
   m_Name: MeshContainer
-  m_TagString: EditorOnly
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4165,7 +4165,7 @@ MonoBehaviour:
   _ContinuousLocalizationEnabled: 0
   _InterpolationEnabled: 0
   ContinuousLocalizationRateSeconds: 0
-  _autoTrack: 0
+  _autoTrack: 1
 --- !u!114 &778045206
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4480,6 +4480,7 @@ MonoBehaviour:
   arObjectPrefab: {fileID: 466906773201426306, guid: 203dcbcdfc020bd428b65871a779db7f,
     type: 3}
   arCamera: {fileID: 186993364}
+  gravity: 1
 --- !u!1 &854803279
 GameObject:
   m_ObjectHideFlags: 0
@@ -4496,7 +4497,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &854803280
 Transform:
   m_ObjectHideFlags: 0
@@ -4510,8 +4511,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2066896391301125668}
   - {fileID: 462106107}
+  - {fileID: 2066896391301125668}
   m_Father: {fileID: 778045204}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &854803281
@@ -4529,7 +4530,7 @@ MonoBehaviour:
   Payload:
     Data: 0a15088a92b182abf2c1a31610bde5eec6d8ecce98e20118a29692b1fb302a280a1608cac1e48cc1a1eda6ad0110a7eba5d695cce2ec910112090a001205250000803f1d0000803f321211f6b44a452abf494019c69a486784adc8bf
   MeshContainer: {fileID: 462106106}
-  IncludeMeshInBuild: 0
+  IncludeMeshInBuild: 1
   GpsLocation:
     lat_degrees: 51.493492126464844
     lng_degrees: -0.1927649974822998
@@ -10802,7 +10803,7 @@ GameObject:
   - component: {fileID: 1089865249134084734}
   m_Layer: 0
   m_Name: MeshContainer
-  m_TagString: EditorOnly
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11185,7 +11186,7 @@ Transform:
   m_GameObject: {fileID: 2066896391301352004}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.58, y: -4.91, z: -4.62}
+  m_LocalPosition: {x: 2.46, y: -4.85, z: -4.62}
   m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -13742,7 +13743,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2682562265873678467
 Transform:
   m_ObjectHideFlags: 0
@@ -17078,7 +17079,7 @@ MonoBehaviour:
   Payload:
     Data: 0a140880b085b2da9982a2331092ffcaaccf99bab46318dfaf8d88fb302a260a1408b7bc9bd190c4aa2210b5abd99fc5b19186db0112090a001205250000803f1d0000803f321211f5bdff8fd8bf49401915063ba7b2f9c6bf
   MeshContainer: {fileID: 1554679319965089049}
-  IncludeMeshInBuild: 0
+  IncludeMeshInBuild: 1
   GpsLocation:
     lat_degrees: 51.49876022338867
     lng_degrees: -0.17945000529289246
@@ -24942,7 +24943,7 @@ MonoBehaviour:
   Payload:
     Data: 0a15088ca5f1f9fb89c3a0d10110a6d9b5fc809ee6f57418f8bcd3b8fb302a270a1508c791c385e392f7a5d5011087b1d8d6ba9b98c94612090a001205250000803f1d0000803f321211f5d851b952bf4940194c634cc06b9cc8bf
   MeshContainer: {fileID: 6462446126733378339}
-  IncludeMeshInBuild: 0
+  IncludeMeshInBuild: 1
   GpsLocation:
     lat_degrees: 51.49463653564453
     lng_degrees: -0.19227999448776245
@@ -24960,7 +24961,7 @@ GameObject:
   - component: {fileID: 979506550881891993}
   m_Layer: 0
   m_Name: MeshContainer
-  m_TagString: EditorOnly
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -25538,7 +25539,7 @@ MonoBehaviour:
   Payload:
     Data: 0a14089994b1b4e385eca7591098d7e2a2f689aea24718aee4939199d384032a270a1508f8ade9bb82c2bba2351081a384daec94e69aed0112090a001205250000803f1d0000803f32190a05250000803f11000000202dbf494019000000a06fa0c8bf
   MeshContainer: {fileID: 8492209587871995683}
-  IncludeMeshInBuild: 0
+  IncludeMeshInBuild: 1
   GpsLocation:
     lat_degrees: 51.493553161621094
     lng_degrees: -0.19237199425697327
@@ -25622,7 +25623,7 @@ GameObject:
   - component: {fileID: 741454393514324397}
   m_Layer: 0
   m_Name: MeshContainer
-  m_TagString: EditorOnly
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
