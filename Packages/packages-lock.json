@@ -14,6 +14,22 @@
       "dependencies": {},
       "hash": "3405952a03c1555affc2bf11071ad634592e84ce"
     },
+    "com.nianticlabs.lightship": {
+      "version": "https://github.com/niantic-lightship/ardk-upm.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.editorcoroutines": "1.0.0",
+        "com.unity.xr.arfoundation": "5.1.0",
+        "com.unity.xr.arcore": "5.1.0",
+        "com.unity.xr.arkit": "5.1.0",
+        "com.unity.xr.openxr": "1.6.0",
+        "com.unity.xr.core-utils": "2.1.0",
+        "com.unity.xr.management": "4.0.1",
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+      },
+      "hash": "7cc172749e6577d934f1af4719c2de9fb78a205f"
+    },
     "com.unity.2d.animation": {
       "version": "9.0.4",
       "depth": 0,
@@ -145,8 +161,8 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.nuget.newtonsoft-json": {
-      "version": "3.0.2",
-      "depth": 0,
+      "version": "3.2.1",
+      "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -334,6 +350,18 @@
         "com.unity.modules.vr": "1.0.0",
         "com.unity.modules.xr": "1.0.0",
         "com.unity.xr.legacyinputhelpers": "2.1.7"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.xr.openxr": {
+      "version": "1.8.2",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.xr.management": "4.0.1",
+        "com.unity.xr.legacyinputhelpers": "2.1.2",
+        "com.unity.inputsystem": "1.4.4",
+        "com.unity.xr.core-utils": "2.1.1"
       },
       "url": "https://packages.unity.com"
     },
