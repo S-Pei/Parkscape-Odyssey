@@ -11,6 +11,7 @@ public class QuestsProgressPopUpManager : MonoBehaviour
     private GameObject basicQuestPrefab;
     [SerializeField]
     private GameObject locationQuestPrefab;
+    private GameObject questTile;
 
     private readonly string COMPLETED_QUEST_MSG = "Quest Completed!";
     private readonly string PROGRESS_QUEST_MSG = "You've made progress on a quest!";
@@ -41,7 +42,6 @@ public class QuestsProgressPopUpManager : MonoBehaviour
         questStatus.text = QuestStatusString(quest, success);
         Debug.Log("Quest status string");
         if (success) {
-            GameObject questTile;
             if (quest is LocationQuest) {
                 questTile = Instantiate(locationQuestPrefab, gameObject.transform);
                 questTile.GetComponent<LocationQuestUISetter>().Set((LocationQuest) quest);
@@ -56,6 +56,7 @@ public class QuestsProgressPopUpManager : MonoBehaviour
     public void CloseQuestResultPopUp()
     {
         gameObject.SetActive(false);
+        Destroy(questTile);
     }
 
     private string FoundObjString(Quest quest, bool success) {

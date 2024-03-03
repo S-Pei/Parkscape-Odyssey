@@ -101,11 +101,6 @@ public class GameState {
         this.myID = myID;
         Initialized = true;
         InitialiseCards();
-        Texture2D emptyTexture = new Texture2D(1, 1);
-        emptyTexture.SetPixel(0, 0, Color.clear);
-        emptyTexture.Apply();
-
-        InitialiseQuests(new List<Texture2D>{emptyTexture, emptyTexture, emptyTexture});
     }
 
     // Method to specify the initial state of the game.
@@ -117,11 +112,6 @@ public class GameState {
 
         Initialized = true;
         InitialiseCards();
-        Texture2D emptyTexture = new Texture2D(1, 1);
-        emptyTexture.SetPixel(0, 0, Color.clear);
-        emptyTexture.Apply();
-
-        InitialiseQuests(new List<Texture2D>{emptyTexture, emptyTexture, emptyTexture});
     }
 
     // This method returns a reference to a player with the given name.
@@ -305,6 +295,7 @@ public class GameState {
 
     // --------------------------------  QUESTS --------------------------------
     public void InitialiseQuests(List<Texture2D> referenceImages) {
+        Debug.Log("Initialising quests.");
         basicQuests = QuestFactory.CreateInitialBasicQuests();
         locationQuests = QuestFactory.CreateInitialLocationQuests(referenceImages);
         QuestManager.Instance.GetNextLocationQuest();

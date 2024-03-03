@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
-using System.Collections;
+using System.Collections.Generic;
 using System;
 using TMPro;
 
@@ -34,6 +34,13 @@ public class GameManager : MonoBehaviour
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
         databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
+
+        // Initialise Quests
+        Texture2D speke = Resources.Load<Texture2D>("Assets/Resources/speke-monument.jpg");
+        Texture2D albert = Resources.Load<Texture2D>("Assets/Resources/albert_memorial_test.jpeg");
+        Texture2D peter = Resources.Load<Texture2D>("Assets/Resources/peter_pan_test_img.jpeg");
+        Debug.Log("Going to initialise quests.");
+        GameState.Instance.InitialiseQuests(new List<Texture2D>{peter, albert, speke});
     }
 
     // Update is called once per frame

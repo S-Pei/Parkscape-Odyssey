@@ -19,16 +19,13 @@ public class QuestFactory : MonoBehaviour {
         locationQuests.Add(new LocationQuest(QuestType.FIND, "Albert Memorial", referenceImages[1], new LatLon(51.502382, -0.177694)));
         locationQuests.Add(new LocationQuest(QuestType.FIND, "Speke's Monument", referenceImages[2], new LatLon(51.508995, -0.179137)));
         return locationQuests;
-    } 
+    }
 
     public static List<BasicQuest> CreateInitialBasicQuests() {
         List<BasicQuest> basicQuests = new();
-        Texture2D emptyTexture = new Texture2D(1, 1);
-        emptyTexture.SetPixel(0, 0, Color.clear);
-        emptyTexture.Apply();
-        basicQuests.Add(new BasicQuest(QuestType.FIND, "flower", 1, emptyTexture));
-        basicQuests.Add(new BasicQuest(QuestType.FIND, "bird", 1, emptyTexture));
-        basicQuests.Add(new BasicQuest(QuestType.FIND, "duck", 1, emptyTexture));
+        basicQuests.Add(new BasicQuest(QuestType.FIND, "flower", 1));
+        basicQuests.Add(new BasicQuest(QuestType.FIND, "bird", 1));
+        basicQuests.Add(new BasicQuest(QuestType.FIND, "duck", 1));
         return basicQuests;
     }
 }

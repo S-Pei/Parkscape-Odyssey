@@ -53,11 +53,15 @@ public class QuestsUIManager : MonoBehaviour {
 
     public void SetUp(List<BasicQuest> basicQuests, List<LocationQuest> locationQuests) {
         foreach (BasicQuest quest in basicQuests) {
-            CreateBasicQuestDisplay(quest);
+            if (!quest.HasNotStarted()) {
+                CreateBasicQuestDisplay(quest);
+            }
         }
 
         foreach (LocationQuest quest in locationQuests) {
-            CreateLocationQuestDisplay(quest);
+            if (!quest.HasNotStarted()) {
+                CreateLocationQuestDisplay(quest);
+            }
         }
 
         ToggleBasicQuestsDisplay();

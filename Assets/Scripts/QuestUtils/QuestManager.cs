@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class QuestManager : MonoBehaviour
 {
     private static QuestManager instance;
-    private GPSManager gpsManager;
 
     public static QuestManager Instance { 
         get {
@@ -21,12 +20,6 @@ public class QuestManager : MonoBehaviour
 
     private void Start()
     {
-        gpsManager = GPSManager.Instance;
-        List<Texture2D> referenceImages = new();
-        referenceImages.Add(Resources.Load<Texture2D>("Assets/Resources/peter_pan_test_img.jpeg"));
-        referenceImages.Add(Resources.Load<Texture2D>("Assets/Resources/albert_memorial_test.jpeg"));
-        referenceImages.Add(Resources.Load<Texture2D>("Assets/Resources/speke-monument.jpg"));
-        GameState.Instance.InitialiseQuests(referenceImages);
     }
 
     private void Update()
@@ -35,7 +28,7 @@ public class QuestManager : MonoBehaviour
     }
 
     public void GetNextLocationQuest() {
-        LatLon currentLocation = gpsManager.GetLocation();
+        LatLon currentLocation = GPSManager.Instance.GetLocation();
         double minDistance = double.MaxValue;
         LocationQuest nearestLocationQuest = null;
         // Get nearest unattempted location quest

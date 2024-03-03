@@ -112,7 +112,7 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                 } else {
                     // Get semantics of screen position touched
                     string channelName = semanticQuerying.GetPositionChannel((int) screenPosition.x, (int) screenPosition.y);
-                    if (channelName == "ground") {
+                    if (channelName == "water") {
                         if (!isFishing && !fishingInCooldown) {
                             StartFishing(screenPosition, displayMat);
                         }

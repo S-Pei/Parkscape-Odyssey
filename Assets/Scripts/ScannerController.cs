@@ -3,7 +3,7 @@ using System.Collections;
 
 public class ScannerController : MonoBehaviour
 {
-    public float speed = 50f; // Adjust the speed of the scanner line
+    public float speed = 200f; // Adjust the speed of the scanner line
     private RectTransform rectTransform;
     
     float x_pos = 0;
@@ -25,7 +25,7 @@ public class ScannerController : MonoBehaviour
     {
         startTime = Time.time;
         rectTransform.sizeDelta = new Vector2(width, height);
-        float screenHeight = 2340;
+        float screenHeight = 2800;
         while (!ScannerComplete)
         {
             // Oscillate the Y position using Mathf.Cos
