@@ -14,8 +14,8 @@ public class SpriteButton : MonoBehaviour {
         }
 
         // Check if gameobject has box collider
-        if (GetComponent<BoxCollider>() == null || GetComponent<BoxCollider2D>() == null 
-            || GetComponent<SphereCollider>() == null || GetComponent<MeshCollider>() == null) {
+        if (GetComponent<BoxCollider>() == null && GetComponent<BoxCollider2D>() == null 
+            && GetComponent<SphereCollider>() == null && GetComponent<MeshCollider>() == null) {
             throw new System.Exception("SpriteButton requires a Collider component on the object.");
         }
 

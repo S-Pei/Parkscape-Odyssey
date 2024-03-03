@@ -4416,7 +4416,6 @@ Transform:
   - {fileID: 150297691123380577}
   - {fileID: 4549338716983703115}
   - {fileID: 50189330}
-  - {fileID: 843860930}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &778045205
@@ -4719,10 +4718,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 265cf5274afe9448ca9fac9edc2ee92c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  questTitle: {fileID: 0}
-  questStatus: {fileID: 0}
-  basicQuestPrefab: {fileID: 0}
-  locationQuestPrefab: {fileID: 0}
+  questTitle: {fileID: 1596273197}
+  questStatus: {fileID: 827521598}
+  basicQuestPrefab: {fileID: 8785794135726636891, guid: 9f4ea563fbec951429d75cb11d265701,
+    type: 3}
+  locationQuestPrefab: {fileID: 8785794135726636891, guid: 4e9d15fb1d940c54c822613c56786fa4,
+    type: 3}
 --- !u!1 &827521596
 GameObject:
   m_ObjectHideFlags: 0
