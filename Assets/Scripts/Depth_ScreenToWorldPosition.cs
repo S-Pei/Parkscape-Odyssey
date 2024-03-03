@@ -106,8 +106,14 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                 // Check if fishing is in cooldown
                 CheckFishingCooldown();
 
-                if (initializedFishingReward && isFishing) {
-                    CheckFishingRewardRetrieval(screenPosition);
+                if (initializedFishingReward && fishingAnchorPosition != null && isFishing) {
+                    // Sample eye depth
+                    var anchorScreenPosition = _camera.WorldToScreenPoint(fishingAnchorPosition.Value);
+                    gameManager.LogTxt("Anchor pos:");
+                    gameManager.LogTxt("x: " + anchorScreenPosition.x + " y: " + anchorScreenPosition.y);
+                    gameManager.LogTxt("Clicked pos:");
+                    gameManager.LogTxt("x: " + screenPosition.x + " y: " + screenPosition.y);
+                    CheckFishingRewardRetrieval(anchorScreenPosition, screenPosition);
                 } else {
                     // Get semantics of screen position touched
                     string channelName = semanticQuerying.GetPositionChannel((int) screenPosition.x, (int) screenPosition.y);
@@ -145,6 +151,7 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
         waterRippleEffect.transform.position = worldPosition;
         fishingStartTime = DateTime.Now;
         float randomTime = UnityEngine.Random.Range(FISHING_REWARD_MIN_TIME, FISHING_REWARD_MAX_TIME);
+        gameManager.LogTxt("x: " + worldPosition.x + " y: " + worldPosition.y + " z: " + worldPosition.z);
         gameManager.LogTxt("Fishing for " + randomTime + " seconds");
         fishingRewardTime = fishingStartTime.AddSeconds(randomTime);
         fishingAnchorScreenPosition = screenPosition;
@@ -156,23 +163,20 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
         CloseFishingWaterRipple();
         isFishing = false;
         initializedFishingReward = false;
-        gameManager.LogTxt("Stopped fishing.");
     }
 
     private void ShowHasFishingReward() {
-        gameManager.LogTxt("Fishing reward ready!");
-
         ShowFishingWaterRipple();
         waterRippleEffect.GetComponent<AudioSource>().Play();
         initializedFishingReward = true;
     }
 
-    private void CheckFishingRewardRetrieval(Vector2 clickedPosition) {
-        if (fishingAnchorScreenPosition != null) {
-            if (clickedPosition.x <= Mathf.Min(Screen.width, fishingAnchorScreenPosition.Value.x + FISHING_CLICK_BOUND)
-                    && clickedPosition.x >= Mathf.Max(0, fishingAnchorScreenPosition.Value.x - FISHING_CLICK_BOUND)
-                    && clickedPosition.y <= Mathf.Min(Screen.height, fishingAnchorScreenPosition.Value.y + FISHING_CLICK_BOUND)
-                    && clickedPosition.y >= Mathf.Max(0, fishingAnchorScreenPosition.Value.y - FISHING_CLICK_BOUND)) {
+    private void CheckFishingRewardRetrieval(Vector2 anchorScreenPosition, Vector2 clickedPosition) {
+        if (clickedPosition.x >= 0 && clickedPosition.x <= Screen.width && clickedPosition.y >= 0 && clickedPosition.y <= Screen.height) {
+            if (clickedPosition.x <= Mathf.Min(Screen.width, anchorScreenPosition.x + FISHING_CLICK_BOUND)
+                    && clickedPosition.x >= Mathf.Max(0, anchorScreenPosition.x - FISHING_CLICK_BOUND)
+                    && clickedPosition.y <= Mathf.Min(Screen.height, anchorScreenPosition.y + FISHING_CLICK_BOUND)
+                    && clickedPosition.y >= Mathf.Max(0, anchorScreenPosition.y - FISHING_CLICK_BOUND)) {
                 gameManager.LogTxt("Fishing reward clicked, getting reward...");
                 fishingRod.GetComponent<AudioSource>().Play();
                 StartFishingCooldown();
@@ -181,30 +185,36 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
         }
     }
 
+    // Start fishing cooldown
     private void StartFishingCooldown() {
         FishingRefreshTime = DateTime.Now.AddSeconds(FISHING_COOLDOWN);
         fishingInCooldown = true;
     }
 
+    // Check if fishing is in cooldown
     private void CheckFishingCooldown() {
         if (fishingInCooldown && DateTime.Now > FishingRefreshTime) {
             fishingInCooldown = false;
         }
     }
 
+    // Show fishing layer
     private void ShowFishingLayer() {
         overlayCamera.SetActive(true);
     }
 
+    // Close fishing layer
     private void CloseFishingLayer() {
         overlayCamera.SetActive(false);
         CloseFishingWaterRipple();
     }
 
+    // Show fishing water ripple effect
     private void ShowFishingWaterRipple() {
         waterRippleEffect.SetActive(true);
     }
 
+    // Close fishing water ripple effect
     private void CloseFishingWaterRipple() {
         waterRippleEffect.SetActive(false);
     }
