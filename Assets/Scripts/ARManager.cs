@@ -35,7 +35,9 @@ public class ARManager : MonoBehaviour
         new LatLon(51.493553, -0.192372),
         new LatLon(51.493492, -0.192765),
         new LatLon(51.494637, -0.192280),
-        new LatLon(51.498760, -0.179450)
+        new LatLon(51.498760, -0.179450),
+        new LatLon(51.501621, -0.180658),
+        new LatLon(51.500771, -0.180400),
     };
 
     private ARLocationManager arLocationManager;
@@ -63,15 +65,12 @@ public class ARManager : MonoBehaviour
     public void Start() {
         arLocationManager = xrOrigin.GetComponent<ARLocationManager>();
         arLocationManager.enabled = true;
-        arLocationManager.arPersistentAnchorStateChanged += PersistentAnchorsTrackedUpdated;
         arLocationManager.locationTrackingStateChanged += LocationTrackedUpdated;
 
         gameManager = gameManagerObj.GetComponent<GameManager>();
         objectDetectionManager = GetComponent<ObjectDetectionManager>();
 
         ARLocation[] arLocations = arLocationManager.ARLocations;
-        arLocationManager.SetARLocations(arLocations);
-        arLocationManager.StartTracking();
         int i = 0;
         foreach (ARLocation arLocation in arLocations) {
             arSpawnLocations.Add((latlons[i], arLocation));
@@ -84,42 +83,35 @@ public class ARManager : MonoBehaviour
         gameManager.LogTxt($"Location: {result.name}");
     }
 
-    private void PersistentAnchorsTrackedUpdated(ARPersistentAnchorStateChangedEventArgs args) {
-        var result = args.arPersistentAnchor;
-        gameManager.LogTxt($"Persistent Anchor: {result.name}");
-    }
-
     public void Update() {
-        // if (currCheckLoctionFreq == 0) {
-        //     LatLon latlon = GPSManager.Instance.GetLocation();
-        //     // gameManager.LogTxt("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
-        //     // Debug.Log("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
+        if (currCheckLoctionFreq == 0) {
+            LatLon latlon = GPSManager.Instance.GetLocation();
 
-        //     double minDistance = 100000;
-        //     ARLocation closestLocation = null;
-        //     foreach ((LatLon locationLatLon, ARLocation location) in arSpawnLocations) {
-        //         double distance = distanceToSpawnLocation(latlon, locationLatLon);
-        //         if (distance < minDistance) {
-        //             minDistance = distance;
-        //             closestLocation = location;
-        //         }
-        //     }
-        //     // gameManager.LogTxt("Closest location: " + closestLocation.name);
-        //     if (activeLocation == null || activeLocation.name != closestLocation.name) {
-        //         ARLocationManager locationManager = xrOrigin.GetComponent<ARLocationManager>();
+            double minDistance = 100000;
+            ARLocation closestLocation = null;
+            foreach ((LatLon locationLatLon, ARLocation location) in arSpawnLocations) {
+                double distance = distanceToSpawnLocation(latlon, locationLatLon);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestLocation = location;
+                }
+            }
+            // gameManager.LogTxt("Closest location: " + closestLocation.name);
+            if (activeLocation == null || activeLocation.name != closestLocation.name) {
+                ARLocationManager locationManager = xrOrigin.GetComponent<ARLocationManager>();
 
-        //         locationManager.StopTracking();
-        //         locationManager.SetARLocations(closestLocation);
-        //         locationManager.StartTracking();
-        //         activeLocation = closestLocation;
+                locationManager.StopTracking();
+                locationManager.SetARLocations(closestLocation);
+                locationManager.StartTracking();
+                activeLocation = closestLocation;
 
-        //         gameManager.LogTxt($"New active location: {activeLocation.name}");
-        //     }
+                gameManager.LogTxt($"New active location: {activeLocation.name}");
+            }
 
-        //     currCheckLoctionFreq = checkLocationFreq;
-        // } else {
-        //     currCheckLoctionFreq--;
-        // }
+            currCheckLoctionFreq = checkLocationFreq;
+        } else {
+            currCheckLoctionFreq--;
+        }
     }
 
     // public void ActivateTestLocation() {
