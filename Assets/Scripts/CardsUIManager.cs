@@ -102,4 +102,9 @@ public class CardsUIManager : MonoBehaviour
     public Dictionary<CardRarity, List<Card>> getAllAvailableCardsByRarity() {
         return cardsByRarity;
     }
+
+    public Card GetRandomCard() {
+        int randomIndex = UnityEngine.Random.Range(0, cards.Count);
+        return cards[randomIndex];
+    }
 }
