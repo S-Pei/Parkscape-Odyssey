@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
@@ -103,15 +105,45 @@ public class LobbyManager : MonoBehaviour {
 
         GameState.Instance.MyPlayer.IsLeader = true;
 
-        Debug.Log("Getting medium encounters");
-        // Get and broadcast medium encounter positions
-        gpsManager.GetMediumEncounters();
-        // Debugging
-        foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations)
-        {
-            Debug.Log("Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
-        }
+        StartCoroutine(InitialiseMediumEncountersAndStartGame());
+    }
 
+    // Try to get new medium encounters from the database and start the game.
+    //
+    // This is a coroutine instead of an async function because the latter
+    // makes no guarantees of continuing on the main thread (so loading scenes
+    // may not work properly). Internally, it awaits the completion of async
+    // functions before starting the game on the main thread.
+    private IEnumerator InitialiseMediumEncountersAndStartGame() {
+        // Display the loading scene while waiting for async DB operations
+        // to complete. The scene is loaded additively so that this GameObject
+        // doesn't get destroyed
+        SceneManager.LoadScene("Initialisation", LoadSceneMode.Additive);
+
+        // Get medium encounter positions asynchronously
+        Debug.LogWarning("1. Getting medium encounters");
+        Task initialiseMediumEncounters = gpsManager.GetMediumEncounters();
+        
+        // Wait for the task to complete
+        // Internally, GetMediumEncounters has a timeout for its Firebase
+        // operations, so the task will always complete
+        while (!initialiseMediumEncounters.IsCompleted) {
+            yield return null;
+        }
+        // Unload the loading scene
+        SceneManager.UnloadSceneAsync("Initialisation");
+
+        Debug.LogWarning("10. Sending encounter info to players in lobby");
+
+        Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
+        network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
+
+        Debug.LogWarning("11. Got medium encounters");
+        // Debugging
+        foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations) {
+            Debug.LogWarning("12. Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
+        }
+        
         if (players.Count > 1) {
             // send map info
             // members
@@ -120,8 +152,18 @@ public class LobbyManager : MonoBehaviour {
             // start game
             LeaderSendStartGameMessage();
         }
-        StartGame();
 
+        // Get count of loaded Scenes and last index
+        // (corresponding to the loading scene)
+        var lastSceneIndex = SceneManager.sceneCount - 1;
+
+        // Get last Scene by index in all loaded Scenes
+        var lastLoadedScene = SceneManager.GetSceneAt(lastSceneIndex);
+
+        // Unload Scene
+        SceneManager.UnloadSceneAsync(lastLoadedScene);
+        
+        StartGame();
     }
 
     private void LeaderSendStartGameMessage() {
@@ -175,6 +217,7 @@ public class LobbyManager : MonoBehaviour {
 
     // Common method to start the game for both leader and non-leader.
     private void StartGame() {
+        Debug.LogWarning("13. Starting game");
         AcceptMessages = false;
         GameState.Instance.isLeader = isLeader;
         // Load the game scene.

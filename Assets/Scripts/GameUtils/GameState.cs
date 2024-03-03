@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
 
+using Firebase;
+using Firebase.Firestore;
+using Firebase.Extensions;
+
 public class GameState {
     public static readonly bool DEBUGMODE = 
     #if UNITY_EDITOR 
