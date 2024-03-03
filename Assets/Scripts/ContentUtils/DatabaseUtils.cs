@@ -13,16 +13,16 @@ using UnityEngine.SceneManagement;
 using Firebase;
 using Firebase.Firestore;
 using Firebase.Storage;
-using Firebase.Extensions; // for ContinueWithOnMainThread
+using Firebase.Extensions;
 
 
 /*
-* The database MUST be initialized before calling any of the methods defined in
-* this class. It is assumed that DatabaseManager.Instance exists.
-*/
+ * The database MUST be initialized and its dependencies checked/fixed by DatabaseManager
+ * before calling any of the methods defined in this class.
+ */
 
 public static class DatabaseUtils {
-    private static FirebaseFirestore database = DatabaseManager.Instance.Database;
+    private static FirebaseFirestore database = FirebaseFirestore.DefaultInstance;
 
     /*
      **************************************************************************

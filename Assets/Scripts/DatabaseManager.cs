@@ -21,7 +21,6 @@ public class DatabaseManager : MonoBehaviour {
     public static DatabaseManager Instance { get; private set; }
 
     public Firebase.FirebaseApp App { get; private set; }
-    public FirebaseFirestore Database { get; private set; }
 
     void Awake() {
         // Make sure we only ever have one instance of this object
@@ -75,8 +74,6 @@ public class DatabaseManager : MonoBehaviour {
         }
 
         DontDestroyOnLoad(this.gameObject);
-
-        Database = FirebaseFirestore.DefaultInstance;
 
         SceneManager.LoadScene("Main Menu");
     }

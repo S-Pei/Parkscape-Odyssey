@@ -71,6 +71,12 @@ public class GameState {
     // Medium Encounter IDs found by the player, to be shared with other players
     public HashSet<string> foundMediumEncounters = new();
 
+    // LOCATION QUESTS
+    // Files required for the object classifier used in location-specific quests
+    public byte[] locationQuestVectors;
+    public byte[] locationQuestGraph;
+    public byte[] locationQuestLabels;
+
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
 
@@ -98,8 +104,11 @@ public class GameState {
 
         isLeader = true;
         this.myID = myID;
+        FindAndLoadQuestFiles();
+
         Initialized = true;
         InitialiseCards();
+
     }
 
     // Method to specify the initial state of the game.
@@ -108,6 +117,8 @@ public class GameState {
         RoomCode = roomCode;
         MyPlayer = myPlayer;
         OtherPlayers = otherPlayers;
+
+        FindAndLoadQuestFiles();
 
         Initialized = true;
         InitialiseCards();
@@ -139,6 +150,19 @@ public class GameState {
             }
         }
         return null;
+    }
+
+    public void FindAndLoadQuestFiles() {
+        if (FileUtils.ShouldUseDefaultQuestFiles()) {
+            // TODO: Load default quest files
+            // locationQuestVectors = FileUtils.LoadBytesFromResources("locationQuestVectors");
+            // locationQuestGraph = FileUtils.LoadBytesFromResources("locationQuestGraph");
+            // locationQuestLabels = FileUtils.LoadBytesFromResources("locationQuestLabels");
+        } else {
+            locationQuestVectors = FileUtils.Load<byte[]>("locationQuestVectors");
+            locationQuestGraph = FileUtils.Load<byte[]>("locationQuestGraph");
+            locationQuestLabels = FileUtils.Load<byte[]>("locationQuestLabels");
+        }
     }
 
     public void AddCard(CardName card) {

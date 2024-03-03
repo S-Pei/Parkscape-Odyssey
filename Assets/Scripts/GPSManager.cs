@@ -202,17 +202,13 @@ IEnumerator GPSLoc() {
 
             Debug.LogWarning("8. LocationQuests: " + locationQuests.Count);
 
+            // Add a medium encounter for each location
             foreach (LocationQuest locationQuest in locationQuests) {
                 Debug.LogWarning("9. LocationQuest: " + locationQuest.Label + ", " + locationQuest.Location + ", " + $"[{string.Join(",", locationQuest.FeatureVector)}]");
                 encounterLocations.Add(locationQuest.Location);
             }
 
-            // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
-            // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.39355, -0.1924046));
-
-            // Send medium encounters to players
             SetMediumEncounterID(encounterLocations);
-            
             return;
         }
     }
