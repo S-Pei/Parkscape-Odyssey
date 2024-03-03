@@ -27,7 +27,6 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private GameObject fishingRod;
     private LineRenderer fishingRodLine;
     private Vector3? fishingAnchorPosition = null;
-    private Vector2? fishingAnchorScreenPosition = null;
 
     [SerializeField]
     private GameObject waterRippleEffect;
