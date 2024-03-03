@@ -187,6 +187,7 @@ public class ARManager : MonoBehaviour
         }
         scannerController.SetSuccessQuest(successQuest);
         scannerController.SetReady();
+        successQuest = null;
         // FUTURE: Save images.
     }
 
