@@ -89,13 +89,13 @@ public class ApproxNN : MonoBehaviour
 
         MemoryStream sampleVectorsStream = new MemoryStream();
         formatter.Serialize(sampleVectorsStream, vectors);
-        File.WriteAllBytes($"{path}.{VectorsPathSuffix}", sampleVectorsStream.ToArray());
+        File.WriteAllBytes($"{path}/{VectorsPathSuffix}", sampleVectorsStream.ToArray());
 
         MemoryStream labelsStream = new MemoryStream();
         formatter.Serialize(labelsStream, labels);
-        File.WriteAllBytes($"{path}.{LabelsPathSuffix}", labelsStream.ToArray());
+        File.WriteAllBytes($"{path}/{LabelsPathSuffix}", labelsStream.ToArray());
 
-        using (var f = File.Open($"{path}.{GraphpathSuffix}", FileMode.Create))
+        using (var f = File.Open($"{path}/{GraphpathSuffix}", FileMode.Create))
         {
             world.SerializeGraph(f);
         }
