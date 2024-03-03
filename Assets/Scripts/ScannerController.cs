@@ -3,7 +3,7 @@ using System.Collections;
 
 public class ScannerController : MonoBehaviour
 {
-    public float speed = 1f; // Adjust the speed of the scanner line
+    public float speed = 50f; // Adjust the speed of the scanner line
     private RectTransform rectTransform;
     private bool isScannerComplete = false;
     
@@ -13,6 +13,9 @@ public class ScannerController : MonoBehaviour
     float height = 0.398f;
     bool justStarted = true;
     private float startTime;
+    public bool ScannerComplete = false;
+    private Quest successQuest;
+    private bool ready = false;
 
     private void Start()
     {
@@ -46,11 +49,29 @@ public class ScannerController : MonoBehaviour
                     isScannerComplete = true;
                     // Show Photo Results Function
                     Debug.Log("Scanner complete");
+                    while (!ready)
+                    {
+                        Debug.Log("Waiting for ready");
+                        yield return null;
+                    }
+                    ARManager.Instance.ShowQuestResultPopUp(successQuest);
                     Destroy(gameObject);
                 }
             }
 
             yield return null;
         }
+    }
+
+    public void SetSuccessQuest(Quest quest)
+    {
+        Debug.Log("Setting success quest");
+        successQuest = quest;
+    }
+
+    public void SetReady()
+    {
+        Debug.Log("Setting ready");
+        this.ready = true;
     }
 }
