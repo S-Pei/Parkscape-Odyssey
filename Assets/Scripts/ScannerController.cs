@@ -5,13 +5,11 @@ public class ScannerController : MonoBehaviour
 {
     public float speed = 50f; // Adjust the speed of the scanner line
     private RectTransform rectTransform;
-    private bool isScannerComplete = false;
     
     float x_pos = 0;
     float starting_y = -1169.4f;
     float width = 1.3059f;
     float height = 0.398f;
-    bool justStarted = true;
     private float startTime;
     public bool ScannerComplete = false;
     private Quest successQuest;
@@ -28,35 +26,29 @@ public class ScannerController : MonoBehaviour
         startTime = Time.time;
         rectTransform.sizeDelta = new Vector2(width, height);
         float screenHeight = 2340;
-        while (!isScannerComplete)
+        while (!ScannerComplete)
         {
             // Oscillate the Y position using Mathf.Cos
             float elapsedTime = Time.time - startTime; 
-            Debug.Log(Mathf.Sin(elapsedTime * speed / 2));
-            float newY = starting_y + Mathf.Sin(elapsedTime * speed / 2) * screenHeight; // Adjust the amplitude (100f) as needed
+            float displacement = Mathf.Sin(elapsedTime * speed / 2);
+            Debug.Log(displacement);
+            float newY = starting_y + Mathf.Sin(displacement) * screenHeight; // Adjust the amplitude (100f) as needed
             rectTransform.anchoredPosition3D = new Vector3(x_pos, newY, 0f);
 
             // Check if the scanner completes one cycle (up and down)
-            if (Mathf.Abs(newY - starting_y) < 4f) // Adjust the threshold as needed
+            if (displacement < 0) // Adjust the threshold as needed
             {
-                if (justStarted)
+                ScannerComplete = true;
+                // Show Photo Results Function
+                Debug.Log("Scanner complete");
+                while (!ready)
                 {
-                    Debug.Log("Scanner here");
-                    justStarted = false;
+                    Debug.Log("Waiting for ready");
+                    yield return null;
                 }
-                else
-                {
-                    isScannerComplete = true;
-                    // Show Photo Results Function
-                    Debug.Log("Scanner complete");
-                    while (!ready)
-                    {
-                        Debug.Log("Waiting for ready");
-                        yield return null;
-                    }
-                    ARManager.Instance.ShowQuestResultPopUp(successQuest);
-                    Destroy(gameObject);
-                }
+                ARManager.Instance.ShowQuestResultPopUp(successQuest);
+                Destroy(gameObject);
+                
             }
 
             yield return null;

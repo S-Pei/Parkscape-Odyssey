@@ -17,22 +17,6 @@ public class QuestsProgressPopUpManager : MonoBehaviour
     private readonly string FAILED_QUEST_MSG = "Hmm... This doesn't seem like something you're looking for. Try again!";
     private readonly string SUCCESS_FOUND_OBJ_MSG = "You have found ";
 
-
-    private static QuestsProgressPopUpManager instance;
-
-    
-    public static QuestsProgressPopUpManager Instance
-    {
-        get
-        {
-            if (instance == null)
-            {
-                instance = new();
-            }
-            return instance;
-        }
-    }
-
     
     // Start is called before the first frame update
     void Start()
@@ -49,9 +33,13 @@ public class QuestsProgressPopUpManager : MonoBehaviour
     public void ShowQuestResultPopUp(Quest quest)
     {
         bool success = quest != null;
+        Debug.Log("In show");
         gameObject.SetActive(true);
+        Debug.Log("Quest: " + quest);
         questTitle.text = FoundObjString(quest, success);
+        Debug.Log("Found obj string");
         questStatus.text = QuestStatusString(quest, success);
+        Debug.Log("Quest status string");
         if (success) {
             GameObject questTile;
             if (quest is LocationQuest) {
@@ -61,7 +49,7 @@ public class QuestsProgressPopUpManager : MonoBehaviour
                 questTile = Instantiate(basicQuestPrefab, gameObject.transform);
                 questTile.GetComponent<BasicQuestUISetter>().Set((BasicQuest) quest);
             }
-            questTile.transform.localPosition = new Vector3(0, 0, 0);
+            questTile.transform.localPosition = new Vector3(15, -346, 0);
         }
     }
     

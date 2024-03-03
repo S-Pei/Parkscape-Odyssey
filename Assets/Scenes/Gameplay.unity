@@ -4416,7 +4416,6 @@ Transform:
   - {fileID: 150297691123380577}
   - {fileID: 4549338716983703115}
   - {fileID: 50189330}
-  - {fileID: 843860930}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &778045205
@@ -4622,7 +4621,6 @@ GameObject:
   - component: {fileID: 800065301}
   - component: {fileID: 800065304}
   - component: {fileID: 800065305}
-  - component: {fileID: 800065306}
   m_Layer: 0
   m_Name: AR Session
   m_TagString: Untagged
@@ -4693,6 +4691,7 @@ MonoBehaviour:
   scannerLinePrefab: {fileID: 8189002549711480873, guid: 55c8922f7fa6a452ea088bbf29db4adb,
     type: 3}
   canvas: {fileID: 1802788016}
+  questResultPopUp: {fileID: 648005534}
 --- !u!114 &800065305
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4707,22 +4706,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _objectDetectionManager: {fileID: 186993367}
   gameManagerObj: {fileID: 1068634069}
---- !u!114 &800065306
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 800065300}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 265cf5274afe9448ca9fac9edc2ee92c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  questTitle: {fileID: 0}
-  questStatus: {fileID: 0}
-  basicQuestPrefab: {fileID: 0}
-  locationQuestPrefab: {fileID: 0}
 --- !u!1 &827521596
 GameObject:
   m_ObjectHideFlags: 0

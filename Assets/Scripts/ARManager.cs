@@ -34,6 +34,8 @@ public class ARManager : MonoBehaviour
     private GameObject scannerLinePrefab;
     [SerializeField]
     private GameObject canvas;
+    [SerializeField]
+    private GameObject questResultPopUp;
 
     private List<LatLon> latlons = new() {
         new LatLon(51.493553, -0.192372),
@@ -198,7 +200,8 @@ public class ARManager : MonoBehaviour
 
     public void ShowQuestResultPopUp(Quest quest) {
         Debug.Log("Showing quest result pop up.");
-        QuestsProgressPopUpManager.Instance.ShowQuestResultPopUp(quest);
+        QuestsProgressPopUpManager questResultPopUpManager = questResultPopUp.GetComponent<QuestsProgressPopUpManager>();
+        questResultPopUpManager.ShowQuestResultPopUp(quest);
     }
 
     // NOT USED FOR NOW
