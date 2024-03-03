@@ -35,6 +35,10 @@ public class ARManager : MonoBehaviour
     [SerializeField]
     private GameObject canvas;
 
+    [SerializeField]
+    private GameObject ARQuestRewardHandlerObj;
+    private ARQuestRewardHandler ARQuestRewardHandler;
+
     private List<LatLon> latlons = new() {
         new LatLon(51.493553, -0.192372),
         new LatLon(51.493492, -0.192765),
@@ -68,6 +72,7 @@ public class ARManager : MonoBehaviour
         arLocationManager = xrOrigin.GetComponent<ARLocationManager>();
         gameManager = gameManagerObj.GetComponent<GameManager>();
         objectDetectionManager = GetComponent<ObjectDetectionManager>();
+        ARQuestRewardHandler = ARQuestRewardHandlerObj.GetComponent<ARQuestRewardHandler>();
 
         ARLocation[] arLocations = arLocationManager.ARLocations;
         int i = 0;
@@ -158,6 +163,7 @@ public class ARManager : MonoBehaviour
     // Onclick button for taking images
     public void TakeQuestImage() {
         // Trigger Scanning animation
+        ARQuestRewardHandler.TriggerReward((BasicQuest) null);
         TriggerScannerEffect();
         Texture2D screenCapture = TakeScreenCapture();
         gameManager.LogTxt("Screen capture taken.");
@@ -169,6 +175,7 @@ public class ARManager : MonoBehaviour
             gameManager.LogTxt("Basic quest :" + basicQuest.Label + " progress: " + basicQuest.Progress);
             if (basicQuest.IsCompleted()) {
                 gameManager.LogTxt("Basic quest completed.");
+                ARQuestRewardHandler.TriggerReward(basicQuest);
             }
             
         } else {
@@ -177,6 +184,10 @@ public class ARManager : MonoBehaviour
             LocationQuest locationQuest = QuestManager.Instance.CheckLocationQuests(screenCapture);
             if (locationQuest != null) {
                 gameManager.LogTxt("Location quest :" + locationQuest.Label + " progress: " + locationQuest.Progress);
+                if (locationQuest.IsCompleted()) {
+                    gameManager.LogTxt("Location quest completed.");
+                    ARQuestRewardHandler.TriggerReward(locationQuest);
+                }
             } else {
                 gameManager.LogTxt("No location quest progress.");
             }

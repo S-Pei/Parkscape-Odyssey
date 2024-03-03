@@ -104,7 +104,11 @@ public class CardsUIManager : MonoBehaviour
     }
 
     public Card GetRandomCard() {
-        int randomIndex = UnityEngine.Random.Range(0, cards.Count);
-        return cards[randomIndex];
+        // Ignore base cards
+        while (true) {
+            int randomIndex = UnityEngine.Random.Range(0, cards.Count);
+            if (cards[randomIndex].name != CardName.BASE_ATK && cards[randomIndex].name != CardName.BASE_DEF)
+                return cards[randomIndex];
+        }
     }
 }
