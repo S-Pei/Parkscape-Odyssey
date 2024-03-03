@@ -26,6 +26,7 @@ public class LocationQuestUISetter : MonoBehaviour {
     }
 
     private Sprite CreateRefSprite(Texture2D refImage) {
+        Debug.Log("Creating image sprite" + refImage);
         Vector3 size = referenceImage.GetComponent<RectTransform>().sizeDelta;
         return Sprite.Create(refImage, new Rect(0, 0, size.x, size.y), new Vector2(0.5f, 0.5f));
     }

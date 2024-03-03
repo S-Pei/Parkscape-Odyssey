@@ -4,9 +4,11 @@ using System.Linq;
 
 public class LocationQuest : Quest {
     public LatLon Location { get; private set; }
+    public Texture2D ReferenceImage { get; private set; }
 
     public LocationQuest(QuestType questType, string label, Texture2D referenceImage, LatLon location) 
-        : base(questType, label, 1, referenceImage) {
+        : base(questType, label, 1) {
+        ReferenceImage = referenceImage;
         Location = location;
     }
 
@@ -28,6 +30,7 @@ public class LocationQuest : Quest {
     // Check if the image taken is the correct object
     public bool ImageIsCorrect(Texture2D image) {
         string[] searchResults = VecSearchManager.Instance.ClassifyImage(image);
+        Debug.Log("Searching for " + Label + " in " + string.Join(", ", searchResults));
         return searchResults.Contains(Label);
     }
 }

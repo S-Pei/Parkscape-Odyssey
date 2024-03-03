@@ -27,7 +27,6 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private GameObject fishingRod;
     private LineRenderer fishingRodLine;
     private Vector3? fishingAnchorPosition = null;
-    private Vector2? fishingAnchorScreenPosition = null;
 
     [SerializeField]
     private GameObject waterRippleEffect;
@@ -109,15 +108,11 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                 if (initializedFishingReward && fishingAnchorPosition != null && isFishing) {
                     // Sample eye depth
                     var anchorScreenPosition = _camera.WorldToScreenPoint(fishingAnchorPosition.Value);
-                    gameManager.LogTxt("Anchor pos:");
-                    gameManager.LogTxt("x: " + anchorScreenPosition.x + " y: " + anchorScreenPosition.y);
-                    gameManager.LogTxt("Clicked pos:");
-                    gameManager.LogTxt("x: " + screenPosition.x + " y: " + screenPosition.y);
                     CheckFishingRewardRetrieval(anchorScreenPosition, screenPosition);
                 } else {
                     // Get semantics of screen position touched
                     string channelName = semanticQuerying.GetPositionChannel((int) screenPosition.x, (int) screenPosition.y);
-                    if (channelName == "ground") {
+                    if (channelName == "water") {
                         if (!isFishing && !fishingInCooldown) {
                             StartFishing(screenPosition, displayMat);
                         }
@@ -125,13 +120,6 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                         StopFishing();
                     }
                 }
-                
-                // gameManager.LogTxt("Screen width: " + Screen.width + " Screen height: " + Screen.height);
-                // gameManager.LogTxt($"Screen position: {screenPosition.x}, {screenPosition.y}");
-
-                // Get overlay world position
-                // var overlayWorldPosition =
-                //     overlayCamera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, eyeDepth));
             }
         }
     }
@@ -151,10 +139,8 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
         waterRippleEffect.transform.position = worldPosition;
         fishingStartTime = DateTime.Now;
         float randomTime = UnityEngine.Random.Range(FISHING_REWARD_MIN_TIME, FISHING_REWARD_MAX_TIME);
-        gameManager.LogTxt("x: " + worldPosition.x + " y: " + worldPosition.y + " z: " + worldPosition.z);
         gameManager.LogTxt("Fishing for " + randomTime + " seconds");
         fishingRewardTime = fishingStartTime.AddSeconds(randomTime);
-        fishingAnchorScreenPosition = screenPosition;
         isFishing = true;
     }
 

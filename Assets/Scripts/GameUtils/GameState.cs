@@ -295,8 +295,10 @@ public class GameState {
 
     // --------------------------------  QUESTS --------------------------------
     public void InitialiseQuests(List<Texture2D> referenceImages) {
+        Debug.Log("Initialising quests.");
         basicQuests = QuestFactory.CreateInitialBasicQuests();
         locationQuests = QuestFactory.CreateInitialLocationQuests(referenceImages);
+        QuestManager.Instance.GetNextLocationQuest();
     }
 }
 
