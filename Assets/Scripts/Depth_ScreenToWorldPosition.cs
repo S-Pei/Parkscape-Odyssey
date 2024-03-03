@@ -121,13 +121,6 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                         StopFishing();
                     }
                 }
-                
-                // gameManager.LogTxt("Screen width: " + Screen.width + " Screen height: " + Screen.height);
-                // gameManager.LogTxt($"Screen position: {screenPosition.x}, {screenPosition.y}");
-
-                // Get overlay world position
-                // var overlayWorldPosition =
-                //     overlayCamera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, eyeDepth));
             }
         }
     }
