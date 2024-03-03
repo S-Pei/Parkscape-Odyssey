@@ -34,6 +34,11 @@ public class ARManager : MonoBehaviour
     private GameObject scannerLinePrefab;
     [SerializeField]
     private GameObject canvas;
+
+    [SerializeField]
+    private GameObject ARQuestRewardHandlerObj;
+    private ARQuestRewardHandler ARQuestRewardHandler;
+
     [SerializeField]
     private GameObject questResultPopUp;
 
@@ -70,6 +75,7 @@ public class ARManager : MonoBehaviour
         arLocationManager = xrOrigin.GetComponent<ARLocationManager>();
         gameManager = gameManagerObj.GetComponent<GameManager>();
         objectDetectionManager = GetComponent<ObjectDetectionManager>();
+        ARQuestRewardHandler = ARQuestRewardHandlerObj.GetComponent<ARQuestRewardHandler>();
 
         ARLocation[] arLocations = arLocationManager.ARLocations;
         int i = 0;
@@ -168,6 +174,7 @@ public class ARManager : MonoBehaviour
         if (locationQuest != null) {
             successQuest = locationQuest;
             gameManager.LogTxt("Location quest :" + locationQuest.Label + " progress: " + locationQuest.Progress);
+            ARQuestRewardHandler.TriggerReward(locationQuest);
         } else {
             gameManager.LogTxt("No location quest progress.");
             // Attempt basic Quests if location quest not fulfilled
@@ -175,10 +182,11 @@ public class ARManager : MonoBehaviour
             gameManager.LogTxt("Labels: " + string.Join(", ", labels));
             BasicQuest basicQuest = QuestManager.Instance.CheckBasicQuests(labels);
             if (basicQuest != null) {
-                successQuest = basicQuest;
                 gameManager.LogTxt("Basic quest :" + basicQuest.Label + " progress: " + basicQuest.Progress);
                 if (basicQuest.IsCompleted()) {
+                    successQuest = basicQuest;
                     gameManager.LogTxt("Basic quest completed.");
+                    ARQuestRewardHandler.TriggerReward(basicQuest);
                 }
             } else {
                 gameManager.LogTxt("No basic quest progress.");

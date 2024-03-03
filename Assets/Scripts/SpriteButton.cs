@@ -8,6 +8,8 @@ public class SpriteButton : MonoBehaviour {
     protected SpriteRenderer spriteRenderer;
     protected Color originalColor;
 
+    public Camera cam;
+
     protected void Start() {
         if (onClick == null) {
             throw new System.Exception("SpriteButton requires an onClick event to be set.");
@@ -19,8 +21,12 @@ public class SpriteButton : MonoBehaviour {
             throw new System.Exception("SpriteButton requires a Collider component on the object.");
         }
 
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        originalColor = spriteRenderer.color;
+        if (TryGetComponent<SpriteRenderer>(out spriteRenderer))
+            originalColor = spriteRenderer.color;
+
+        if (cam == null) {
+            cam = Camera.main;
+        }
     }
 
     // Update is called once per frame
@@ -45,7 +51,7 @@ public class SpriteButton : MonoBehaviour {
 
     private GameObject GetClickedObject(out RaycastHit hit) {
         GameObject target = null;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray.origin, ray.direction * 10, out hit)) {
             if (hit.collider != null)
                 target = hit.collider.gameObject;
