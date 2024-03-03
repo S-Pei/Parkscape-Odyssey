@@ -31,13 +31,11 @@ public class ARManager : MonoBehaviour
     [SerializeField]
     private List<(LatLon latlon, ARLocation location)> arSpawnLocations = new();
 
-    private List<LatLon> latlons = new() {
-        new LatLon(51.493553, -0.192372),
-        new LatLon(51.493492, -0.192765),
-        new LatLon(51.494637, -0.192280),
-        new LatLon(51.498760, -0.179450),
-        new LatLon(51.501621, -0.180658),
-        new LatLon(51.500771, -0.180400),
+    private Dictionary<string, LatLon> latlons = new() {
+        {"AR Location (Kenway)", new LatLon(51.493553, -0.192372)},
+        {"AR Location (Huxley)", new LatLon(51.498760, -0.179450)},
+        {"AR Location (Feeding Fawn)", new LatLon(51.501621, -0.180658)},
+        {"AR Location (Benny Hill)", new LatLon(51.500771, -0.180400)},
     };
 
     private ARLocationManager arLocationManager;
@@ -71,10 +69,13 @@ public class ARManager : MonoBehaviour
         objectDetectionManager = GetComponent<ObjectDetectionManager>();
 
         ARLocation[] arLocations = arLocationManager.ARLocations;
-        int i = 0;
         foreach (ARLocation arLocation in arLocations) {
-            arSpawnLocations.Add((latlons[i], arLocation));
-            i ++;
+            bool getRes = latlons.TryGetValue(arLocation.name, out LatLon latlon);
+            if (getRes) {
+                arSpawnLocations.Add((latlon, arLocation));
+            } else {
+                gameManager.LogTxt($"LatLon not found for {arLocation.name}");
+            }
         }
     }
 

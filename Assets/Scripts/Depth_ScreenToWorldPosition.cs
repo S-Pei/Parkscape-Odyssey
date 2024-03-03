@@ -18,6 +18,7 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private GameObject gameManagerObj;
     private GameManager gameManager;
 
+    private bool arInteractionEnabled = true;
 
     // FISHING
     [SerializeField]
@@ -89,7 +90,10 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
             ShowHasFishingReward();
         }
 
-        
+        if (!arInteractionEnabled) 
+        {
+            return;
+        }
 
 #if UNITY_EDITOR
         if (Input.GetMouseButtonDown(0))
@@ -112,7 +116,7 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                 } else {
                     // Get semantics of screen position touched
                     string channelName = semanticQuerying.GetPositionChannel((int) screenPosition.x, (int) screenPosition.y);
-                    if (channelName == "ground") {
+                    if (channelName == "water") {
                         if (!isFishing && !fishingInCooldown) {
                             StartFishing(screenPosition, displayMat);
                         }
@@ -203,5 +207,13 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     // Close fishing water ripple effect
     private void CloseFishingWaterRipple() {
         waterRippleEffect.SetActive(false);
+    }
+
+    public void DisableARInteraction() {
+        arInteractionEnabled = false;
+    }
+
+    public void EnableARInteraction() {
+        arInteractionEnabled = true;
     }
 }
