@@ -63,12 +63,15 @@ public class ARManager : MonoBehaviour
     public void Start() {
         arLocationManager = xrOrigin.GetComponent<ARLocationManager>();
         arLocationManager.enabled = true;
+        arLocationManager.arPersistentAnchorStateChanged += PersistentAnchorsTrackedUpdated;
         arLocationManager.locationTrackingStateChanged += LocationTrackedUpdated;
 
         gameManager = gameManagerObj.GetComponent<GameManager>();
         objectDetectionManager = GetComponent<ObjectDetectionManager>();
 
         ARLocation[] arLocations = arLocationManager.ARLocations;
+        arLocationManager.SetARLocations(arLocations);
+        arLocationManager.StartTracking();
         int i = 0;
         foreach (ARLocation arLocation in arLocations) {
             arSpawnLocations.Add((latlons[i], arLocation));
@@ -79,6 +82,11 @@ public class ARManager : MonoBehaviour
     private void LocationTrackedUpdated(ARLocationTrackedEventArgs args) {
         var result = args.ARLocation;
         gameManager.LogTxt($"Location: {result.name}");
+    }
+
+    private void PersistentAnchorsTrackedUpdated(ARPersistentAnchorStateChangedEventArgs args) {
+        var result = args.arPersistentAnchor;
+        gameManager.LogTxt($"Persistent Anchor: {result.name}");
     }
 
     public void Update() {
