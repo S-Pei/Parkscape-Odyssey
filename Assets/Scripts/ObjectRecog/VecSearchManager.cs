@@ -13,7 +13,8 @@ using UnityEngine;
 public class VecSearchManager : MonoBehaviour
 {
     [SerializeField]
-    private TextMeshProUGUI resultText;
+    private GameObject gameManagerObj;
+    private GameManager gameManager;
 
     [SerializeField]
     private NNModel modelAsset;
@@ -30,25 +31,23 @@ public class VecSearchManager : MonoBehaviour
 
     public static VecSearchManager Instance { 
         get {
-            if (instance == null) {
-                // To make sure that script is persistent across scenes
-                GameObject go = new GameObject("VecSearchManager");
-                instance = go.AddComponent<VecSearchManager>();
-                DontDestroyOnLoad(go);
-            }
+
             return instance;
         }
     }
 
-    // Start is called before the first frame updatesimi
+    // Start is called before the first frame updates
     void Start()
     {
+        instance = this;
+        gameManager = gameManagerObj.GetComponent<GameManager>();
         // Initialize mobilenet encoder
         m_RuntimeModel = ModelLoader.Load(modelAsset);
+        Debug.Log("Testing name model: " + m_RuntimeModel.inputs[0].name);
         Initialize();
-        Texture2D imageFromFile = LoadImage("Assets/Resources/speke-monument.jpg");
-        string[] outputs = ClassifyImage(imageFromFile);
-        Debug.Log(string.Join(", ", outputs));
+        // Texture2D imageFromFile = LoadImage("Assets/Resources/speke-monument.jpg");
+        // string[] outputs = ClassifyImage(imageFromFile);
+        // Debug.Log(string.Join(", ", outputs));
     }
 
     // Initialize Approximate NN with training data
@@ -66,7 +65,8 @@ public class VecSearchManager : MonoBehaviour
     {
         image = ResizeImage(image, 224, 224);
         var input = new Tensor(image, channels: 3);
-        var worker = WorkerFactory.CreateWorker(WorkerFactory.Type.ComputePrecompiled, m_RuntimeModel);
+        Debug.Log("Input tensor shape: " + input.shape);
+        var worker = WorkerFactory.CreateWorker(WorkerFactory.Type.CSharpBurst, m_RuntimeModel);
         worker.Execute(input);
         Tensor output = worker.PeekOutput();
 
@@ -76,7 +76,7 @@ public class VecSearchManager : MonoBehaviour
 
         // perform similarity search
         string[] results = ApproxNN.Instance.Search(queryFeatureVector, 5); 
-        Debug.Log("Search result: " + string.Join(", ", results));
+        gameManager.LogTxt("Search result: " + string.Join(", ", results));
         worker.Dispose();
         return results;
     }

@@ -28,6 +28,7 @@ public class LocationQuest : Quest {
     // Check if the image taken is the correct object
     public bool ImageIsCorrect(Texture2D image) {
         string[] searchResults = VecSearchManager.Instance.ClassifyImage(image);
+        Debug.Log("Searching for " + Label + " in " + string.Join(", ", searchResults));
         return searchResults.Contains(Label);
     }
 }

@@ -76,17 +76,15 @@ public class QuestManager : MonoBehaviour
 
     // Checks if any location quests have been completed, returns a quest if progressed or completed.
     public LocationQuest CheckLocationQuests(Texture2D image) {
-        // foreach (LocationQuest quest in GameState.Instance.locationQuests) {
-        //     // Only one ongoing location quest at a time
-        //     if (quest.IsOnGoing() && quest.AttemptQuest(image)) {
-        //         if (quest.IsCompleted()) {
-        //             GetNextLocationQuest();
-        //         }
-        //         return quest;
-        //     }
-        // }
-        // return null;
-
-        return GameState.Instance.locationQuests[0];
+        foreach (LocationQuest quest in GameState.Instance.locationQuests) {
+            // Only one ongoing location quest at a time
+            if (quest.IsOnGoing() && quest.AttemptQuest(image)) {
+                if (quest.IsCompleted()) {
+                    GetNextLocationQuest();
+                }
+                return quest;
+            }
+        }
+        return null;
     }
 }

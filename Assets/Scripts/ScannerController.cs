@@ -31,7 +31,7 @@ public class ScannerController : MonoBehaviour
             // Oscillate the Y position using Mathf.Cos
             float elapsedTime = Time.time - startTime; 
             float displacement = Mathf.Sin(elapsedTime * speed / 2);
-            Debug.Log(displacement);
+            // Debug.Log(displacement);
             float newY = starting_y + Mathf.Sin(displacement) * screenHeight; // Adjust the amplitude (100f) as needed
             rectTransform.anchoredPosition3D = new Vector3(x_pos, newY, 0f);
 
