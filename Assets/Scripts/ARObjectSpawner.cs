@@ -12,9 +12,9 @@ public class ARObjectSpawner : MonoBehaviour {
     [SerializeField]
     private bool gravity = true;
 
-    private Dictionary<GameObject, Action> trackObjects = new();
+    private List<GameObject> trackObjects = new();
 
-    private const float threshold = -500;
+    private const float threshold = -200;
 
     void Start() {
         if (arObjectPrefab == null) {
@@ -41,26 +41,27 @@ public class ARObjectSpawner : MonoBehaviour {
             return;
 
         foreach (var obj in trackObjects) {
-            if (obj.Key.transform.position.y < threshold) {
-                trackObjects.Remove(obj.Key);
-                Destroy(obj.Key);
-                // Spawn new object
-                obj.Value();
+            if (obj.transform.position.y < threshold) {
+                obj.transform.position = GetPosition(2.0f);
             }
-        }   
+        }
     }
 
     public GameObject SpawnARObject(float distance = 2.0f) {
         //spawn in front of at the camera with some random degree deviation.
-        var pos = arCamera.transform.position;
-        var forw = arCamera.transform.forward.normalized;
-        var obj = Instantiate(arObjectPrefab, pos + (forw * distance), Quaternion.identity);
+        var obj = Instantiate(arObjectPrefab, GetPosition(distance), Quaternion.identity);
 
         // Track if the object has settled on the ground
         if (!gravity)
             return obj;
         
-        trackObjects.Add(obj, () => SpawnARObject(distance));
+        trackObjects.Add(obj);
         return obj;
+    }
+
+    private Vector3 GetPosition(float distance) {
+        var pos = arCamera.transform.position;
+        var forw = arCamera.transform.forward.normalized;
+        return pos + (forw * distance);
     }
 }
