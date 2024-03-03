@@ -141,7 +141,6 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
         float randomTime = UnityEngine.Random.Range(FISHING_REWARD_MIN_TIME, FISHING_REWARD_MAX_TIME);
         gameManager.LogTxt("Fishing for " + randomTime + " seconds");
         fishingRewardTime = fishingStartTime.AddSeconds(randomTime);
-        fishingAnchorScreenPosition = screenPosition;
         isFishing = true;
     }
 
