@@ -42,7 +42,7 @@ public class VecSearchManager : MonoBehaviour
         m_RuntimeModel = ModelLoader.Load(modelAsset);
         Initialize();
         
-        // Texture2D imageFromFile = LoadImage("Assets/Resources/physical_energy.jpg");
+        // Texture2D imageFromFile = LoadImage("Assets/Resources/hyde_park.jpg");
         // string[] outputs = ClassifyImage(imageFromFile);
     }
 
