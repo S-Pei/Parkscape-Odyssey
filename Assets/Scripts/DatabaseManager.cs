@@ -22,6 +22,8 @@ public class DatabaseManager : MonoBehaviour {
 
     public Firebase.FirebaseApp App { get; private set; }
 
+    public FirebaseFirestore Database { get; private set; }
+
     void Awake() {
         // Make sure we only ever have one instance of this object
         GameObject[] objs = GameObject.FindGameObjectsWithTag("Database");
@@ -44,8 +46,9 @@ public class DatabaseManager : MonoBehaviour {
         Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWith(task => {
             var dependencyStatus = task.Result;
             if (dependencyStatus == Firebase.DependencyStatus.Available) {
-                // Create and hold a reference to the FirebaseApp
+                // Create and hold a reference to the FirebaseApp and FirebaseFirestore
                 App = Firebase.FirebaseApp.DefaultInstance;
+                Database = FirebaseFirestore.DefaultInstance;
                 // Set a flag here to indicate whether Firebase is ready to use by your app.
                 FirebaseReady = true;
             } else {

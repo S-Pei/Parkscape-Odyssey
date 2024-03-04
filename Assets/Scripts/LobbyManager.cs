@@ -105,7 +105,7 @@ public class LobbyManager : MonoBehaviour {
 
         GameState.Instance.MyPlayer.IsLeader = true;
 
-        StartCoroutine(InitialiseMediumEncountersAndStartGame());
+        StartCoroutine(FetchDataAndInitialiseGame());
     }
 
     // Try to get new medium encounters from the database and start the game.
@@ -114,34 +114,60 @@ public class LobbyManager : MonoBehaviour {
     // makes no guarantees of continuing on the main thread (so loading scenes
     // may not work properly). Internally, it awaits the completion of async
     // functions before starting the game on the main thread.
-    private IEnumerator InitialiseMediumEncountersAndStartGame() {
+    private IEnumerator FetchDataAndInitialiseGame() {
         // Display the loading scene while waiting for async DB operations
         // to complete. The scene is loaded additively so that this GameObject
         // doesn't get destroyed
         SceneManager.LoadScene("Initialisation", LoadSceneMode.Additive);
 
+        int fileTimeoutSeconds = 20;
+
         // Get medium encounter positions asynchronously
         Debug.LogWarning("1. Getting medium encounters");
-        Task initialiseMediumEncounters = gpsManager.GetMediumEncounters();
-        
-        // Wait for the task to complete
-        // Internally, GetMediumEncounters has a timeout for its Firebase
-        // operations, so the task will always complete
+        Task initialiseMediumEncounters = gpsManager.GetMediumEncountersAndLocationQuests();
+
+        // Wait for the tasks to complete
         while (!initialiseMediumEncounters.IsCompleted) {
             yield return null;
         }
+
+        // Get location quest data asynchronously
+        Task<byte[]> locationQuestVectors = DatabaseUtils.GetFileWithTimeout(
+            "locationQuestVectors.bytes", fileTimeoutSeconds);
+        Task<byte[]> locationQuestGraph = DatabaseUtils.GetFileWithTimeout(
+            "locationQuestGraph.bytes", fileTimeoutSeconds);
+        Task<byte[]> locationQuestLabels = DatabaseUtils.GetFileWithTimeout(
+            "locationQuestLabels.bytes", fileTimeoutSeconds);
+        
+        // Internally, these functions have will timeout if they take too long
+        // so they will always complete eventually
+        while (
+            !locationQuestVectors.IsCompleted ||
+            !locationQuestGraph.IsCompleted ||
+            !locationQuestLabels.IsCompleted) {
+            yield return null;
+        }
+
+        // Save the files to disk
+        Debug.LogWarning("10. Saving location quest files to disk");
+        // FileUtils.ProcessNewQuestFiles(
+        //     locationQuestVectors.Result,
+        //     locationQuestGraph.Result,
+        //     locationQuestLabels.Result
+        // );
+
         // Unload the loading scene
         SceneManager.UnloadSceneAsync("Initialisation");
 
-        Debug.LogWarning("10. Sending encounter info to players in lobby");
+        Debug.LogWarning("11. Sending encounter info to players in lobby");
 
         Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
         network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
 
-        Debug.LogWarning("11. Got medium encounters");
+        Debug.LogWarning("12. Got medium encounters: " + GameState.Instance.mediumEncounterLocations.Count + " locations.");
         // Debugging
         foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations) {
-            Debug.LogWarning("12. Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
+            Debug.LogWarning("13. Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
         }
         
         if (players.Count > 1) {

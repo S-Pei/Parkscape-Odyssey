@@ -72,7 +72,9 @@ public class GameState {
     public HashSet<string> foundMediumEncounters = new();
 
     // LOCATION QUESTS
-    // Files required for the object classifier used in location-specific quests
+    // Map of location names to locationQuest objects, as well as
+    // files required for the object classifier
+    public Dictionary<string, LocationQuest> locationQuests;
     public byte[] locationQuestVectors;
     public byte[] locationQuestGraph;
     public byte[] locationQuestLabels;
@@ -153,15 +155,15 @@ public class GameState {
     }
 
     public void FindAndLoadQuestFiles() {
+        UnityEngine.Debug.LogWarning("Finding and loading quest files. ShouldUseDefaultQuestFiles: " + FileUtils.ShouldUseDefaultQuestFiles());
         if (FileUtils.ShouldUseDefaultQuestFiles()) {
-            // TODO: Load default quest files
-            // locationQuestVectors = FileUtils.LoadBytesFromResources("locationQuestVectors");
-            // locationQuestGraph = FileUtils.LoadBytesFromResources("locationQuestGraph");
-            // locationQuestLabels = FileUtils.LoadBytesFromResources("locationQuestLabels");
+            locationQuestVectors = FileUtils.LoadBytesFromResources("locationQuestVectors");
+            locationQuestGraph = FileUtils.LoadBytesFromResources("locationQuestGraph");
+            locationQuestLabels = FileUtils.LoadBytesFromResources("locationQuestLabels");
         } else {
-            locationQuestVectors = FileUtils.Load<byte[]>("locationQuestVectors");
-            locationQuestGraph = FileUtils.Load<byte[]>("locationQuestGraph");
-            locationQuestLabels = FileUtils.Load<byte[]>("locationQuestLabels");
+            locationQuestVectors = FileUtils.Load<byte[]>("locationQuestVectors", "quests");
+            locationQuestGraph = FileUtils.Load<byte[]>("locationQuestGraph", "quests");
+            locationQuestLabels = FileUtils.Load<byte[]>("locationQuestLabels", "quests");
         }
     }
 

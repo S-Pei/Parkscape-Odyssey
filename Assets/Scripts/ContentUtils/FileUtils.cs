@@ -34,7 +34,12 @@ public static class FileUtils {
     // Check if the default quest files should be used (i.e. if no quest files
     // have been downloaded from Firebase yet)
     public static bool ShouldUseDefaultQuestFiles() {
-        return !PlayerPrefs.HasKey("LastQuestFileUpdate");
+        // True only if the last quest file update time is not set, or
+        // the quest files are not present on disk
+        return !PlayerPrefs.HasKey("LastQuestFileUpdate") ||
+               !File.Exists(GetFilePath("locationQuestVectors", "quests")) ||
+               !File.Exists(GetFilePath("locationQuestGraph", "quests")) ||
+               !File.Exists(GetFilePath("locationQuestLabels", "quests"));
     }
 
     // Save the three given quest files (as byte arrays) to the GameState instance, and write them to disk
@@ -84,9 +89,7 @@ public static class FileUtils {
             if (typeof(TData) == typeof(List<int>)) {
                 // Print each element of the list
                 List<int> list = (List<int>)Convert.ChangeType(data, typeof(List<int>));
-                Debug.Log("List: " + string.Join(", ", list.Select(x => x.ToString()).ToArray()));
             }
-            Debug.Log("json: " + jsonData);
             byteData = Encoding.ASCII.GetBytes(jsonData);
         } else {
             byteData = (byte[])Convert.ChangeType(data, typeof(byte[]));
@@ -179,6 +182,7 @@ public static class FileUtils {
             Debug.LogWarning("Failed to load file from Resources: " + fullPath);
             return null;
         }
+        Debug.LogWarning("Loaded file from Resources: " + fullPath);
         return textAsset.bytes;
     }
 }

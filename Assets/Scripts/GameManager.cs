@@ -1,8 +1,14 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+
 using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using System;
+
+using Firebase;
+using Firebase.Firestore;
 
 
 public class GameManager : MonoBehaviour
@@ -24,11 +30,16 @@ public class GameManager : MonoBehaviour
 
     private Boolean inARMode = false;
 
+    private volatile Boolean IsProcessingNewLocationQuests = false;
+
+    private ListenerRegistration locationQuestListener;
+
     // Start is called before the first frame update
     void Start() {
         databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
+        AddLocationQuestListener();
     }
 
     // Update is called once per frame
@@ -37,6 +48,57 @@ public class GameManager : MonoBehaviour
         //     isInEncounter = true;
         //     StartCoroutine(EncounterMonsterRandomly());
         // }
+    }
+
+    // Add listener for location quest updates
+    public void AddLocationQuestListener() {
+        Query query = DatabaseManager.Instance.Database.Collection("locationQuests");
+        
+        // On an update to the locationQuests collection, we will:
+        //  - Fetch the reference images to construct locationQuest objects
+        //  - Fetch the updated files for the object classifier
+        //  - Update the map of locationQuests in the GameState
+        //  - Update the byte[] fields in the GameState
+        //  - Save the new files to disk
+        // The above steps must be atomic, i.e. saves should only be done
+        // once all the required data is obtained from the database.
+        // We will continuously try to fetch said data in the background.
+        locationQuestListener = query.Listen(snapshot => {
+            Debug.LogWarning("LocationQuests collection updated.");
+            StartCoroutine(ProcessLocationQuestsUpdate(snapshot.GetChanges()));
+        });
+    }
+
+    public void DetachLocationQuestListener() {
+        Debug.LogWarning("Detaching location quest listener.");
+        locationQuestListener.Stop();
+    }
+
+    public IEnumerator ProcessLocationQuestsUpdate(IEnumerable<DocumentChange> changes) {
+        // Detach the listener until this update is done - this seems to not work, and neither does setting a flag...
+        // TODO: Discuss this/how to handle multiple listener triggers at once
+        // DetachLocationQuestListener();
+        
+        Debug.LogWarning("Done waiting - processing new location quests.");
+
+        // // Set flag to indicate that we are currently processing new location quests
+        // IsProcessingNewLocationQuests = true;
+        
+        string previousUpdate = PlayerPrefs.GetString("LastQuestFileUpdate");
+        Task task = DatabaseUtils.ProcessLocationQuestsUpdateAsync(changes, this);
+
+        // Wait for the task to complete and for the last quest file update to change
+        // The second condition is to ensure that the quest files have been saved to both
+        // GameState and disk (we may run into read/write race conditions on the GameState
+        // fields if we don't wait)
+        while (!task.IsCompleted || previousUpdate == PlayerPrefs.GetString("LastQuestFileUpdate")) {
+            yield return null;
+        }
+
+        // // Reset the flag
+        // IsProcessingNewLocationQuests = false;
+        // Add the listener back
+        // AddLocationQuestListener();
     }
 
     public void OpenInventory() {

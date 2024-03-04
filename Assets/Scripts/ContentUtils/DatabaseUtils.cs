@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ using Firebase.Extensions;
 
 public static class DatabaseUtils {
     private static FirebaseFirestore database = FirebaseFirestore.DefaultInstance;
+    private const string storageBucketUrl = "gs://segp-03.appspot.com";
 
     /*
      **************************************************************************
@@ -46,6 +48,105 @@ public static class DatabaseUtils {
             Debug.LogWarning("GetLocationQuestsAsync timed out.");
             return new List<LocationQuest>();
         }
+    }
+
+    // Get the file asynchronously and timeout if it takes too long
+    public static async Task<byte[]> GetFileWithTimeout(
+        string filePath, int timeoutSeconds) {
+        var tokenSource = new CancellationTokenSource();
+        var timeout = TimeSpan.FromSeconds(timeoutSeconds);
+        try {
+            return await CancelAfterAsync(
+                (token) => GetFileAsync(filePath, token),
+                timeout,
+                tokenSource.Token
+            );
+        } catch (TimeoutException) {
+            Debug.LogWarning("GetFileAsync timed out for " + filePath);
+            return null;
+        }
+    }
+
+    // Get the file from Firebase Storage and return it as a byte array
+    public static async Task<byte[]> GetFileAsync(
+        string filePath, CancellationToken token=default(CancellationToken)) {
+        try {
+            // Get a reference to the file in Firebase Storage
+            StorageReference storageReference = FirebaseStorage
+                .DefaultInstance
+                .GetReferenceFromUrl(Path.Combine(storageBucketUrl, filePath).Replace('\\','/'));
+
+            Debug.LogWarning("Got storage reference for " + Path.Combine(storageBucketUrl, filePath).Replace('\\','/'));
+
+            // Maximum allowed size is 8MB
+            const long maxAllowedSize = 8 * 1024 * 1024;
+            
+            // Wait for the file download and return the byte array
+            byte[] fileContents = await storageReference.GetBytesAsync(maxAllowedSize);
+
+            Debug.LogWarning("Successfully fetched contents for " + Path.Combine(storageBucketUrl, filePath).Replace('\\','/'));
+            
+            return fileContents;
+        } catch (StorageException ex) {
+            Debug.LogWarning("Failed to fetch file: " + filePath);
+        } catch (OperationCanceledException ex) {
+            Debug.LogWarning("Cancelled file fetch: " + filePath);
+        }
+
+        return null;
+    }
+
+    // Process the location quest updates from the database
+    // The caller (GameManager, which inherits from MonoBehaviour) is passed in so that
+    // we can start a coroutine to save the new quest files to disk
+    public static async Task ProcessLocationQuestsUpdateAsync(
+        IEnumerable<DocumentChange> changes, MonoBehaviour caller) {
+        // Keep track of the asynchronous tasks we are about to start
+        // so we can wait for them all to complete
+        var tasks = new List<Task<LocationQuest>>();
+        var questsToRemove = new List<string>();
+
+        // Start a Task for each location quest fetch
+        // Only try to fetch for those location quests that are not already in GameState
+        foreach (DocumentChange locationQuestChange in changes) {
+            DocumentSnapshot locationQuestDocument = locationQuestChange.Document;
+            
+            // If the location quest was removed, we will remove it from GameState
+            // Otherwise, fetch the new/updated location quest
+            if (locationQuestChange.ChangeType == DocumentChange.Type.Removed) {
+                Debug.LogWarning("Location quest removed: " + locationQuestDocument.Id);
+                questsToRemove.Add(locationQuestDocument.Id);
+            } else {
+                Debug.LogWarning("Location quest updated: " + locationQuestDocument.Id);
+                tasks.Add(GetLocationQuestAsync(locationQuestChange.Document));
+            }
+        }
+
+        // Start a Task for each file fetch and pause until all of them are retrieved
+        byte[] locationQuestVectors = await GetFileAsync("locationQuestVectors.bytes");
+        byte[] locationQuestGraph = await GetFileAsync("locationQuestGraph.bytes");
+        byte[] locationQuestLabels = await GetFileAsync("locationQuestLabels.bytes");
+
+
+        // Pause this method until all the tasks complete, at which point we have all
+        // the required data to apply the update
+        foreach (LocationQuest locationQuest in await Task.WhenAll(tasks)) {
+            if (locationQuest != null) {
+                // Add the location quest to GameState if it is not already there, or
+                // update it if it is
+                GameState.Instance.locationQuests[locationQuest.Label] = locationQuest;
+            }
+        }
+
+        // Remove the location quests that were deleted from the database
+        foreach (string label in questsToRemove) {
+            GameState.Instance.locationQuests.Remove(label);
+        }
+
+        // Save the location quest files to disk; we will know this operation is complete when
+        // LastQuestFileUpdate in PlayerPrefs updates
+        caller.StartCoroutine(FileUtils.ProcessNewQuestFiles(
+            locationQuestVectors, locationQuestGraph, locationQuestLabels));
     }
 
     /*
@@ -93,7 +194,7 @@ public static class DatabaseUtils {
     // Get all the location quests from the database and return them asynchronously
     // The cancellation token is used to cancel the operation if it takes too long
     private static async Task<List<LocationQuest>> GetLocationQuestsAsync(
-        CancellationToken token) {
+        CancellationToken token=default(CancellationToken)) {
         try {
             // Get a reference to the locationQuests collection
             Query locationQuestsQuery = database.Collection("locationQuests");
@@ -137,57 +238,43 @@ public static class DatabaseUtils {
         }
     }
 
-    private static async Task<LocationQuest> GetLocationQuestAsync(
-        DocumentSnapshot locationQuestDocument, CancellationToken token) {
-        
-        try {
-            // Fetch the reference image from Firebase Storage
-            Debug.LogWarning("5. Getting image from " + locationQuestDocument.GetValue<string>("imageUrl"));
-            StorageReference storageReference = FirebaseStorage
-                .DefaultInstance
-                .GetReferenceFromUrl(
-                    locationQuestDocument.GetValue<string>("imageUrl")
-            );
-
-            // Maximum image size is 1MB
-            const long maxAllowedSize = 1 * 1024 * 1024;
-            
-            // Wait for the image download and then convert it to a Texture2D
-            byte[] fileContents = await storageReference.GetBytesAsync(maxAllowedSize);
-            Debug.LogWarning("6. Got image from " + locationQuestDocument.Id);
-
-            // Convert the downloaded byte array to a Texture2D
-            Texture2D texture = new Texture2D(2, 2);
-            texture.LoadImage(fileContents);
-
-            // Extract the other fields from the document to construct a LocationQuest object
-            Dictionary<string, object> locationQuestData = locationQuestDocument.ToDictionary();
-
-            string label = locationQuestDocument.Id;
-            
-            // Convert the feature vector string to a double array
-            // TODO: The feature vectors will be stored in a file instead.
-            string featureVectorString = (string) locationQuestData["featureVector"];
-            double[] featureVector = featureVectorString
-                .TrimStart('[')
-                .TrimEnd(']')
-                .Split(',')
-                .Select(double.Parse)
-                .ToArray();
-            
-            GeoPoint geoPoint = (GeoPoint) locationQuestData["location"];
-            LatLon location = new LatLon(geoPoint.Latitude, geoPoint.Longitude);
-            
-            // Create the LocationQuest object to be returned
-            return new LocationQuest(label, texture, featureVector, location);
-        } catch (StorageException ex) {
-            Debug.LogWarning("Failed to fetch a location quest.");
-        } catch (OperationCanceledException ex) {
-            Debug.LogWarning("Fetching location quest was cancelled.");
-        }
-
-        return null;
+    // Get the reference image path from the location quest document
+    // For now, this is defaulted to the first image in the location quest's folder
+    // TODO: See XXX for full documentation about the Firebase Storage structure
+    private static string GetReferenceImagePath(DocumentSnapshot locationQuestDocument) {
+        return (Path.Combine(
+            "data",
+            locationQuestDocument.Id.Replace(" ", "_") + "/image_0.jpg"
+        ).Replace('\\','/'));
     }
 
+    private static async Task<LocationQuest> GetLocationQuestAsync(
+        DocumentSnapshot locationQuestDocument,
+        CancellationToken token=default(CancellationToken)) {
+        
+        Debug.LogWarning("5. Getting reference image for " + locationQuestDocument.Id);
+        byte[] referenceImage = await GetFileAsync(GetReferenceImagePath(locationQuestDocument));
 
+        if (referenceImage == null) {
+            Debug.LogWarning("6. Failed to fetch reference image for " + locationQuestDocument.Id);
+            return null;
+        }
+
+        Debug.LogWarning("6. Got image from " + locationQuestDocument.Id);
+
+        // Convert the downloaded byte array to a Texture2D
+        Texture2D texture = new Texture2D(2, 2);
+        texture.LoadImage(referenceImage);
+
+        // Extract the other fields from the document to construct a LocationQuest object
+        Dictionary<string, object> locationQuestData = locationQuestDocument.ToDictionary();
+
+        string label = locationQuestDocument.Id;
+        
+        GeoPoint geoPoint = (GeoPoint) locationQuestData["location"];
+        LatLon location = new LatLon(geoPoint.Latitude, geoPoint.Longitude);
+        
+        // Create the LocationQuest object to be returned
+        return new LocationQuest(label, texture, location);
+    }
 }
