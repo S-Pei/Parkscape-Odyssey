@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5203874687534623930}
   - component: {fileID: 272265819265355712}
+  - component: {fileID: 1998735718160559003}
   m_Layer: 0
   m_Name: Normal Encounter
   m_TagString: AREncounterSpawn
@@ -54,6 +55,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1998735718160559003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7829443816992711151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 068804955c9ef484b876217c548d2a49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &8956200139468187761
 PrefabInstance:
   m_ObjectHideFlags: 0

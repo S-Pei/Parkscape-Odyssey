@@ -59,8 +59,7 @@ public class LobbyManager : MonoBehaviour {
         // Tell the leader to remove you from the list of players.
         if (isLeader) {
             // If you are the leader, tell everyone to exit the lobby.
-            LobbyMessage leaveLobbyMessage = new(LobbyMessageType.LEADER_LEAVE, true, "", 
-                mediumEncounterLocations: null, mediumEncounterARLocations: null);
+            LobbyMessage leaveLobbyMessage = new(LobbyMessageType.LEADER_LEAVE, true, "", mediumEncounterLocations: null);
             network.broadcast(leaveLobbyMessage.toJson());
         }
         network.stopAdvertising();
@@ -108,9 +107,9 @@ public class LobbyManager : MonoBehaviour {
         // Get and broadcast medium encounter positions
         gpsManager.GetMediumEncounters();
         // Debugging
-        foreach (KeyValuePair<string, (LatLon, string)> item in GameState.Instance.mediumEncounterLocations)
+        foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations)
         {
-            Debug.Log("Key: " + item.Key + ", Location: (" + item.Value.Item1.LatitudeInDegrees + ", " + item.Value.Item1.LongitudeInDegrees + ")");
+            Debug.Log("Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
         }
 
         if (players.Count > 1) {
@@ -129,8 +128,7 @@ public class LobbyManager : MonoBehaviour {
         // Send a message to everyone to start the game.
         LobbyMessage leaderStartMessage = 
             new(LobbyMessageType.LEADER_START, true, GameState.Instance.ToMessage().toJson(), 
-            mediumEncounterLocations: MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations),
-            mediumEncounterARLocations: MapMessage.GetARLocs(GameState.Instance.mediumEncounterLocations));
+            mediumEncounterLocations: MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations));
         network.broadcast(leaderStartMessage.toJson());
     }
 
@@ -169,8 +167,7 @@ public class LobbyManager : MonoBehaviour {
             if (!joinedLobby) {
                 // If I am not in the lobby, send a message to the leader that I am in.
                 Debug.Log("Broadcast to leader I AM IN message");
-                LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, mediumEncounterLocations: null, 
-                    mediumEncounterARLocations: null, sendTo : leaderID, sendFrom: myID);
+                LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, mediumEncounterLocations: null, sendTo : leaderID, sendFrom: myID);
                 network.broadcast(amIInMessage.toJson());
             }
         }
@@ -300,8 +297,7 @@ public class LobbyManager : MonoBehaviour {
                 if (!joinedLobby) {
                     // If I am not in the lobby, send a message to the leader that I am in.
                     Debug.Log("Broadcast to leader I AM IN message");
-                    LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, mediumEncounterLocations: null, 
-                        mediumEncounterARLocations: null, sendTo : leaderID, sendFrom: myID);
+                    LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, mediumEncounterLocations: null, sendTo : leaderID, sendFrom: myID);
                     network.broadcast(amIInMessage.toJson());
                 }
                 break;
@@ -318,9 +314,7 @@ public class LobbyManager : MonoBehaviour {
                     gameState.InitializeFromMessage(GameStateMessage.fromJson(lobbyMessage.Message), roomCode, myID);
                 }
                 // Receive map info about medium encounters
-                gameState.mediumEncounterLocations = MapMessage.ProcessMediumEncounterLocations(
-                    lobbyMessage.MediumEncounterLocations,
-                    lobbyMessage.MediumEncounterARLocations);
+                gameState.mediumEncounterLocations = MapMessage.DictToLatLon(lobbyMessage.MediumEncounterLocations);
                 StartGame();
                 break;
             case LobbyMessageType.MEMBER_START:
@@ -330,8 +324,7 @@ public class LobbyManager : MonoBehaviour {
                 // Send a message to say that their start message was received and it's okay to start the game.
                 if (playerIDs.Contains(lobbyMessage.SendFrom))
                     playerIDs.Remove(lobbyMessage.SendFrom);
-                LobbyMessage leaderStartMessage = new(LobbyMessageType.LEADER_START_OK, true, myName, mediumEncounterLocations: null, 
-                    mediumEncounterARLocations: null, sendTo : lobbyMessage.SendFrom, sendFrom : myID);
+                LobbyMessage leaderStartMessage = new(LobbyMessageType.LEADER_START_OK, true, myName, mediumEncounterLocations: null, sendTo : lobbyMessage.SendFrom, sendFrom : myID);
                 network.broadcast(leaderStartMessage.toJson());
 
                 // Once everyone has sent the start message, start the game.
@@ -376,11 +369,8 @@ public class LobbyMessage : MessageInfo {
     public string SendTo {get;}
     public string SendFrom {get;}
     public Dictionary<string, Dictionary<string, double>> MediumEncounterLocations {get;}
-    public Dictionary<string, string> MediumEncounterARLocations {get;}
 
-    public LobbyMessage(LobbyMessageType type, bool isLeader, string message, Dictionary<string, 
-        Dictionary<string, double>> mediumEncounterLocations,
-        Dictionary<string, string> mediumEncounterARLocations,
+    public LobbyMessage(LobbyMessageType type, bool isLeader, string message, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations, 
         string sendTo = "", string sendFrom = "") {
         messageType = MessageType.LOBBYMESSAGE;
         Type = type;
@@ -389,7 +379,6 @@ public class LobbyMessage : MessageInfo {
         SendTo = sendTo;
         SendFrom = sendFrom;
         MediumEncounterLocations = mediumEncounterLocations == null ? new() : mediumEncounterLocations;
-        MediumEncounterARLocations = mediumEncounterARLocations == null ? new() : mediumEncounterARLocations;
     }
 
     public LobbyMessage(bool isLeader, Dictionary<string, string> players, string leaderID, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations, 
