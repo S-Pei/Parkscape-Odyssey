@@ -8,9 +8,10 @@ using HNSW.Net;
 
 public class ApproxNN : MonoBehaviour
 {
-    private const string VectorsPathSuffix = "vectors.bytes";
-    private const string LabelsPathSuffix = "labels.bytes";
-    private const string GraphpathSuffix = "world.bytes";
+    private const string FilePrefix = "quests/";
+    private const string VectorsPathSuffix = "locationQuestVectors.bytes";
+    private const string LabelsPathSuffix = "locationQuestLabels.bytes";
+    private const string GraphpathSuffix = "locationQuestGraph.bytes";
     private const float KNNThreshold = 0.5f;
 
     private SmallWorld<float[], float> world;
@@ -56,6 +57,7 @@ public class ApproxNN : MonoBehaviour
     public string[] Search(float[] query, int k = 3)
     {
         float[] normalizedQuery = NormalizeVector(query);
+        Debug.Log("Normalized query");
         var results = this.world.KNNSearch(normalizedQuery, k);
         Debug.Log("Labels " + string.Join(", ", results.Select(r => this.labels[r.Id])));
         Debug.Log("Distances " + string.Join(", ", results.Select(r => r.Distance)));
@@ -101,17 +103,24 @@ public class ApproxNN : MonoBehaviour
         }
     }
 
-    public void Load(string path) {
+    public void Load() {
+        string path = DatabaseManager.Instance.dataPath + FilePrefix;
+        Debug.Log("Loading from " + path);
         BinaryFormatter formatter = new BinaryFormatter();
         MemoryStream sampleVectorsStream = new MemoryStream(File.ReadAllBytes($"{path}/{VectorsPathSuffix}"));
+        Debug.Log("Sample vectors stream " + sampleVectorsStream.Length);
         this.vectors = (float[][])formatter.Deserialize(sampleVectorsStream);
+        Debug.Log("Vectors loaded");
 
         MemoryStream labelsStream = new MemoryStream(File.ReadAllBytes($"{path}/{LabelsPathSuffix}"));
         this.labels = (string[])formatter.Deserialize(labelsStream);
+        Debug.Log("Labels loaded");
 
         using (var f = File.OpenRead($"{path}/{GraphpathSuffix}"))
         {
+            Debug.Log("Deserializing graph");
             this.world = SmallWorld<float[], float>.DeserializeGraph(vectors, CosineDistance.ForUnits, DefaultRandomGenerator.Instance, f);
+            Debug.Log("Graph deserialized");
         }
 
         Debug.Log("World loaded");
