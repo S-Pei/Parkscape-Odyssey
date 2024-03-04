@@ -1,4 +1,6 @@
 using UnityEngine;
+using System;
+
 
 public enum QuestType {
     FIND
@@ -10,18 +12,49 @@ public enum QuestStatus {
     COMPLETED
 }
 
+[Serializable]
 public class Quest
 {
     // name of object to find
-    public string Label { get; private set; }
-    // public Texture2D ReferenceImage { get; private set; }
-    public double[] FeatureVector { get; private set; }
-    public QuestStatus QuestStatus { get; private set; }
-    public QuestType QuestType { get; private set; }
-    public int Progress { get; private set; }
-    public int Target { get; private set; }
+    public string Label {
+        get => _label;
+        private set => _label = value;
+    }
 
-    public Quest(QuestType questType, string label, int target)
+    public Texture2D ReferenceImage {
+        get => _referenceImage;
+        private set => _referenceImage = value;
+    }
+
+    public QuestStatus QuestStatus {
+        get => _questStatus;
+        private set => _questStatus = value;
+    }
+
+    public QuestType QuestType {
+        get => _questType;
+        private set => _questType = value;
+    }
+    
+    public int Progress {
+        get => _progress;
+        private set => _progress = value;
+    }
+    public int Target {
+        get => _target;
+        private set => _target = value;
+    }
+
+
+    // Private backing variables for properties so that this class can be properly serialized
+    [SerializeField] private string _label;
+    [SerializeField] private Texture2D _referenceImage;
+    [SerializeField] private QuestStatus _questStatus;
+    [SerializeField] private QuestType _questType;
+    [SerializeField] private int _progress;
+    [SerializeField] private int _target;
+
+    public Quest(QuestType questType, string label, Texture2D referenceImage, int target)
     {
         QuestType = questType;
         Label = label;

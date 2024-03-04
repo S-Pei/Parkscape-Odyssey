@@ -1,9 +1,15 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System;
 using TMPro;
+
+using Firebase;
+using Firebase.Firestore;
 
 
 public class GameManager : MonoBehaviour
@@ -22,6 +28,10 @@ public class GameManager : MonoBehaviour
 
     private Boolean inARMode = false;
 
+    private volatile Boolean IsProcessingNewLocationQuests = false;
+
+    private ListenerRegistration locationQuestListener;
+
     // Start is called before the first frame update
     void Start() {
         GameObject databseOjb = GameObject.FindWithTag("Database");
@@ -33,13 +43,7 @@ public class GameManager : MonoBehaviour
 
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
-
-        // Initialise Quests
-        Texture2D speke = Resources.Load<Texture2D>("Assets/Resources/speke-monument.jpg");
-        Texture2D albert = Resources.Load<Texture2D>("Assets/Resources/albert_memorial_test.jpeg");
-        Texture2D peter = Resources.Load<Texture2D>("Assets/Resources/peter_pan_test_img.jpeg");
-        Debug.Log("Going to initialise quests.");
-        GameState.Instance.InitialiseQuests(new List<Texture2D>{peter, albert, speke});
+        AddLocationQuestListener();
     }
 
     // Update is called once per frame
@@ -48,6 +52,68 @@ public class GameManager : MonoBehaviour
         //     isInEncounter = true;
         //     StartCoroutine(EncounterMonsterRandomly());
         // }
+    }
+
+    // Add listener for location quest updates
+    public void AddLocationQuestListener() {
+        Query query = DatabaseManager.Instance.Database.Collection("locationQuests");
+        
+        // On an update to the locationQuests collection, we will:
+        //  - Fetch the reference images to construct locationQuest objects
+        //  - Fetch the updated files for the object classifier
+        //  - Update the map of locationQuests in the GameState
+        //  - Update the byte[] fields in the GameState
+        //  - Save the new files to disk
+        // The above steps must be atomic, i.e. saves should only be done
+        // once all the required data is obtained from the database.
+        // We will continuously try to fetch said data in the background.
+        locationQuestListener = query.Listen(snapshot => {
+            Debug.LogWarning("LocationQuests collection updated.");
+            StartCoroutine(ProcessLocationQuestsUpdate(snapshot.GetChanges()));
+        });
+    }
+
+    public void DetachLocationQuestListener() {
+        Debug.LogWarning("Detaching location quest listener.");
+        locationQuestListener.Stop();
+    }
+
+    public IEnumerator ProcessLocationQuestsUpdate(IEnumerable<DocumentChange> changes) {
+        // Detach the listener until this update is done - this seems to not work, and neither does setting a flag...
+        // TODO: Discuss this/how to handle multiple listener triggers at once
+        // DetachLocationQuestListener();
+        
+        Debug.LogWarning("Done waiting - processing new location quests.");
+
+        // // Set flag to indicate that we are currently processing new location quests
+        // IsProcessingNewLocationQuests = true;
+        
+        string previousUpdate = PlayerPrefs.GetString("LastQuestFileUpdate");
+        Task task = DatabaseUtils.ProcessLocationQuestsUpdateAsync(changes, this);
+
+        // Wait for the task to complete and for the last quest file update to change
+        // The second condition is to ensure that the quest files have been saved to
+        // the GameState. There may be read/write race conditions on the GameState otherwise.
+        while (!task.IsCompleted || previousUpdate == PlayerPrefs.GetString("LastQuestFileUpdate")) {
+            yield return null;
+        }
+
+        // // Save the location quest files to disk; we will know this operation is complete when
+        // // LastQuestFileUpdate in PlayerPrefs updates
+        // StartCoroutine(FileUtils.ProcessNewQuestFiles(
+        //     GameState.Instance.locationQuestVectors,
+        //     GameState.Instance.locationQuestGraph,
+        //     GameState.Instance.locationQuestLabels,
+        //     updateGameState: false));
+
+        // // Write the updated locationQuests to disk
+        // FileUtils.Save(new LocationQuestStore(new List<LocationQuest>(GameState.Instance.locationQuests.Values)), "locationQuests", "quests");
+
+
+        // // Reset the flag
+        // IsProcessingNewLocationQuests = false;
+        // Add the listener back
+        // AddLocationQuestListener();
     }
 
     public void OpenInventory() {

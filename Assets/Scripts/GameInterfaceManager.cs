@@ -116,7 +116,10 @@ public class GameInterfaceManager : MonoBehaviour
         closeButton.onClick.AddListener(CloseQuests);
 
         // Set up Quests
-        questsOverlay.GetComponent<QuestsUIManager>().SetUp(GameState.Instance.basicQuests, GameState.Instance.locationQuests);
+        questsOverlay.GetComponent<QuestsUIManager>().SetUp(
+            GameState.Instance.basicQuests,
+            new List<LocationQuest>(GameState.Instance.locationQuests.Values)
+        );
 
         questsOverlay.SetActive(true);
     }

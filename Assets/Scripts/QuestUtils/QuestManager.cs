@@ -32,8 +32,8 @@ public class QuestManager : MonoBehaviour
         double minDistance = double.MaxValue;
         LocationQuest nearestLocationQuest = null;
         // Get nearest unattempted location quest
-        for (int i = 0; i < GameState.Instance.locationQuests.Count; i++) {
-            LocationQuest locationQuest = GameState.Instance.locationQuests[i];
+        Debug.LogWarning("in getnextlocationquest: " + GameState.Instance.locationQuests.Values.Count);
+        foreach (LocationQuest locationQuest in GameState.Instance.locationQuests.Values) {
             if (locationQuest.HasNotStarted()) {
                 double distance = 
                     MapManager.DistanceBetweenCoordinates(
@@ -45,6 +45,7 @@ public class QuestManager : MonoBehaviour
                 }
             }
         }
+
         if (nearestLocationQuest != null) {
             // Add quest to ongoing quests
             nearestLocationQuest.SetOngoing();
@@ -69,7 +70,7 @@ public class QuestManager : MonoBehaviour
 
     // Checks if any location quests have been completed, returns a quest if progressed or completed.
     public LocationQuest CheckLocationQuests(Texture2D image) {
-        foreach (LocationQuest quest in GameState.Instance.locationQuests) {
+        foreach (LocationQuest quest in GameState.Instance.locationQuests.Values) {
             // Only one ongoing location quest at a time
             if (quest.IsOnGoing() && quest.AttemptQuest(image)) {
                 if (quest.IsCompleted()) {

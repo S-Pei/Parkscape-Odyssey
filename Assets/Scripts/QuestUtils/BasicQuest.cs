@@ -1,8 +1,8 @@
 using UnityEngine;
 
 public class BasicQuest : Quest {
-    public BasicQuest(QuestType questType, string label, int target) 
-        : base(questType, label, target) {
+    public BasicQuest(QuestType questType, string label, Texture2D referenceImage, int target) 
+        : base(questType, label, referenceImage, target) {
             // Set basic quests to be ongoing upon creation
             SetOngoing();
         }

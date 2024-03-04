@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
@@ -72,9 +73,15 @@ public class GameState {
     // Medium Encounter IDs found by the player, to be shared with other players
     public HashSet<string> foundMediumEncounters = new();
 
+    // LOCATION QUESTS
+    // Map of location names to locationQuest objects, as well as
+    // files required for the object classifier
+    public Dictionary<string, LocationQuest> locationQuests = new();
+    public byte[] locationQuestVectors;
+    public byte[] locationQuestGraph;
+    public byte[] locationQuestLabels;
     // Quests
     public List<BasicQuest> basicQuests = new();
-    public List<LocationQuest> locationQuests = new();
 
     // Method will be called only during Game initialization.
     public void Initialize(string myID, string roomCode, Dictionary<string, string> players) {
@@ -103,8 +110,11 @@ public class GameState {
 
         isLeader = true;
         this.myID = myID;
+        FindAndLoadQuestFiles();
+
         Initialized = true;
         InitialiseCards();
+
     }
 
     // Method to specify the initial state of the game.
@@ -114,8 +124,22 @@ public class GameState {
         MyPlayer = myPlayer;
         OtherPlayers = otherPlayers;
 
+        FindAndLoadQuestFiles();
+
         Initialized = true;
         InitialiseCards();
+    }
+
+    public void UpdateLocationQuest(LocationQuest quest) {
+        CheckInitialised();
+        if (!locationQuests.ContainsKey(quest.Label)) {
+            locationQuests.Add(quest.Label, quest);
+        }
+    }
+
+    public void RemoveLocationQuest(string label) {
+        CheckInitialised();
+        locationQuests.Remove(label);
     }
 
     // This method returns a reference to a player with the given name.
@@ -144,6 +168,19 @@ public class GameState {
             }
         }
         return null;
+    }
+
+    public void FindAndLoadQuestFiles() {
+        UnityEngine.Debug.LogWarning("Finding and loading quest files. ShouldUseDefaultQuestFiles: " + FileUtils.ShouldUseDefaultQuestFiles());
+        if (FileUtils.ShouldUseDefaultQuestFiles()) {
+            locationQuestVectors = FileUtils.LoadBytesFromResources("locationQuestVectors");
+            locationQuestGraph = FileUtils.LoadBytesFromResources("locationQuestGraph");
+            locationQuestLabels = FileUtils.LoadBytesFromResources("locationQuestLabels");
+        } else {
+            locationQuestVectors = FileUtils.Load<byte[]>("locationQuestVectors", "quests");
+            locationQuestGraph = FileUtils.Load<byte[]>("locationQuestGraph", "quests");
+            locationQuestLabels = FileUtils.Load<byte[]>("locationQuestLabels", "quests");
+        }
     }
 
     public void AddCard(CardName card) {
@@ -298,10 +335,13 @@ public class GameState {
     }
 
     // --------------------------------  QUESTS --------------------------------
-    public void InitialiseQuests(List<Texture2D> referenceImages) {
+    public async Task InitialiseQuests() {
         Debug.Log("Initialising quests.");
+        // Initialise basic quests and set them in the GameState
         basicQuests = QuestFactory.CreateInitialBasicQuests();
-        locationQuests = QuestFactory.CreateInitialLocationQuests(referenceImages);
+
+        // Initialise location quests and set them in the GameState
+        locationQuests = await QuestFactory.CreateInitialLocationQuests();
         QuestManager.Instance.GetNextLocationQuest();
     }
 }

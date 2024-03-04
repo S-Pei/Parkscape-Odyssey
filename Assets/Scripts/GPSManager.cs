@@ -187,41 +187,24 @@ IEnumerator GPSLoc() {
 
     // ENCOUNTER SPAWNING
     // Leader gets medium encounter locations from web authoring tool
-    public async Task GetMediumEncounters() {
+    public void GetMediumEncounters() {
         if (GameState.Instance.MyPlayer.IsLeader) {
-            // TODO: get list from web authoring tool
-            // Hardcoded for now
             List<LatLon> encounterLocations = new List<LatLon>();
             encounterLocations.Add(new LatLon(51.496451, -0.176775));
             encounterLocations.Add(new LatLon(51.506061, -0.174226));
 
-            Debug.LogWarning("2. Getting locationQuests from the database");
-
-            // Synchronously wait for the list of locationQuests to be fetched from the database
-            List<LocationQuest> locationQuests = await DatabaseUtils.GetLocationQuestsWithTimeout(10);
-
-            Debug.LogWarning("8. LocationQuests: " + locationQuests.Count);
-
-            foreach (LocationQuest locationQuest in locationQuests) {
-                Debug.LogWarning("9. LocationQuest: " + locationQuest.Label + ", " + locationQuest.Location + ", " + $"[{string.Join(",", locationQuest.FeatureVector)}]");
-                encounterLocations.Add(locationQuest.Location);
-            }
-
-            // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
-            // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.39355, -0.1924046));
-
-            // Send medium encounters to players
             SetMediumEncounterID(encounterLocations);
-            
-            return;
         }
     }
 
-    public void SetMediumEncounterID(List<LatLon> locations) {
+    public static void SetMediumEncounterID(List<LatLon> locations) {
+        Debug.LogWarning("Setting medium encounter IDs");
         foreach (LatLon location in locations) {
             string encounterId = Guid.NewGuid().ToString();
+            Debug.LogWarning("Setting encounter ID: " + encounterId + " at location: " + location);
             GameState.Instance.mediumEncounterLocations.Add(encounterId, location);
         }
+        Debug.LogWarning("Medium encounters: " + GameState.Instance.mediumEncounterLocations.Count);
     }
 
     // Geolocation sharing

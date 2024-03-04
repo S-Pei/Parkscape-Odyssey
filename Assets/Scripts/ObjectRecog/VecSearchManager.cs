@@ -92,7 +92,7 @@ public class VecSearchManager : MonoBehaviour
         return texture;
     }
 
-    Texture2D ResizeImage(Texture2D originalTexture, int targetWidth, int targetHeight)
+    public static Texture2D ResizeImage(Texture2D originalTexture, int targetWidth, int targetHeight)
     {
         RenderTexture rt = new RenderTexture(targetWidth, targetHeight, 24);
         RenderTexture.active = rt;
@@ -111,7 +111,7 @@ public class VecSearchManager : MonoBehaviour
     private string LoadJsonFile(string jsonFilePath) {
         // Load the JSON file as a text asset
         TextAsset jsonTextAsset = Resources.Load<TextAsset>(Path.GetFileNameWithoutExtension(jsonFilePath));
-
+        
         if (jsonTextAsset != null)
         {
             // Access the JSON content as a string
