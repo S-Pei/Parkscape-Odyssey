@@ -103,10 +103,10 @@ public class ApproxNN : MonoBehaviour
 
     public void Load(string path) {
         BinaryFormatter formatter = new BinaryFormatter();
-        MemoryStream sampleVectorsStream = new MemoryStream(File.ReadAllBytes($"{path}.{VectorsPathSuffix}"));
+        MemoryStream sampleVectorsStream = new MemoryStream(File.ReadAllBytes($"{path}/{VectorsPathSuffix}"));
         this.vectors = (float[][])formatter.Deserialize(sampleVectorsStream);
 
-        MemoryStream labelsStream = new MemoryStream(File.ReadAllBytes($"{path}.{LabelsPathSuffix}"));
+        MemoryStream labelsStream = new MemoryStream(File.ReadAllBytes($"{path}/{LabelsPathSuffix}"));
         this.labels = (string[])formatter.Deserialize(labelsStream);
 
         using (var f = File.OpenRead($"{path}/{GraphpathSuffix}"))
