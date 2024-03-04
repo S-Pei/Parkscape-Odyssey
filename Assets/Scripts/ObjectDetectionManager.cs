@@ -18,7 +18,8 @@ public class ObjectDetectionManager : MonoBehaviour
     private GameManager gameManager;
 
     private Dictionary<string, float> objectDetectionTimes = new();
-    private const float detectionTTL = 3f;  // seconds
+    private const float detectionTTL = 2f;  // seconds
+    private const float confidenceThreshold = 0.7f;
 
     private void Start()
     {
@@ -67,8 +68,11 @@ public class ObjectDetectionManager : MonoBehaviour
                 var categoryToDisplay = categorizations[j];
 
                 resultString += "Detected " + $"{categoryToDisplay.CategoryName}: " + "with " + $"{categoryToDisplay.Confidence} Confidence \n";
+
                 // Add object to category.
-                AddToDetectionTimes(categoryToDisplay.CategoryName);
+                if (categoryToDisplay.Confidence >= confidenceThreshold) {
+                    AddToDetectionTimes(categoryToDisplay.CategoryName);
+                }
             }
         }
 
