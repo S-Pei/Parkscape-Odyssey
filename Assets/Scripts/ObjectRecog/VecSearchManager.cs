@@ -19,12 +19,8 @@ public class VecSearchManager : MonoBehaviour
     [SerializeField]
     private NNModel modelAsset;
     private Model m_RuntimeModel;
-    private IWorker worker;
-    private List<float[]> vectors = new List<float[]>();
-    private int dimension = 128;
-    private int vectorsCount = 100000;
+    private int imageDimension = 224;
     private int k = 5;
-    private static readonly System.Random _rand = new System.Random();
     private float[][] featureVectors;
     private string[] labels;
 
@@ -44,12 +40,10 @@ public class VecSearchManager : MonoBehaviour
         gameManager = gameManagerObj.GetComponent<GameManager>();
         // Initialize mobilenet encoder
         m_RuntimeModel = ModelLoader.Load(modelAsset);
-        Debug.Log("Testing name model: " + m_RuntimeModel.inputs[0].name);
-        worker = WorkerFactory.CreateWorker(WorkerFactory.Type.CSharpBurst, m_RuntimeModel);
         Initialize();
-        // Texture2D imageFromFile = LoadImage("Assets/Resources/speke-monument.jpg");
+        
+        // Texture2D imageFromFile = LoadImage("Assets/Resources/hyde_park.jpg");
         // string[] outputs = ClassifyImage(imageFromFile);
-        // Debug.Log(string.Join(", ", outputs));
     }
 
     // Initialize Approximate NN with training data
@@ -65,18 +59,20 @@ public class VecSearchManager : MonoBehaviour
     // Classify input image
     public string[] ClassifyImage(Texture2D image)
     {
-        image = ResizeImage(image, 224, 224);
+        image = ResizeImage(image, this.imageDimension, this.imageDimension);
         var input = new Tensor(image, channels: 3);
-        Debug.Log("Input tensor shape: " + input.shape);
+        var worker = WorkerFactory.CreateWorker(WorkerFactory.Type.CSharpBurst, m_RuntimeModel);
         worker.Execute(input);
         Tensor output = worker.PeekOutput();
 
         // transform tensor into float32 vector
         float[] queryFeatureVector = output.data.Download(output.shape);
-        Debug.Log("Feature vector: " + string.Join(", ", queryFeatureVector));
         input.Dispose();
+        worker.Dispose();
+
         // perform similarity search
-        string[] results = ApproxNN.Instance.Search(queryFeatureVector, 5); 
+        string[] results = ApproxNN.Instance.Search(queryFeatureVector, this.k); 
+        // Debug.Log("Search result: " + string.Join(", ", results));
         gameManager.LogTxt("Search result: " + string.Join(", ", results));
         
         return results;
@@ -149,10 +145,6 @@ public class VecSearchManager : MonoBehaviour
     private float[] parseTestJson(string jsonString) {
         Dictionary<string, float[]> testData = JsonConvert.DeserializeObject<Dictionary<string, float[]>>(jsonString);
         return testData["feature_vector"];
-    }
-
-    void OnDestroy() {
-        worker.Dispose();
     }
 }
 

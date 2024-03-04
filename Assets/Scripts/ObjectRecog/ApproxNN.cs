@@ -11,6 +11,7 @@ public class ApproxNN : MonoBehaviour
     private const string VectorsPathSuffix = "vectors.bytes";
     private const string LabelsPathSuffix = "labels.bytes";
     private const string GraphpathSuffix = "world.bytes";
+    private const float KNNThreshold = 0.5f;
 
     private SmallWorld<float[], float> world;
     private string[] labels;
@@ -46,7 +47,7 @@ public class ApproxNN : MonoBehaviour
                 M = 15,
                 LevelLambda = 1 / Math.Log(15),
             };
-        this.world = new SmallWorld<float[], float>(CosineDistance.NonOptimized, DefaultRandomGenerator.Instance, parameters);
+        this.world = new SmallWorld<float[], float>(CosineDistance.SIMDForUnits, DefaultRandomGenerator.Instance, parameters);
         this.world.AddItems(normalizedInputs);
         Debug.Log("World constructed");
     }
@@ -56,17 +57,31 @@ public class ApproxNN : MonoBehaviour
     {
         float[] normalizedQuery = NormalizeVector(query);
         var results = this.world.KNNSearch(normalizedQuery, k);
-        // var threshold = 1.0f;
-        // var filteredResults = results.Where(r => r.Distance < threshold).ToArray();
-        var indices = results.Select(r => r.Id).ToArray();
-        var labels = indices.Select(i => this.labels[i]).ToArray();
+        Debug.Log("Labels " + string.Join(", ", results.Select(r => this.labels[r.Id])));
+        Debug.Log("Distances " + string.Join(", ", results.Select(r => r.Distance)));
 
-        Debug.Log(string.Join(", ", results.Select(r => r.Distance)));
-        return labels;
-        // return string.Join(", ", labels);
-        // var bestResult = results.OrderBy(r => r.Distance).First();
-        // Debug.Log("Search result: " + bestResult.ToString());
-        // return bestResult.ToString();
+        var filteredResults = results.Where(r => r.Distance < KNNThreshold).ToArray();
+        if (filteredResults.Length == 0) {
+            return new string[0];
+        }
+        return new string[] { WeightedNN(filteredResults) };
+    }
+    
+    /*** weighted nearest neighbour ***/
+    private string WeightedNN(SmallWorld<float[], float>.KNNSearchResult[] results) {
+        var distances = results.Select(r => r.Distance).ToArray();
+        var weights = distances.Select(d => 1 / (d + float.Epsilon)).ToArray();
+        var labelWeights = new Dictionary<string, float>();
+        for (int i = 0; i < results.Length; i++) {
+            var label = this.labels[results[i].Id];
+            if (labelWeights.ContainsKey(label)) {
+                labelWeights[label] += weights[i];
+            } else {
+                labelWeights[label] = weights[i];
+            }
+        }
+        Debug.Log("Label weights " + string.Join(", ", labelWeights.Select(kv => $"{kv.Key}: {kv.Value}")));
+        return labelWeights.OrderByDescending(kv => kv.Value).First().Key;
     }
 
     public void Save(string path) {
@@ -74,13 +89,13 @@ public class ApproxNN : MonoBehaviour
 
         MemoryStream sampleVectorsStream = new MemoryStream();
         formatter.Serialize(sampleVectorsStream, vectors);
-        File.WriteAllBytes($"{path}.{VectorsPathSuffix}", sampleVectorsStream.ToArray());
+        File.WriteAllBytes($"{path}/{VectorsPathSuffix}", sampleVectorsStream.ToArray());
 
         MemoryStream labelsStream = new MemoryStream();
         formatter.Serialize(labelsStream, labels);
-        File.WriteAllBytes($"{path}.{LabelsPathSuffix}", labelsStream.ToArray());
+        File.WriteAllBytes($"{path}/{LabelsPathSuffix}", labelsStream.ToArray());
 
-        using (var f = File.Open($"{path}.{GraphpathSuffix}", FileMode.Create))
+        using (var f = File.Open($"{path}/{GraphpathSuffix}", FileMode.Create))
         {
             world.SerializeGraph(f);
         }
@@ -89,14 +104,14 @@ public class ApproxNN : MonoBehaviour
     public void Load(string path) {
         BinaryFormatter formatter = new BinaryFormatter();
         MemoryStream sampleVectorsStream = new MemoryStream(File.ReadAllBytes($"{path}.{VectorsPathSuffix}"));
-        vectors = (float[][])formatter.Deserialize(sampleVectorsStream);
+        this.vectors = (float[][])formatter.Deserialize(sampleVectorsStream);
 
         MemoryStream labelsStream = new MemoryStream(File.ReadAllBytes($"{path}.{LabelsPathSuffix}"));
-        labels = (string[])formatter.Deserialize(labelsStream);
+        this.labels = (string[])formatter.Deserialize(labelsStream);
 
         using (var f = File.OpenRead($"{path}/{GraphpathSuffix}"))
         {
-            world = SmallWorld<float[], float>.DeserializeGraph(vectors, CosineDistance.NonOptimized, DefaultRandomGenerator.Instance, f);
+            this.world = SmallWorld<float[], float>.DeserializeGraph(vectors, CosineDistance.SIMDForUnits, DefaultRandomGenerator.Instance, f);
         }
 
         Debug.Log("World loaded");
