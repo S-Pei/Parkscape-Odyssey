@@ -179,7 +179,7 @@ public static class DatabaseUtils {
             LatLon location = new LatLon(geoPoint.Latitude, geoPoint.Longitude);
             
             // Create the LocationQuest object to be returned
-            return new LocationQuest(label, texture, featureVector, location);
+            return new LocationQuest(QuestType.FIND, label, texture, location);
         } catch (StorageException ex) {
             Debug.LogWarning("Failed to fetch a location quest.");
         } catch (OperationCanceledException ex) {

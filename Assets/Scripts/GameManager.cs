@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
-using System.Collections;
+using System.Collections.Generic;
 using System;
+using TMPro;
 
 
 public class GameManager : MonoBehaviour
@@ -15,20 +16,30 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private GameObject arSession;
-    
+
     [SerializeField]
-    private GameObject xrInteractionManager;
-    
-    [SerializeField]
-    private GameObject xrOrigin;
+    private GameObject debugLogger;
 
     private Boolean inARMode = false;
 
     // Start is called before the first frame update
     void Start() {
-        databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
+        GameObject databseOjb = GameObject.FindWithTag("Database");
+        if (databseOjb == null) {
+            Debug.LogError("Database not found.");
+        } else {
+            databaseManager = databseOjb.GetComponent<DatabaseManager>();
+        }
+
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
+
+        // Initialise Quests
+        Texture2D speke = Resources.Load<Texture2D>("Assets/Resources/speke-monument.jpg");
+        Texture2D albert = Resources.Load<Texture2D>("Assets/Resources/albert_memorial_test.jpeg");
+        Texture2D peter = Resources.Load<Texture2D>("Assets/Resources/peter_pan_test_img.jpeg");
+        Debug.Log("Going to initialise quests.");
+        GameState.Instance.InitialiseQuests(new List<Texture2D>{peter, albert, speke});
     }
 
     // Update is called once per frame
@@ -74,20 +85,24 @@ public class GameManager : MonoBehaviour
         gameInterfaceManager.OpenPlayerView();
     }
 
+    public void OpenQuests() {
+        gameInterfaceManager.OpenQuests();
+    }
+
     //------------------------------- AR CAMERA -------------------------------
     public void ToggleARCamera() {
         if (inARMode) {
             CloseARSession();
+            gameInterfaceManager.SetARCameraToggle(false);
         } else {
             OpenARSession();
+            gameInterfaceManager.SetARCameraToggle(true);
         }
     }
 
     private void OpenARSession() {
         mainCamera.SetActive(false);
-        arSession.SetActive(true);
-        xrInteractionManager.SetActive(true);
-        xrOrigin.SetActive(true);
+        ARManager.Instance.StartAR();
 
         // Disable map interactions
         MapManager.Instance.DisableMapInteraction();
@@ -96,14 +111,23 @@ public class GameManager : MonoBehaviour
     }
 
     private void CloseARSession() {
-        arSession.SetActive(false);
-        xrInteractionManager.SetActive(false);
-        xrOrigin.SetActive(false);
+        ARManager.Instance.StopAR();
         mainCamera.SetActive(true);
 
         // Enable map interactions
         MapManager.Instance.EnableMapInteraction();
 
         inARMode = false;
+    }
+
+
+    // ------------------------------ BUILD DEBUG ------------------------------
+    public void LogTxt(string text) {
+        debugLogger.GetComponent<TextMeshProUGUI>().text += "\n";
+        debugLogger.GetComponent<TextMeshProUGUI>().text += text;
+    }
+
+    public void RelogTxt(string text) {
+        debugLogger.GetComponent<TextMeshProUGUI>().text = text;
     }
 }
