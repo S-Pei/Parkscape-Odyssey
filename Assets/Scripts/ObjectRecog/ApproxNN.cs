@@ -47,7 +47,7 @@ public class ApproxNN : MonoBehaviour
                 M = 15,
                 LevelLambda = 1 / Math.Log(15),
             };
-        this.world = new SmallWorld<float[], float>(CosineDistance.SIMDForUnits, DefaultRandomGenerator.Instance, parameters);
+        this.world = new SmallWorld<float[], float>(CosineDistance.ForUnits, DefaultRandomGenerator.Instance, parameters);
         this.world.AddItems(normalizedInputs);
         Debug.Log("World constructed");
     }
@@ -111,7 +111,7 @@ public class ApproxNN : MonoBehaviour
 
         using (var f = File.OpenRead($"{path}/{GraphpathSuffix}"))
         {
-            this.world = SmallWorld<float[], float>.DeserializeGraph(vectors, CosineDistance.SIMDForUnits, DefaultRandomGenerator.Instance, f);
+            this.world = SmallWorld<float[], float>.DeserializeGraph(vectors, CosineDistance.ForUnits, DefaultRandomGenerator.Instance, f);
         }
 
         Debug.Log("World loaded");
