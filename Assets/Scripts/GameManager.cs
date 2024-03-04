@@ -33,13 +33,17 @@ public class GameManager : MonoBehaviour
 
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
-        databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
+        // databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
 
         // Initialise Quests
-        Texture2D speke = Resources.Load<Texture2D>("Assets/Resources/speke-monument.jpg");
-        Texture2D albert = Resources.Load<Texture2D>("Assets/Resources/albert_memorial_test.jpeg");
-        Texture2D peter = Resources.Load<Texture2D>("Assets/Resources/peter_pan_test_img.jpeg");
+        Texture2D speke = VecSearchManager.LoadImage("Assets/Resources/speke-monument.jpg");
+        Texture2D albert = VecSearchManager.LoadImage("Assets/Resources/albert_memorial_test.jpg");
+        Texture2D peter = VecSearchManager.LoadImage("Assets/Resources/peter_pan_test_img.jpg");
         Debug.Log("Going to initialise quests.");
+        speke = VecSearchManager.ResizeImage(speke, 150, 150);
+        albert = VecSearchManager.ResizeImage(albert, 150, 150);
+        peter = VecSearchManager.ResizeImage(peter, 150, 150);
+        Debug.Log(speke);
         GameState.Instance.InitialiseQuests(new List<Texture2D>{peter, albert, speke});
     }
 

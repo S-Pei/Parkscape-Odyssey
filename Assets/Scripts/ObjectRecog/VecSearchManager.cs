@@ -78,7 +78,7 @@ public class VecSearchManager : MonoBehaviour
         return results;
     }
 
-    Texture2D LoadImage(string path)
+    public static Texture2D LoadImage(string path)
     {
         // Read the image bytes from the file path
         byte[] fileData = System.IO.File.ReadAllBytes(path);
@@ -92,7 +92,7 @@ public class VecSearchManager : MonoBehaviour
         return texture;
     }
 
-    Texture2D ResizeImage(Texture2D originalTexture, int targetWidth, int targetHeight)
+    public static Texture2D ResizeImage(Texture2D originalTexture, int targetWidth, int targetHeight)
     {
         RenderTexture rt = new RenderTexture(targetWidth, targetHeight, 24);
         RenderTexture.active = rt;
