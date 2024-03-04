@@ -74,7 +74,7 @@ public class GameState {
     // LOCATION QUESTS
     // Map of location names to locationQuest objects, as well as
     // files required for the object classifier
-    public Dictionary<string, LocationQuest> locationQuests;
+    public Dictionary<string, LocationQuest> locationQuests = new();
     public byte[] locationQuestVectors;
     public byte[] locationQuestGraph;
     public byte[] locationQuestLabels;
@@ -124,6 +124,16 @@ public class GameState {
 
         Initialized = true;
         InitialiseCards();
+    }
+
+    public void UpdateLocationQuest(LocationQuest quest) {
+        CheckInitialised();
+        locationQuests[quest.Label] = quest;
+    }
+
+    public void RemoveLocationQuest(string label) {
+        CheckInitialised();
+        locationQuests.Remove(label);
     }
 
     // This method returns a reference to a player with the given name.

@@ -46,13 +46,15 @@ public static class FileUtils {
     // asynchronously. Also, update the last quest file update time in PlayerPrefs.
     public static IEnumerator ProcessNewQuestFiles(
         byte[] locationQuestVectors, byte[] locationQuestGraph,
-        byte[] locationQuestLabels, string folder="quests", string root=null) {
+        byte[] locationQuestLabels, string folder="quests", string root=null, bool updateGameState=true) {
         Debug.LogWarning("Saving quest files to disk on new thread");
 
-        // Save the quest files to the GameState instance
-        GameState.Instance.locationQuestVectors = locationQuestVectors;
-        GameState.Instance.locationQuestGraph = locationQuestGraph;
-        GameState.Instance.locationQuestLabels = locationQuestLabels;
+        if (updateGameState) {
+            // Save the quest files to the GameState instance
+            GameState.Instance.locationQuestVectors = locationQuestVectors;
+            GameState.Instance.locationQuestGraph = locationQuestGraph;
+            GameState.Instance.locationQuestLabels = locationQuestLabels;
+        }
 
         // Write the quest files to disk in a separate thread to avoid
         // blocking the main thread with slow disk I/O

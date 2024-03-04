@@ -122,31 +122,46 @@ public static class DatabaseUtils {
             }
         }
 
-        // Start a Task for each file fetch and pause until all of them are retrieved
-        byte[] locationQuestVectors = await GetFileAsync("locationQuestVectors.bytes");
-        byte[] locationQuestGraph = await GetFileAsync("locationQuestGraph.bytes");
-        byte[] locationQuestLabels = await GetFileAsync("locationQuestLabels.bytes");
-
-
         // Pause this method until all the tasks complete, at which point we have all
         // the required data to apply the update
         foreach (LocationQuest locationQuest in await Task.WhenAll(tasks)) {
             if (locationQuest != null) {
                 // Add the location quest to GameState if it is not already there, or
                 // update it if it is
-                GameState.Instance.locationQuests[locationQuest.Label] = locationQuest;
+                Debug.LogWarning("Update: " + locationQuest.Label);
+                GameState.Instance.UpdateLocationQuest(locationQuest);
+            } else {
+                Debug.LogWarning("Location quest was null: " + locationQuest.Label);
             }
         }
 
         // Remove the location quests that were deleted from the database
         foreach (string label in questsToRemove) {
-            GameState.Instance.locationQuests.Remove(label);
+            Debug.LogWarning("Removing location quest: " + label);
+            GameState.Instance.RemoveLocationQuest(label);
         }
+
+        // Start a Task for each file fetch and pause until all of them are retrieved
+        byte[] locationQuestVectors = await GetFileAsync("locationQuestVectors.bytes");
+        byte[] locationQuestGraph = await GetFileAsync("locationQuestGraph.bytes");
+        byte[] locationQuestLabels = await GetFileAsync("locationQuestLabels.bytes");
+
+        // Save the location quest files to GameState; the files will be saved to disk
+        // in the caller (as we can't pass in a ref to it here)
+        GameState.Instance.locationQuestVectors = locationQuestVectors;
+        GameState.Instance.locationQuestGraph = locationQuestGraph;
+        GameState.Instance.locationQuestLabels = locationQuestLabels;
 
         // Save the location quest files to disk; we will know this operation is complete when
         // LastQuestFileUpdate in PlayerPrefs updates
         caller.StartCoroutine(FileUtils.ProcessNewQuestFiles(
-            locationQuestVectors, locationQuestGraph, locationQuestLabels));
+            locationQuestVectors,
+            locationQuestGraph,
+            locationQuestLabels,
+            updateGameState: false));
+
+        // Write the updated locationQuests to disk
+        FileUtils.Save(new LocationQuestStore(new List<LocationQuest>(GameState.Instance.locationQuests.Values)), "locationQuests", "quests");
     }
 
     /*

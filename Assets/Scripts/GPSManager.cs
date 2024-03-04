@@ -218,13 +218,16 @@ IEnumerator GPSLoc() {
             Debug.LogWarning("Setting encounter ID: " + encounterId + " at location: " + location);
             GameState.Instance.mediumEncounterLocations.Add(encounterId, location);
         }
+        Debug.LogWarning("Medium encounters: " + GameState.Instance.mediumEncounterLocations.Count);
     }
 
     public void SetLocationQuests(List<LocationQuest> locationQuests) {
         Debug.LogWarning("Setting location quests");
         foreach (LocationQuest locationQuest in locationQuests) {
+            Debug.LogWarning("Setting location quest: " + locationQuest.Label + " at location: " + locationQuest.Location);
             GameState.Instance.locationQuests.Add(locationQuest.Label, locationQuest);
         }
+        Debug.LogWarning("Location quests: " + GameState.Instance.locationQuests.Count);
     }
 
     // Geolocation sharing

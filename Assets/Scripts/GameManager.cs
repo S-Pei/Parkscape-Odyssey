@@ -88,12 +88,23 @@ public class GameManager : MonoBehaviour
         Task task = DatabaseUtils.ProcessLocationQuestsUpdateAsync(changes, this);
 
         // Wait for the task to complete and for the last quest file update to change
-        // The second condition is to ensure that the quest files have been saved to both
-        // GameState and disk (we may run into read/write race conditions on the GameState
-        // fields if we don't wait)
+        // The second condition is to ensure that the quest files have been saved to
+        // the GameState. There may be read/write race conditions on the GameState otherwise.
         while (!task.IsCompleted || previousUpdate == PlayerPrefs.GetString("LastQuestFileUpdate")) {
             yield return null;
         }
+
+        // // Save the location quest files to disk; we will know this operation is complete when
+        // // LastQuestFileUpdate in PlayerPrefs updates
+        // StartCoroutine(FileUtils.ProcessNewQuestFiles(
+        //     GameState.Instance.locationQuestVectors,
+        //     GameState.Instance.locationQuestGraph,
+        //     GameState.Instance.locationQuestLabels,
+        //     updateGameState: false));
+
+        // // Write the updated locationQuests to disk
+        // FileUtils.Save(new LocationQuestStore(new List<LocationQuest>(GameState.Instance.locationQuests.Values)), "locationQuests", "quests");
+
 
         // // Reset the flag
         // IsProcessingNewLocationQuests = false;
