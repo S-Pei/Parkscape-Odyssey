@@ -209,7 +209,7 @@ public class MapManager : MonoBehaviour
                 foreach (string id in newFoundEncounters) {
                     if (GameState.Instance.foundMediumEncounters.Contains(id))
                         continue;
-                    encounterController.CreateMonsterSpawn(id, GameState.Instance.mediumEncounterLocations[id], EncounterType.MEDIUM_BOSS);
+                    encounterController.CreateMonsterSpawn(id, GameState.Instance.mediumEncounterLocations[id].Item1, EncounterType.MEDIUM_BOSS);
                 }
                 GameState.Instance.foundMediumEncounters.UnionWith(newFoundEncounters);
                 break;
@@ -506,6 +506,22 @@ public class MapMessage : MessageInfo
         return dict;
     }
 
+    public static Dictionary<string, Dictionary<string, double>> LatLonToDict(Dictionary<string, (LatLon, string)> latLonDict) {
+        Dictionary<string, Dictionary<string, double>> dict = new();
+        foreach (var entry in latLonDict) {
+            dict.Add(entry.Key, LatLonToDict(entry.Value.Item1));
+        }
+        return dict;
+    }
+
+    public static Dictionary<string, string> GetARLocs(Dictionary<string, (LatLon, string)> latLonDict) {
+        Dictionary<string, string> dict = new();
+        foreach (var entry in latLonDict) {
+            dict.Add(entry.Key, entry.Value.Item2);
+        }
+        return dict;
+    }
+
     public static LatLon DictToLatLon(Dictionary<string, double> dict) {
         return new LatLon(dict["latitude"], dict["longitude"]);
     }
@@ -516,6 +532,15 @@ public class MapMessage : MessageInfo
             latLonDict.Add(entry.Key, DictToLatLon(entry.Value));
         }
         return latLonDict;
+    }
+
+    public static Dictionary<string, (LatLon, string)> ProcessMediumEncounterLocations(
+        Dictionary<string, Dictionary<string, double>> locations, Dictionary<string, string> arlocations) {
+            Dictionary<string, (LatLon, string)> res = new();
+            foreach (KeyValuePair<string, Dictionary<string, double>> location in locations) {
+                res.Add(location.Key, (new LatLon(location.Value["latitude"], location.Value["longitude"]), arlocations[location.Key]));
+            }
+            return res;
     }
     
     public string toJson() {

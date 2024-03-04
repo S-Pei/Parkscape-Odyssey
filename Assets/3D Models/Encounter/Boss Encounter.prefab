@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4998299671219079276}
   - component: {fileID: 426117131773532034}
-  - component: {fileID: 4133670718838564017}
   m_Layer: 0
   m_Name: Boss Encounter
   m_TagString: Untagged
@@ -55,18 +54,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &4133670718838564017
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4108514402268157196}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 068804955c9ef484b876217c548d2a49, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &4589713768008031067
 PrefabInstance:
   m_ObjectHideFlags: 0

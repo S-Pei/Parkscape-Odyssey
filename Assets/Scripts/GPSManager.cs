@@ -28,8 +28,14 @@ public class GPSManager : MonoBehaviour
             }
             return instance;
         }
-    
     }
+
+    private Dictionary<LatLon, string> mediumEncounterLocations = new()
+    {
+        // new LatLon(51.496451, -0.176775),
+        // new LatLon(51.506061, -0.174226),
+        {new LatLon(51.493553, -0.192372), "AR Location (Kenway)"},
+    };
 
     void Awake() {
         // Start GPS location service
@@ -188,24 +194,25 @@ IEnumerator GPSLoc() {
         if (GameState.Instance.MyPlayer.IsLeader) {
             // TODO: get list from web authoring tool
             // Hardcoded for now
-            List<LatLon> encounterLocations = new List<LatLon>();
-            encounterLocations.Add(new LatLon(51.496451, -0.176775));
-            encounterLocations.Add(new LatLon(51.506061, -0.174226));
+            // List<LatLon> encounterLocations = new List<LatLon>
+            // {
+            //     new LatLon(51.496451, -0.176775),
+            //     new LatLon(51.506061, -0.174226)
+            // };
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.39355, -0.1924046));
 
-            Debug.Log("Sending encounter info to players in lobby");
             // Send medium encounters to players
-            SetMediumEncounterID(encounterLocations);
-            Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
-            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
+            SetMediumEncounterID();
+            Dictionary<string, Dictionary<string, double>> medEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
+            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), medEncounterLocations).toJson());
         }
     }
 
-    public void SetMediumEncounterID(List<LatLon> locations) {
-        foreach (LatLon location in locations) {
+    public void SetMediumEncounterID() {
+        foreach (LatLon location in mediumEncounterLocations.Keys) {
             string encounterId = Guid.NewGuid().ToString();
-            GameState.Instance.mediumEncounterLocations.Add(encounterId, location);
+            GameState.Instance.mediumEncounterLocations.Add(encounterId, (location, mediumEncounterLocations[location]));
         }
     }
 

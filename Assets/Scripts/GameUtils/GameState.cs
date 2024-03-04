@@ -64,7 +64,7 @@ public class GameState {
 
     // MAP
     // Medium Encounter Locations broadcasted by the leader/ web authoring tool in the beginning of the game
-    public Dictionary<string, LatLon> mediumEncounterLocations = new();
+    public Dictionary<string, (LatLon, string)> mediumEncounterLocations = new();
     // Medium Encounter IDs found by the player, to be shared with other players
     public HashSet<string> foundMediumEncounters = new();
 
