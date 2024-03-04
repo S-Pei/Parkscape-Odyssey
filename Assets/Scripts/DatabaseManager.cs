@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
@@ -10,9 +11,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 using Firebase;
+using Firebase.Extensions;
 using Firebase.Firestore;
 using Firebase.Storage;
-using Firebase.Extensions; // for ContinueWithOnMainThread
 
 
 public class DatabaseManager : MonoBehaviour {
@@ -24,9 +25,12 @@ public class DatabaseManager : MonoBehaviour {
 
     public FirebaseFirestore Database { get; private set; }
 
+    public string dataPath { get; private set; }
+
     void Awake() {
         // Make sure we only ever have one instance of this object
         GameObject[] objs = GameObject.FindGameObjectsWithTag("Database");
+        dataPath = Path.Combine(Application.persistentDataPath, "data/");
 
         if (objs.Length > 1) {
             Debug.Log("Found more than one database object - destroying the new one.");

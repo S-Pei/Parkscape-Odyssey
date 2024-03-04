@@ -13,8 +13,7 @@ using Microsoft.Geospatial;
 
 public static class FileUtils {
     // This is the path where data files (e.g. for OR location quests) should be stored.
-    // TODO: For complete documentation of the structure of this directory, see XXX. 
-    public static readonly string dataPath = Path.Combine(Application.persistentDataPath, "data/");
+    // TODO: For complete documentation of the structure of this directory, see XXX.
 
     // Flag to indicate whether file saving has completed on a separate thread
     private static volatile bool filesSaved_Threaded = false;
@@ -22,7 +21,7 @@ public static class FileUtils {
     // Return the full filepath in the Application's persistant data folder
     public static string GetFilePath(string fileName, string folder="", string root=null) {
         // return Path.Combine(DataPath, folder, fileName);
-        return Path.Combine(root != null ? root : dataPath, folder, fileName);
+        return Path.Combine(root != null ? root : DatabaseManager.Instance.dataPath, folder, fileName);
     }
 
     /*
@@ -122,7 +121,7 @@ public static class FileUtils {
     private static void SaveFilesThreaded(Dictionary<string, byte[]> files, string folder="quests", string root=null) {
         new Thread(() => {
             foreach (var file in files) {
-                Save(file.Value, file.Key, folder, root != null ? root : dataPath);
+                Save(file.Value, file.Key, folder, root != null ? root : DatabaseManager.Instance.dataPath);
             }
             Debug.LogWarning("Saved quest files to disk");
 
