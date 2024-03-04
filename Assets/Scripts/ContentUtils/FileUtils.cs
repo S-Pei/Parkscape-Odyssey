@@ -47,6 +47,8 @@ public static class FileUtils {
     public static IEnumerator ProcessNewQuestFiles(
         byte[] locationQuestVectors, byte[] locationQuestGraph,
         byte[] locationQuestLabels, string folder="quests", string root=null) {
+        Debug.LogWarning("Saving quest files to disk on new thread");
+
         // Save the quest files to the GameState instance
         GameState.Instance.locationQuestVectors = locationQuestVectors;
         GameState.Instance.locationQuestGraph = locationQuestGraph;
@@ -63,6 +65,8 @@ public static class FileUtils {
         while (!filesSaved_Threaded) {
             yield return null;
         }
+
+        Debug.LogWarning("Quest files saved to disk on new thread");
 
         filesSaved_Threaded = false;
 
@@ -85,7 +89,8 @@ public static class FileUtils {
 
         // If the data is already a byte array, we can save it directly
         if (typeof(TData) != typeof(byte[])) {
-            string jsonData = JsonUtility.ToJson(data, false);
+            string jsonData = JsonUtility.ToJson(data, true);
+            Debug.LogWarning("JsonData: " + jsonData + " (type: " + typeof(TData) + ")");
             if (typeof(TData) == typeof(List<int>)) {
                 // Print each element of the list
                 List<int> list = (List<int>)Convert.ChangeType(data, typeof(List<int>));
@@ -163,6 +168,8 @@ public static class FileUtils {
         // Convert the byte array to json
         string jsonData;
         jsonData = Encoding.ASCII.GetString(jsonDataAsBytes);
+
+        Debug.LogWarning("JsonData: " + jsonData);
 
         // Convert to the specified object type
         TData returnedData = JsonUtility.FromJson<TData>(jsonData);

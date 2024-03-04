@@ -20,6 +20,7 @@ public class FileUtilsTest {
         public string testString;
         public int testInt;
         public float[] testFloatArray;
+        public List<int> testList;
     }
 
     public string root = TestContext.CurrentContext.TestDirectory;
@@ -73,6 +74,7 @@ public class FileUtilsTest {
             testString = "Hello, World!",
             testInt = 42,
             testFloatArray = new float[] { 1.0f, 2.0f, 3.0f },
+            testList = new List<int> { 1, 2, 3 }
         };
 
         FileUtils.Save(data, fileName, folder, root);
@@ -90,6 +92,7 @@ public class FileUtilsTest {
         Assert.AreEqual(data.testString, savedSerializableClass.testString);
         Assert.AreEqual(data.testInt, savedSerializableClass.testInt);
         Assert.AreEqual(data.testFloatArray, savedSerializableClass.testFloatArray);
+        Assert.AreEqual(data.testList, savedSerializableClass.testList);
 
         yield return null;
     }

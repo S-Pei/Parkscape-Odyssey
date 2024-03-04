@@ -201,7 +201,7 @@ IEnumerator GPSLoc() {
             // Add a medium encounter for each location
             foreach (LocationQuest locationQuest in locationQuests) {
                 Debug.LogWarning("9. LocationQuest: " + locationQuest.Label + ", " + locationQuest.Location);
-                encounterLocations.Add(locationQuest.Location);
+                encounterLocations.Add(new LatLon(locationQuest.Location.Latitude, locationQuest.Location.Longitude));
             }
 
             SetMediumEncounterID(encounterLocations);

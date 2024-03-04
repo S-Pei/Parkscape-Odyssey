@@ -190,12 +190,22 @@ public static class DatabaseUtils {
         }
     }
 
-    
     // Get all the location quests from the database and return them asynchronously
     // The cancellation token is used to cancel the operation if it takes too long
     private static async Task<List<LocationQuest>> GetLocationQuestsAsync(
         CancellationToken token=default(CancellationToken)) {
         try {
+            // Load any location quests stored on disk first
+            LocationQuestStore existingLocationQuests = null;
+
+            if (File.Exists(FileUtils.GetFilePath("locationQuests", "quests"))) {
+                // Load the location quests from the file
+                Debug.LogWarning("2. Found location quests on disk.");
+                existingLocationQuests = FileUtils.Load<LocationQuestStore>("locationQuests", "quests");
+            } else {
+                Debug.LogWarning("2. No location quests found on disk.");
+            }
+
             // Get a reference to the locationQuests collection
             Query locationQuestsQuery = database.Collection("locationQuests");
 
@@ -203,7 +213,6 @@ public static class DatabaseUtils {
             // 'await' will return control to the caller while the query is in progress
             QuerySnapshot snapshot = await locationQuestsQuery.GetSnapshotAsync();
             Debug.LogWarning("3. Got location quests from the database.");
-            
             
             // Keep track of the asynchronous tasks we are about to start
             // so we can wait for them all to complete
@@ -228,12 +237,33 @@ public static class DatabaseUtils {
                 }
             }
 
+            // If we are here, fetching the location quests was successful
+            // Save the fetched location quests to disk if there are any
+            // If not, default to using the existing location quests
+            if (locationQuests.Count == 0 && existingLocationQuests != null) {
+                Debug.LogWarning("8. Using existing location quests.");
+                locationQuests = existingLocationQuests.quests;
+            } else if (locationQuests.Count > 0) {
+                Debug.LogWarning("8. Saving location quests to disk.");
+                LocationQuestStore newLocationQuests = new LocationQuestStore(locationQuests);
+                FileUtils.Save(newLocationQuests, "locationQuests", "quests");
+            }
+
             // Return the list of LocationQuest objects
             return locationQuests;
         } catch (AggregateException ex) {
             foreach (var innerException in ex.InnerExceptions) {
                 Debug.LogException(innerException);
             }
+        }
+
+        // If we are here, fetching the location quests failed
+        // Return the existing location quests on disk if there are any
+        if (File.Exists(FileUtils.GetFilePath("locationQuests", "quests"))) {
+            Debug.LogWarning("9. Using existing location quests.");
+            return FileUtils.Load<LocationQuestStore>("locationQuests", "quests").quests;
+        } else {
+            Debug.LogWarning("9. No location quests found.");
             return new List<LocationQuest>();
         }
     }
@@ -265,6 +295,9 @@ public static class DatabaseUtils {
         // Convert the downloaded byte array to a Texture2D
         Texture2D texture = new Texture2D(2, 2);
         texture.LoadImage(referenceImage);
+
+        // Save the reference image to persistent data storage, in the referenceImages folder
+        FileUtils.Save(referenceImage, locationQuestDocument.Id + ".jpg", "referenceImages");
 
         // Extract the other fields from the document to construct a LocationQuest object
         Dictionary<string, object> locationQuestData = locationQuestDocument.ToDictionary();

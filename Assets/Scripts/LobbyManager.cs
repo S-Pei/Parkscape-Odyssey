@@ -150,11 +150,11 @@ public class LobbyManager : MonoBehaviour {
 
         // Save the files to disk
         Debug.LogWarning("10. Saving location quest files to disk");
-        // FileUtils.ProcessNewQuestFiles(
-        //     locationQuestVectors.Result,
-        //     locationQuestGraph.Result,
-        //     locationQuestLabels.Result
-        // );
+        yield return FileUtils.ProcessNewQuestFiles(
+            locationQuestVectors.Result,
+            locationQuestGraph.Result,
+            locationQuestLabels.Result
+        );
 
         // Unload the loading scene
         SceneManager.UnloadSceneAsync("Initialisation");
