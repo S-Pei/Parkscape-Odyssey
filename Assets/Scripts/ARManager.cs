@@ -174,7 +174,6 @@ public class ARManager : MonoBehaviour
         if (locationQuest != null) {
             successQuest = locationQuest;
             gameManager.LogTxt("Location quest :" + locationQuest.Label + " progress: " + locationQuest.Progress);
-            ARQuestRewardHandler.TriggerReward(locationQuest);
         } else {
             gameManager.LogTxt("No location quest progress.");
             // Attempt basic Quests if location quest not fulfilled
@@ -186,7 +185,6 @@ public class ARManager : MonoBehaviour
                 if (basicQuest.IsCompleted()) {
                     successQuest = basicQuest;
                     gameManager.LogTxt("Basic quest completed.");
-                    ARQuestRewardHandler.TriggerReward(basicQuest);
                 }
             } else {
                 gameManager.LogTxt("No basic quest progress.");
@@ -211,6 +209,16 @@ public class ARManager : MonoBehaviour
         Debug.Log("Showing quest result pop up.");
         QuestsProgressPopUpManager questResultPopUpManager = questResultPopUp.GetComponent<QuestsProgressPopUpManager>();
         questResultPopUpManager.ShowQuestResultPopUp(quest);
+    }
+
+    public void TriggerReward(Quest quest) {
+        if (quest != null) {
+            if (quest is LocationQuest) {
+                ARQuestRewardHandler.TriggerReward((LocationQuest) quest);
+            } else {
+                ARQuestRewardHandler.TriggerReward((BasicQuest) quest);
+            }
+        }
     }
 
     // NOT USED FOR NOW
