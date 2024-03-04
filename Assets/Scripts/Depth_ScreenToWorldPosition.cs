@@ -29,6 +29,10 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private Vector3? fishingAnchorPosition = null;
 
     [SerializeField]
+    private GameObject questRewardHandlerObj;
+    private ARQuestRewardHandler questRewardHandler;
+
+    [SerializeField]
     private GameObject waterRippleEffect;
     private bool fishingInCooldown = false;
     private bool isFishing = false;
@@ -40,11 +44,13 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private float FISHING_CLICK_BOUND = 300;
     private float FISHING_COOLDOWN = 2; // Seconds
     private DateTime FishingRefreshTime;
+    private const float REWARD_CHANCE = 0.3f;
 
     void Start() 
     {
         semanticQuerying = segmentationManager.GetComponent<SemanticQuerying>();
         gameManager = gameManagerObj.GetComponent<GameManager>();
+        questRewardHandler = questRewardHandlerObj.GetComponent<ARQuestRewardHandler>();
 
         fishingRodLine = overlayCamera.GetComponent<LineRenderer>();
         fishingRodLine.positionCount = 2;
@@ -164,7 +170,10 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                     && clickedPosition.y <= Mathf.Min(Screen.height, anchorScreenPosition.y + FISHING_CLICK_BOUND)
                     && clickedPosition.y >= Mathf.Max(0, anchorScreenPosition.y - FISHING_CLICK_BOUND)) {
                 gameManager.LogTxt("Fishing reward clicked, getting reward...");
-                fishingRod.GetComponent<AudioSource>().Play();
+                if (UnityEngine.Random.value <= REWARD_CHANCE)
+                    questRewardHandler.TriggerReward(waterRippleEffect.transform.position, true);
+                else 
+                    questRewardHandler.TriggerTrash(waterRippleEffect.transform.position);
                 StartFishingCooldown();
                 StopFishing();
             }

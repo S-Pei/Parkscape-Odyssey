@@ -28,6 +28,14 @@ public class ARQuestRewardHandler : MonoBehaviour
     [SerializeField]
     private Camera arCamera;
 
+    [SerializeField]
+    private List<GameObject> trashPrefabs;
+
+    [SerializeField]
+    private AudioClip failAudio;
+
+    [SerializeField]
+    private AudioClip successAudio;
     void Start() {
         if (TryGetComponent<ARObjectSpawner>(out var aRObjectSpawner)) {
             this.aRObjectSpawner = aRObjectSpawner;
@@ -77,7 +85,14 @@ public class ARQuestRewardHandler : MonoBehaviour
             StartCoroutine(AnimateObject(potionObj, position));
         }
         // Play audio
-        GetComponent<AudioSource>().Play();
+        PlaySuccessAudio();
+    }
+
+    public void TriggerTrash(Vector3 position) {
+        int index = UnityEngine.Random.Range(0, trashPrefabs.Count);
+        GameObject trash = Instantiate(trashPrefabs[index], gameObject.transform);
+        StartCoroutine(AnimateObject(trash, position));
+        PlayFailAudio();
     }
 
     // Reward with random card.
@@ -117,5 +132,15 @@ public class ARQuestRewardHandler : MonoBehaviour
         });
 
         spriteButton.cam = arCamera;
+    }
+
+    private void PlayFailAudio() {
+        GetComponent<AudioSource>().clip = failAudio;
+        GetComponent<AudioSource>().Play();
+    }
+
+    private void PlaySuccessAudio() {
+        GetComponent<AudioSource>().clip = successAudio;
+        GetComponent<AudioSource>().Play();
     }
 }
