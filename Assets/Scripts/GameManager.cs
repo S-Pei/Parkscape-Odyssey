@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using TMPro;
 
 using Firebase;
 using Firebase.Firestore;
@@ -21,12 +22,9 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private GameObject arSession;
-    
+
     [SerializeField]
-    private GameObject xrInteractionManager;
-    
-    [SerializeField]
-    private GameObject xrOrigin;
+    private GameObject debugLogger;
 
     private Boolean inARMode = false;
 
@@ -36,7 +34,13 @@ public class GameManager : MonoBehaviour
 
     // Start is called before the first frame update
     void Start() {
-        databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
+        GameObject databseOjb = GameObject.FindWithTag("Database");
+        if (databseOjb == null) {
+            Debug.LogError("Database not found.");
+        } else {
+            databaseManager = databseOjb.GetComponent<DatabaseManager>();
+        }
+
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
         AddLocationQuestListener();
@@ -147,20 +151,24 @@ public class GameManager : MonoBehaviour
         gameInterfaceManager.OpenPlayerView();
     }
 
+    public void OpenQuests() {
+        gameInterfaceManager.OpenQuests();
+    }
+
     //------------------------------- AR CAMERA -------------------------------
     public void ToggleARCamera() {
         if (inARMode) {
             CloseARSession();
+            gameInterfaceManager.SetARCameraToggle(false);
         } else {
             OpenARSession();
+            gameInterfaceManager.SetARCameraToggle(true);
         }
     }
 
     private void OpenARSession() {
         mainCamera.SetActive(false);
-        arSession.SetActive(true);
-        xrInteractionManager.SetActive(true);
-        xrOrigin.SetActive(true);
+        ARManager.Instance.StartAR();
 
         // Disable map interactions
         MapManager.Instance.DisableMapInteraction();
@@ -169,14 +177,23 @@ public class GameManager : MonoBehaviour
     }
 
     private void CloseARSession() {
-        arSession.SetActive(false);
-        xrInteractionManager.SetActive(false);
-        xrOrigin.SetActive(false);
+        ARManager.Instance.StopAR();
         mainCamera.SetActive(true);
 
         // Enable map interactions
         MapManager.Instance.EnableMapInteraction();
 
         inARMode = false;
+    }
+
+
+    // ------------------------------ BUILD DEBUG ------------------------------
+    public void LogTxt(string text) {
+        debugLogger.GetComponent<TextMeshProUGUI>().text += "\n";
+        debugLogger.GetComponent<TextMeshProUGUI>().text += text;
+    }
+
+    public void RelogTxt(string text) {
+        debugLogger.GetComponent<TextMeshProUGUI>().text = text;
     }
 }

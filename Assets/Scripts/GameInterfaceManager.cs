@@ -11,6 +11,11 @@ public class GameInterfaceManager : MonoBehaviour
     
     [SerializeField]
     private GameObject playerViewPrefab;
+    private GameObject playerView;
+
+    [SerializeField]
+    private GameObject questsOverlayPrefab;
+    private GameObject questsOverlay;
 
     [SerializeField]
     private GameObject playerIcon;
@@ -18,7 +23,17 @@ public class GameInterfaceManager : MonoBehaviour
     [SerializeField]
     private List<Sprite> playerIcons;
 
-    private GameObject playerView;
+    [SerializeField]
+    private GameObject arCameraToggle;
+
+    [SerializeField]
+    private Sprite arCameraIcon;
+
+    [SerializeField]
+    private Sprite mapIcon;
+
+    [SerializeField]
+    private GameObject scanImageButton;
 
     private Dictionary<string, int> roleToIcon = new Dictionary<string, int>()
         {
@@ -37,6 +52,7 @@ public class GameInterfaceManager : MonoBehaviour
         foreach (Player p in otherPlayers) {
             p.Icon = GetIcon(p.Role);
         }
+        scanImageButton.SetActive(false);
     }
 
     // Open with actual inventory stored in GameManager
@@ -86,5 +102,40 @@ public class GameInterfaceManager : MonoBehaviour
             throw new Exception("Role Icon not found");
         }
         return playerIcons[roleToIcon[role]];
+    }
+
+    public void OpenQuests() {
+        questsOverlay = Instantiate(questsOverlayPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+
+        // Disable Map Interactions
+        MapManager.Instance.DisableMapInteraction();
+
+
+        // Set close button onClick
+        Button closeButton = questsOverlay.transform.Find("Close Button").GetComponent<Button>();
+        closeButton.onClick.AddListener(CloseQuests);
+
+        // Set up Quests
+        questsOverlay.GetComponent<QuestsUIManager>().SetUp(
+            GameState.Instance.basicQuests,
+            new List<LocationQuest>(GameState.Instance.locationQuests.Values)
+        );
+
+        questsOverlay.SetActive(true);
+    }
+
+    private void CloseQuests() {
+        MapManager.Instance.EnableMapInteraction();
+        Destroy(questsOverlay);
+    }
+
+    public void SetARCameraToggle(bool ARMode) {
+        if (ARMode) {
+            arCameraToggle.GetComponent<Image>().sprite = arCameraIcon;
+            scanImageButton.SetActive(true);
+        } else {
+            arCameraToggle.GetComponent<Image>().sprite = mapIcon;
+            scanImageButton.SetActive(false);
+        }
     }
 }

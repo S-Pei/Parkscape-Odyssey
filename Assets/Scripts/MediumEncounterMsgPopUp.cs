@@ -33,13 +33,13 @@ public class MediumEncounterMsgPopUp : MonoBehaviour
     }
 
     public void CloseMediumEncounterMessagePopup() {
-        bool isLeader = GameState.Instance.isLeader;
-        if (GameState.MAPDEBUGMODE) {
-            isLeader = debugIsLeader;
-        }
-        if (isLeader) {
-            return;
-        }
+        // bool isLeader = GameState.Instance.isLeader;
+        // if (GameState.MAPDEBUGMODE) {
+        //     isLeader = debugIsLeader;
+        // }
+        // if (isLeader) {
+        //     return;
+        // }
         Debug.Log("CloseMediumEncounterMessagePopup");
         mediumEncounterMessagePopupMember.SetActive(false);
     }

@@ -124,10 +124,13 @@ public class LobbyManager : MonoBehaviour {
 
         // Get medium encounter positions asynchronously
         Debug.LogWarning("1. Getting medium encounters");
-        Task initialiseMediumEncounters = gpsManager.GetMediumEncountersAndLocationQuests();
+        gpsManager.GetMediumEncounters();
 
-        // Wait for the tasks to complete
-        while (!initialiseMediumEncounters.IsCompleted) {
+
+        Task questInitialisation = GameState.Instance.InitialiseQuests();
+
+        // Wait for the task to complete
+        while (!questInitialisation.IsCompleted) {
             yield return null;
         }
 

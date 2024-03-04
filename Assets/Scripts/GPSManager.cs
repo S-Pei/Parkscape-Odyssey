@@ -187,31 +187,17 @@ IEnumerator GPSLoc() {
 
     // ENCOUNTER SPAWNING
     // Leader gets medium encounter locations from web authoring tool
-    public async Task GetMediumEncountersAndLocationQuests() {
+    public void GetMediumEncounters() {
         if (GameState.Instance.MyPlayer.IsLeader) {
             List<LatLon> encounterLocations = new List<LatLon>();
             encounterLocations.Add(new LatLon(51.496451, -0.176775));
             encounterLocations.Add(new LatLon(51.506061, -0.174226));
 
-            Debug.LogWarning("2. Getting locationQuests from the database");
-
-            // Pause while fetching the list of locationQuests from the database
-            List<LocationQuest> locationQuests = await DatabaseUtils.GetLocationQuestsWithTimeout(30);
-
-            // Add a medium encounter for each location
-            foreach (LocationQuest locationQuest in locationQuests) {
-                Debug.LogWarning("9. LocationQuest: " + locationQuest.Label + ", " + locationQuest.Location);
-                encounterLocations.Add(new LatLon(locationQuest.Location.Latitude, locationQuest.Location.Longitude));
-            }
-
             SetMediumEncounterID(encounterLocations);
-
-            // TODO: Potentially add a unique ID for sharing location quests, unless only the leader can see them.
-            SetLocationQuests(locationQuests);
         }
     }
 
-    public void SetMediumEncounterID(List<LatLon> locations) {
+    public static void SetMediumEncounterID(List<LatLon> locations) {
         Debug.LogWarning("Setting medium encounter IDs");
         foreach (LatLon location in locations) {
             string encounterId = Guid.NewGuid().ToString();
@@ -219,15 +205,6 @@ IEnumerator GPSLoc() {
             GameState.Instance.mediumEncounterLocations.Add(encounterId, location);
         }
         Debug.LogWarning("Medium encounters: " + GameState.Instance.mediumEncounterLocations.Count);
-    }
-
-    public void SetLocationQuests(List<LocationQuest> locationQuests) {
-        Debug.LogWarning("Setting location quests");
-        foreach (LocationQuest locationQuest in locationQuests) {
-            Debug.LogWarning("Setting location quest: " + locationQuest.Label + " at location: " + locationQuest.Location);
-            GameState.Instance.locationQuests.Add(locationQuest.Label, locationQuest);
-        }
-        Debug.LogWarning("Location quests: " + GameState.Instance.locationQuests.Count);
     }
 
     // Geolocation sharing

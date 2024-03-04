@@ -16,7 +16,6 @@ using Firebase.Firestore;
 using Firebase.Storage;
 using Firebase.Extensions;
 
-
 /*
  * The database MUST be initialized and its dependencies checked/fixed by DatabaseManager
  * before calling any of the methods defined in this class.
@@ -161,7 +160,9 @@ public static class DatabaseUtils {
             updateGameState: false));
 
         // Write the updated locationQuests to disk
-        FileUtils.Save(new LocationQuestStore(new List<LocationQuest>(GameState.Instance.locationQuests.Values)), "locationQuests", "quests");
+        FileUtils.Save(new LocationQuestStore(
+            new List<LocationQuest>(GameState.Instance.locationQuests.Values)
+        ), "locationQuests", "quests");
     }
 
     /*
@@ -305,11 +306,14 @@ public static class DatabaseUtils {
             return null;
         }
 
-        Debug.LogWarning("6. Got image from " + locationQuestDocument.Id);
+
+        Debug.LogWarning("6. Got image from " + locationQuestDocument.Id + "(" + referenceImage + ")");
 
         // Convert the downloaded byte array to a Texture2D
         Texture2D texture = new Texture2D(2, 2);
         texture.LoadImage(referenceImage);
+
+        Debug.LogWarning("6. " + texture);
 
         // Save the reference image to persistent data storage, in the referenceImages folder
         FileUtils.Save(referenceImage, locationQuestDocument.Id + ".jpg", "referenceImages");
@@ -323,6 +327,6 @@ public static class DatabaseUtils {
         LatLon location = new LatLon(geoPoint.Latitude, geoPoint.Longitude);
         
         // Create the LocationQuest object to be returned
-        return new LocationQuest(label, texture, location);
+        return new LocationQuest(QuestType.FIND, label, texture, location);
     }
 }
