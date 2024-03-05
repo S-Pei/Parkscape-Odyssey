@@ -9,27 +9,22 @@ public class ARManager : MonoBehaviour
 {
     public static ARManager selfReference;
 
-    [SerializeField]
-    private GameObject gameManagerObj;
+    [SerializeField] private GameObject gameManagerObj;
     private GameManager gameManager;
     
-    [SerializeField]
-    private GameObject xrInteractionManager;
+    [SerializeField] private GameObject xrInteractionManager;
     
-    [SerializeField]
-    private GameObject xrOrigin;
+    [SerializeField] private GameObject xrOrigin;
 
-    [SerializeField]
-    private GameObject arCamera;
+    [SerializeField] private GameObject arCamera;
 
-    [SerializeField]
-    private GameObject semanticsRawImage;
+    [SerializeField] private GameObject semanticsRawImage;
 
-    [SerializeField]
-    private GameObject semanticsLabel;
+    [SerializeField] private GameObject semanticsLabel;
 
-    [SerializeField]
-    private List<(LatLon latlon, ARLocation location)> arSpawnLocations = new();
+    [SerializeField] private GameObject arEncounterSpawnManager;
+
+    [SerializeField] private List<(LatLon latlon, ARLocation location)> arSpawnLocations = new();
 
     private Dictionary<string, LatLon> latlons = new() {
         {"AR Location (Kenway)", new LatLon(51.493553, -0.192372)},
@@ -63,7 +58,7 @@ public class ARManager : MonoBehaviour
     public void Start() {
         arLocationManager = xrOrigin.GetComponent<ARLocationManager>();
         arLocationManager.enabled = true;
-        arLocationManager.locationTrackingStateChanged += LocationTrackedUpdated;
+        // arLocationManager.locationTrackingStateChanged += LocationTrackedUpdated;
 
         gameManager = gameManagerObj.GetComponent<GameManager>();
         objectDetectionManager = GetComponent<ObjectDetectionManager>();
@@ -79,10 +74,10 @@ public class ARManager : MonoBehaviour
         }
     }
 
-    private void LocationTrackedUpdated(ARLocationTrackedEventArgs args) {
-        var result = args.ARLocation;
-        gameManager.LogTxt($"Location: {result.name}");
-    }
+    // private void LocationTrackedUpdated(ARLocationTrackedEventArgs args) {
+    //     var result = args.ARLocation;
+    //     gameManager.LogTxt($"Location: {result.name}");
+    // }
 
     public void Update() {
         if (currCheckLoctionFreq == 0) {
@@ -136,6 +131,7 @@ public class ARManager : MonoBehaviour
         arCamera.SetActive(true);
         semanticsRawImage.SetActive(true);
         semanticsLabel.SetActive(true);
+        arEncounterSpawnManager.GetComponent<EncounterObjectManager>().SetARMode(true);
     }
 
     public void StopAR() {
@@ -143,6 +139,7 @@ public class ARManager : MonoBehaviour
         arCamera.SetActive(false);
         semanticsRawImage.SetActive(false);
         semanticsLabel.SetActive(false);
+        arEncounterSpawnManager.GetComponent<EncounterObjectManager>().SetARMode(false);
     }
 
     private ARLocation[] GetAllSpawnLocations() {

@@ -13,18 +13,14 @@ public class GameManager : MonoBehaviour
     private GameInterfaceManager gameInterfaceManager;
     private DatabaseManager databaseManager;
 
-    [SerializeField]
-    private GameObject mainCamera;
+    [SerializeField] private GameObject mainCamera;
 
-    [SerializeField]
-    private GameObject arSession;
+    [SerializeField] private GameObject arSession;
 
-    [SerializeField]
-    private GameObject xrOrigin;
+    [SerializeField] private GameObject xrOrigin;
     private Depth_ScreenToWorldPosition depth_ScreenToWorldPosition;
 
-    [SerializeField]
-    private GameObject debugLogger;
+    [SerializeField] private GameObject debugLogger;
 
     private Boolean inARMode = false;
 
