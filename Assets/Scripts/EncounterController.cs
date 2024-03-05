@@ -119,6 +119,11 @@ public class EncounterController : MonoBehaviour
                 GameState.Instance.AddFoundMediumEncounter(encounterId);
             };
         }
+
+        // Set encounter information to the pin
+        monsterSpawn.GetComponent<SpriteButtonLocationBounded>().encounterId = encounterId;
+        monsterSpawn.GetComponent<SpriteButtonLocationBounded>().encounterType = type;
+
         monsterSpawn.GetComponent<EncounterIconChanger>().SetEncounterType(type);
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
         encounterSpawnManager.EncounterSpawnInit(encounterId, monsters, type);

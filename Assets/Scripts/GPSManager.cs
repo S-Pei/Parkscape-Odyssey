@@ -189,10 +189,20 @@ IEnumerator GPSLoc() {
     // Leader gets medium encounter locations from web authoring tool
     public void GetMediumEncounters() {
         if (GameState.Instance.MyPlayer.IsLeader) {
-            List<LatLon> encounterLocations = new List<LatLon>();
-            encounterLocations.Add(new LatLon(51.496451, -0.176775));
-            encounterLocations.Add(new LatLon(51.506061, -0.174226));
+            // TODO: get list from web authoring tool
+            // Hardcoded for now
+            List<LatLon> encounterLocations = new List<LatLon>
+            {
+                // new LatLon(51.496451, -0.176775),
+                // new LatLon(51.506061, -0.174226)
+                new LatLon(51.493553, -0.192372), // Kenway
+                
+            };
+            // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
+            // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.39355, -0.1924046));
 
+            // Debug.Log("Sending encounter info to players in lobby");
+            // Send medium encounters to players
             SetMediumEncounterID(encounterLocations);
         }
     }

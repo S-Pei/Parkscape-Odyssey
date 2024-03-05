@@ -15,6 +15,7 @@ public class SpriteButtonLocationBounded : SpriteButton {
     [SerializeField]
     public System.Action onFound;
     public string encounterId;
+    public EncounterType encounterType;
 
     // State
     [SerializeField]
@@ -28,6 +29,8 @@ public class SpriteButtonLocationBounded : SpriteButton {
     // fog
     [SerializeField]
     private bool isFog;
+
+    private EncounterObjectManager encounterObjectManager;
 
     public SpriteButtonLocationBounded() : base() {}
 
@@ -49,6 +52,8 @@ public class SpriteButtonLocationBounded : SpriteButton {
         
             // By default, the button is disabled.
             SetDisabled(true);
+
+            encounterObjectManager = GameObject.Find("AREncounterSpawnManager").GetComponent<EncounterObjectManager>();
         }
         
     }
@@ -74,7 +79,7 @@ public class SpriteButtonLocationBounded : SpriteButton {
                     onFound();
                     Debug.Log("Found encounters : " + GameState.Instance.foundMediumEncounters.Count);
                 }
-                
+                encounterObjectManager.AddEncounterToSpawn(encounterId, encounterType);
             }
 
             PinState = PinState.NEAR;

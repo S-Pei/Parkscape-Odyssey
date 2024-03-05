@@ -28,7 +28,6 @@ public class VecSearchManager : MonoBehaviour
 
     public static VecSearchManager Instance { 
         get {
-
             return instance;
         }
     }

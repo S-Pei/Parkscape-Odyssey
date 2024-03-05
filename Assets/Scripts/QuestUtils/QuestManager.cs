@@ -45,7 +45,6 @@ public class QuestManager : MonoBehaviour
                 }
             }
         }
-
         if (nearestLocationQuest != null) {
             // Add quest to ongoing quests
             nearestLocationQuest.SetOngoing();

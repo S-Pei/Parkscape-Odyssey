@@ -2,33 +2,27 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Geospatial;
 using Niantic.Lightship.AR.LocationAR;
+using Niantic.Lightship.AR.PersistentAnchors;
 using UnityEngine;
 
 public class ARManager : MonoBehaviour
 {
     public static ARManager selfReference;
 
-    [SerializeField]
-    private GameObject gameManagerObj;
+    [SerializeField] private GameObject gameManagerObj;
     private GameManager gameManager;
     
-    [SerializeField]
-    private GameObject xrInteractionManager;
+    [SerializeField] private GameObject xrInteractionManager;
     
-    [SerializeField]
-    private GameObject xrOrigin;
+    [SerializeField] private GameObject xrOrigin;
 
-    [SerializeField]
-    private GameObject arCamera;
+    [SerializeField] private GameObject arCamera;
 
-    [SerializeField]
-    private GameObject semanticsRawImage;
+    [SerializeField] private GameObject semanticsRawImage;
 
-    [SerializeField]
-    private GameObject semanticsLabel;
+    [SerializeField] private GameObject semanticsLabel;
 
-    [SerializeField]
-    private List<(LatLon latlon, ARLocation location)> arSpawnLocations = new();
+    [SerializeField] private GameObject arEncounterSpawnManager;
 
     [SerializeField]
     private GameObject scannerLinePrefab;
@@ -42,11 +36,13 @@ public class ARManager : MonoBehaviour
     [SerializeField]
     private GameObject questResultPopUp;
 
-    private List<LatLon> latlons = new() {
-        new LatLon(51.493553, -0.192372),
-        new LatLon(51.493492, -0.192765),
-        new LatLon(51.494637, -0.192280),
-        new LatLon(51.498760, -0.179450)
+    [SerializeField] private List<(LatLon latlon, ARLocation location)> arSpawnLocations = new();
+
+    private Dictionary<string, LatLon> latlons = new() {
+        {"AR Location (Kenway)", new LatLon(51.493553, -0.192372)},
+        {"AR Location (Huxley)", new LatLon(51.498760, -0.179450)},
+        {"AR Location (Feeding Fawn)", new LatLon(51.501621, -0.180658)},
+        {"AR Location (Benny Hill)", new LatLon(51.500771, -0.180400)},
     };
 
     private ARLocationManager arLocationManager;
@@ -73,23 +69,32 @@ public class ARManager : MonoBehaviour
 
     public void Start() {
         arLocationManager = xrOrigin.GetComponent<ARLocationManager>();
+        arLocationManager.enabled = true;
+        // arLocationManager.locationTrackingStateChanged += LocationTrackedUpdated;
+
         gameManager = gameManagerObj.GetComponent<GameManager>();
         objectDetectionManager = GetComponent<ObjectDetectionManager>();
         ARQuestRewardHandler = ARQuestRewardHandlerObj.GetComponent<ARQuestRewardHandler>();
 
         ARLocation[] arLocations = arLocationManager.ARLocations;
-        int i = 0;
         foreach (ARLocation arLocation in arLocations) {
-            arSpawnLocations.Add((latlons[i], arLocation));
-            i ++;
+            bool getRes = latlons.TryGetValue(arLocation.name, out LatLon latlon);
+            if (getRes) {
+                arSpawnLocations.Add((latlon, arLocation));
+            } else {
+                gameManager.LogTxt($"LatLon not found for {arLocation.name}");
+            }
         }
     }
+
+    // private void LocationTrackedUpdated(ARLocationTrackedEventArgs args) {
+    //     var result = args.ARLocation;
+    //     gameManager.LogTxt($"Location: {result.name}");
+    // }
 
     public void Update() {
         if (currCheckLoctionFreq == 0) {
             LatLon latlon = GPSManager.Instance.GetLocation();
-            // gameManager.LogTxt("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
-            // Debug.Log("Lat: " + latlon.LatitudeInDegrees + " Lon: " + latlon.LongitudeInDegrees);
 
             double minDistance = 100000;
             ARLocation closestLocation = null;
@@ -139,6 +144,7 @@ public class ARManager : MonoBehaviour
         arCamera.SetActive(true);
         semanticsRawImage.SetActive(true);
         semanticsLabel.SetActive(true);
+        arEncounterSpawnManager.GetComponent<EncounterObjectManager>().SetARMode(true);
     }
 
     public void StopAR() {
@@ -146,6 +152,7 @@ public class ARManager : MonoBehaviour
         arCamera.SetActive(false);
         semanticsRawImage.SetActive(false);
         semanticsLabel.SetActive(false);
+        arEncounterSpawnManager.GetComponent<EncounterObjectManager>().SetARMode(false);
     }
 
     private ARLocation[] GetAllSpawnLocations() {
