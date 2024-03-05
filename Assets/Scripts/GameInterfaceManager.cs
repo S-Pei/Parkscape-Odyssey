@@ -133,9 +133,11 @@ public class GameInterfaceManager : MonoBehaviour
         if (ARMode) {
             arCameraToggle.GetComponent<Image>().sprite = mapIcon;
             scanImageButton.SetActive(true);
+            MapManager.Instance.DisableMapInteraction();
         } else {
             arCameraToggle.GetComponent<Image>().sprite = arCameraIcon;
             scanImageButton.SetActive(false);
+            MapManager.Instance.EnableMapInteraction();
         }
     }
 }
