@@ -1341,7 +1341,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0.6862745}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -4653,7 +4653,7 @@ GameObject:
   - component: {fileID: 778045206}
   m_Layer: 0
   m_Name: XR Origin (XR Rig)
-  m_TagString: Untagged
+  m_TagString: xrOrigin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4748,6 +4748,7 @@ MonoBehaviour:
   gameManagerObj: {fileID: 1068634069}
   overlayCamera: {fileID: 1217166541}
   fishingRod: {fileID: 421258916}
+  arEncounterSpawnManager: {fileID: 1054522864}
   questRewardHandlerObj: {fileID: 898264702}
   waterRippleEffect: {fileID: 9004420924440837381}
 --- !u!1 &792842107
@@ -4904,7 +4905,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &800065301
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10254,6 +10255,7 @@ MonoBehaviour:
   fogOfWarPrefab: {fileID: 8517273884755218086, guid: 4e4b2db8f1d0b4d47aeb906ff19c4151,
     type: 3}
   fogOfWarSize: -1
+  ARMode: 0
 --- !u!114 &1920711994
 MonoBehaviour:
   m_ObjectHideFlags: 2

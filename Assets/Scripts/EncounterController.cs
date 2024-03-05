@@ -204,12 +204,12 @@ public class EncounterController : MonoBehaviour
         if (IsMediumEncounter(encounterId)) {
             // show pop up
             encounterType = EncounterType.MEDIUM_BOSS;
-            mediumEncounterMsgPopUp.ShowMediumEncounterMessagePopup();
             bool isLeader = GameState.Instance.isLeader;
             if (GameState.MAPDEBUGMODE) {
                 isLeader = debugIsLeader;
             }
             if (!isLeader) {
+                mediumEncounterMsgPopUp.ShowMediumEncounterMessagePopup();
                 return;
             }
         }
@@ -300,6 +300,18 @@ public class EncounterController : MonoBehaviour
 
         // Enable map interactions
         MapManager.Instance.EnableMapInteraction();
+
+        // Enable AR interaction.
+        GameObject[] gameObjects;
+        gameObjects = GameObject.FindGameObjectsWithTag("xrOrigin");
+        if (gameObjects.Length == 0) {
+            Debug.Log("No xrOrigin found");
+        } else {
+            GameObject xrOrigin = gameObjects[0];
+            if (xrOrigin.activeInHierarchy) {
+                xrOrigin.GetComponent<Depth_ScreenToWorldPosition>().EnableARInteraction();
+            }
+        }
     }
 
     public void LeaderStartEncounter() {

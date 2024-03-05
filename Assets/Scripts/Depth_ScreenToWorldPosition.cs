@@ -30,6 +30,10 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private Vector3? fishingAnchorPosition = null;
 
     [SerializeField]
+    private GameObject arEncounterSpawnManager;
+    private EncounterObjectManager encounterObjectManager;
+
+    [SerializeField]
     private GameObject questRewardHandlerObj;
     private ARQuestRewardHandler questRewardHandler;
 
@@ -52,6 +56,7 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
         semanticQuerying = segmentationManager.GetComponent<SemanticQuerying>();
         gameManager = gameManagerObj.GetComponent<GameManager>();
         questRewardHandler = questRewardHandlerObj.GetComponent<ARQuestRewardHandler>();
+        encounterObjectManager = arEncounterSpawnManager.GetComponent<EncounterObjectManager>();
 
         fishingRodLine = overlayCamera.GetComponent<LineRenderer>();
         fishingRodLine.positionCount = 2;
@@ -219,10 +224,14 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
 
     public void DisableARInteraction() {
         arInteractionEnabled = false;
+        // uiFullBlocker.SetActive(true);
+        encounterObjectManager.DisableSpawnInteraction();
     }
 
     public void EnableARInteraction() {
         arInteractionEnabled = true;
+        // uiFullBlocker.SetActive(false);
+        encounterObjectManager.EnableSpawnInteraction();
     }
 
     public float GetDepthOfPoint(int x, int y) {
