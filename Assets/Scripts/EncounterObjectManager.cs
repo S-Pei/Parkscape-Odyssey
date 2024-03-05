@@ -1,9 +1,4 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Geospatial;
-using Niantic.Lightship.AR.Semantics;
 using UnityEngine;
 
 public class EncounterObjectManager : MonoBehaviour
