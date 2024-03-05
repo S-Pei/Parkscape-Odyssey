@@ -52,6 +52,9 @@ public class EncounterIconChanger : MonoBehaviour {
             _ => throw new System.Exception("Not yet implemented."),
         };
 
+        // Remove AR encounter spawn.
+        spriteButtonLocationBounded.RemoveAREncounterSpawn();
+
         // Disabled sprite button.
         spriteButtonLocationBounded.enabled = false;
     }

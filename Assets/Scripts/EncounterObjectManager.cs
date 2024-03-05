@@ -13,7 +13,8 @@ public class EncounterObjectManager : MonoBehaviour
     // Encounter spawning
     [SerializeField] private GameObject _randomEncounterPrefab;
     [SerializeField] private GameObject _bossEncounterPrefab;
-    private Queue<(string, EncounterType)> _encountersToSpawn = new();
+    private Queue<(string, bool)> _encountersToSpawn = new();
+    private Dictionary<string, (GameObject, GameObject)> _encountersSpawnedStatus = new();
 
     private bool _inARMode = false;
 
@@ -35,7 +36,8 @@ public class EncounterObjectManager : MonoBehaviour
     }
 
     private bool _readyToSpawnEncounter = false;
-    private EncounterType _toSpawnEncounterType;
+    private GameObject _toSpawnEncounterPin;
+    // private EncounterType _toSpawnEncounterType;
 
     void Update() {
         if (!_inARMode) {
@@ -49,7 +51,11 @@ public class EncounterObjectManager : MonoBehaviour
                 Ray ray = Camera.main.ScreenPointToRay(touch.position);
                 if (Physics.Raycast(ray, out hit)) {
                     if (hit.transform.gameObject.CompareTag("AREncounterSpawn")) {
-                        GameManager.Instance.LogTxt("Encounter object touched");
+                        // Encounter spawn clicked, enter encounter lobby
+                        string encounterId = hit.transform.gameObject.GetComponent<AREncounterSpawn>().encounterId;
+                        GameObject pin = _encountersSpawnedStatus[encounterId].Item1;
+                        _depth_ScreenToWorldPosition.DisableARInteraction();
+                        pin.GetComponent<EncounterSpawnManager>().EncounterOnClick();
                     }
                 }
             }
@@ -63,10 +69,9 @@ public class EncounterObjectManager : MonoBehaviour
                 }
             } else {
                 // Check if there is an encounter to spawn
-                if (TryGetEncounterToSpawn() is EncounterType encounterType) {
-                    _toSpawnEncounterType = encounterType;
+                if (TryGetEncounterToSpawn() is GameObject pin) {
+                    _toSpawnEncounterPin = pin;
                     _readyToSpawnEncounter = true;
-                    GameManager.Instance.LogTxt("Checking for ground...");
                 }
             }
             // Reset counter
@@ -76,10 +81,14 @@ public class EncounterObjectManager : MonoBehaviour
         }
     }
 
-    private EncounterType? TryGetEncounterToSpawn() {
-        if (_encountersToSpawn.TryPeek(out (string, EncounterType) encounter)) {
-            (string _, EncounterType encounterType) = encounter;
-            return encounterType;
+    private GameObject TryGetEncounterToSpawn() {
+        if (_encountersToSpawn.TryPeek(out (string encounterId, bool toSpawn) encounter)) {
+            if (encounter.toSpawn) {
+                // Encounter is signaled to spawn
+                return _encountersSpawnedStatus[encounter.encounterId].Item1;
+            }
+
+            // TODO: Encounter is signaled to despawn
         }
         return null;
     }
@@ -94,13 +103,15 @@ public class EncounterObjectManager : MonoBehaviour
         }
 
         if (detectedGroundPoints.Count > 0) {
-            GameManager.Instance.LogTxt("Ground detected");
-
             (int x, int y) = SelectRandomPoint(detectedGroundPoints);
             Vector3 worldPosition = _depth_ScreenToWorldPosition.TranslateScreenToWorldPoint(x, y);
             worldPosition.y += SPAWN_Y_OFFSET;
-            Instantiate(_toSpawnEncounterType == EncounterType.RANDOM_ENCOUNTER ? _randomEncounterPrefab : _bossEncounterPrefab, worldPosition, Quaternion.identity);
+            GameObject newSpawn = Instantiate(
+                _toSpawnEncounterPin.GetComponent<SpriteButtonLocationBounded>().encounterType == EncounterType.RANDOM_ENCOUNTER ? _randomEncounterPrefab : _bossEncounterPrefab, 
+                worldPosition, Quaternion.identity);
+            newSpawn.GetComponentInChildren<AREncounterSpawn>().encounterId = _toSpawnEncounterPin.GetComponent<SpriteButtonLocationBounded>().encounterId;
             _encountersToSpawn.Dequeue();
+            _encountersSpawnedStatus[_toSpawnEncounterPin.GetComponent<SpriteButtonLocationBounded>().encounterId] = (_toSpawnEncounterPin, newSpawn);
             return true;
         }
 
@@ -128,9 +139,14 @@ public class EncounterObjectManager : MonoBehaviour
     }
 
     // Add an encounter to the list of encounters to spawn
-    public void AddEncounterToSpawn(string encounterId, EncounterType encounterType) {
-        _encountersToSpawn.Enqueue((encounterId, encounterType));
-        GameManager.Instance.LogTxt($"Encounter added to spawn queue: {encounterId}");
+    public void AddEncounterToSpawn(string encounterId, GameObject pin) {
+        _encountersSpawnedStatus[encounterId] = (pin, null);
+        _encountersToSpawn.Enqueue((encounterId, true));
+    }
+
+    public void RemoveEncounterSpawn(string encounterId) {
+        Destroy(_encountersSpawnedStatus[encounterId].Item2);
+        _encountersSpawnedStatus[encounterId] = (_encountersSpawnedStatus[encounterId].Item1, null);
     }
 
     // Set AR mode

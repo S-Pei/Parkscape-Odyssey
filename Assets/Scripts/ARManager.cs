@@ -85,6 +85,10 @@ public class ARManager : MonoBehaviour
                 gameManager.LogTxt($"LatLon not found for {arLocation.name}");
             }
         }
+
+
+        // Enable AR interactions
+        xrOrigin.GetComponent<Depth_ScreenToWorldPosition>().EnableARInteraction();
     }
 
     // private void LocationTrackedUpdated(ARLocationTrackedEventArgs args) {

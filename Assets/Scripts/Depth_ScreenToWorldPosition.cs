@@ -18,6 +18,10 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private GameObject gameManagerObj;
     private GameManager gameManager;
 
+    [SerializeField] 
+    private GameObject uiFullBlocker;
+
+
     private bool arInteractionEnabled = true;
 
     // FISHING
@@ -219,10 +223,12 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
 
     public void DisableARInteraction() {
         arInteractionEnabled = false;
+        uiFullBlocker.SetActive(true);
     }
 
     public void EnableARInteraction() {
         arInteractionEnabled = true;
+        uiFullBlocker.SetActive(false);
     }
 
     public float GetDepthOfPoint(int x, int y) {

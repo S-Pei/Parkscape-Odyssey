@@ -17,6 +17,7 @@ TagManager:
   - MonsterManager
   - AREncounterSpawn
   - AREncounterSpawnManager
+  - xrOrigin
   layers:
   - Default
   - TransparentFX

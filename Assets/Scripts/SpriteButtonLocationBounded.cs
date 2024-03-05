@@ -79,7 +79,7 @@ public class SpriteButtonLocationBounded : SpriteButton {
                     onFound();
                     Debug.Log("Found encounters : " + GameState.Instance.foundMediumEncounters.Count);
                 }
-                encounterObjectManager.AddEncounterToSpawn(encounterId, encounterType);
+                encounterObjectManager.AddEncounterToSpawn(encounterId, gameObject);
             }
 
             PinState = PinState.NEAR;
@@ -93,5 +93,9 @@ public class SpriteButtonLocationBounded : SpriteButton {
     public void SetLocation(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    public void RemoveAREncounterSpawn() {
+        encounterObjectManager.RemoveEncounterSpawn(encounterId);
     }
 }
