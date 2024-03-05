@@ -214,7 +214,7 @@ public class GameManager : MonoBehaviour
         ARManager.Instance.StartAR();
 
         // Disable map interactions
-        MapManager.Instance.DisableMapInteraction();
+        MapManager.Instance.DisableMapInteraction(true);
 
         inARMode = true;
     }
@@ -225,7 +225,7 @@ public class GameManager : MonoBehaviour
         mainCamera.SetActive(true);
 
         // Enable map interactions
-        MapManager.Instance.EnableMapInteraction();
+        MapManager.Instance.EnableMapInteraction(true);
 
         inARMode = false;
     }

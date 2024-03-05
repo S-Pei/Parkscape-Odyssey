@@ -87,6 +87,9 @@ public class MapManager : MonoBehaviour
     private GameObject fogOfWarPrefab;
     public float fogOfWarSize = 100;
 
+    // AR
+    public bool ARMode = false;
+
 
     public static MapManager Instance {
         get {
@@ -449,14 +452,21 @@ public class MapManager : MonoBehaviour
     }
 
     /*** Map Interactions ***/
-    public void DisableMapInteraction() {
+    public void DisableMapInteraction(bool ARLock = false) {
         mapTouchInteractionHandler.enabled = false;
         mapBlocker.SetActive(true);
+        if (!ARMode)
+            ARMode = ARLock;
     }
 
-    public void EnableMapInteraction() {
+    public void EnableMapInteraction(bool ARLock = false) {
+        if (ARMode && !ARLock)
+            return;
+        if (ARMode && ARLock)
+            ARMode = false;
         mapTouchInteractionHandler.enabled = true;
         mapBlocker.SetActive(false);
+
     }
 }
 

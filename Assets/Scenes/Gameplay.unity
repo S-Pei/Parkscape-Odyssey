@@ -4740,7 +4740,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b965e1df80157499c88347cbb8488cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _occMan: {fileID: 0}
+  _occMan: {fileID: 186993368}
   _camera: {fileID: 186993364}
   _prefabToSpawn: {fileID: 2066896392038628118, guid: 45288819fde2143449a96207b14db0bb,
     type: 3}
