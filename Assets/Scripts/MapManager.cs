@@ -302,6 +302,10 @@ public class MapManager : MonoBehaviour
                 }
             }
         }
+
+        // FOR DEBUG ONLY
+        string testEncounterId = Guid.NewGuid().ToString();
+        encounterController.CreateMonsterSpawn(testEncounterId, new LatLon(51.493553, -0.192372), EncounterType.RANDOM_ENCOUNTER);
     }
 
     /*** Map Pins ***/

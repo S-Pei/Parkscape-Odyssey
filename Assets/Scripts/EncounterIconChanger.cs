@@ -55,6 +55,18 @@ public class EncounterIconChanger : MonoBehaviour {
         // Remove AR encounter spawn.
         spriteButtonLocationBounded.RemoveAREncounterSpawn();
 
+        // Enable AR interaction.
+        GameObject[] gameObjects;
+        gameObjects = GameObject.FindGameObjectsWithTag("xrOrigin");
+        if (gameObjects.Length == 0) {
+            Debug.Log("No xrOrigin found");
+        } else {
+            GameObject xrOrigin = gameObjects[0];
+            if (xrOrigin.activeInHierarchy) {
+                xrOrigin.GetComponent<Depth_ScreenToWorldPosition>().EnableARInteraction();
+            }
+        }
+
         // Disabled sprite button.
         spriteButtonLocationBounded.enabled = false;
     }

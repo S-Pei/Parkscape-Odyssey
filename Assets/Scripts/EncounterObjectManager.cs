@@ -17,6 +17,7 @@ public class EncounterObjectManager : MonoBehaviour
     private Dictionary<string, (GameObject, GameObject)> _encountersSpawnedStatus = new();
 
     private bool _inARMode = false;
+    private bool _interactionEnabled = true;
 
     // Semantics check for ground
     [SerializeField] private GameObject _segmentationManager;
@@ -43,8 +44,8 @@ public class EncounterObjectManager : MonoBehaviour
         if (!_inARMode) {
             return;
         }
-
-        if (Input.touches.Length > 0) {
+        
+        if (Input.touches.Length > 0 && _interactionEnabled) {
             Touch touch = Input.GetTouch(0);
             if (touch.phase == TouchPhase.Began) {
                 RaycastHit hit;
@@ -152,5 +153,13 @@ public class EncounterObjectManager : MonoBehaviour
     // Set AR mode
     public void SetARMode(bool inARMode) {
         _inARMode = inARMode;
+    }
+
+    public void DisableSpawnInteraction() {
+        _interactionEnabled = false;
+    }
+
+    public void EnableSpawnInteraction() {
+        _interactionEnabled = true;
     }
 }
