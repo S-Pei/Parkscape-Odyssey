@@ -20,7 +20,7 @@ public class VecSearchManager : MonoBehaviour
     private NNModel modelAsset;
     private Model m_RuntimeModel;
     private int imageDimension = 224;
-    private int k = 5;
+    private int k = 10;
     private float[][] featureVectors;
     private string[] labels;
 
@@ -49,10 +49,11 @@ public class VecSearchManager : MonoBehaviour
     public void Initialize() {
         // TODO: CHANGE AFTER PERSISTENT STORAGE
         // Initialize Approximate NN with training data
-        string jsonString = LoadJsonFile("Assets/Resources/metadata.json");
-        parseMetadataJson(jsonString);
-        ApproxNN.Instance.Initialize(featureVectors, labels);
-        ApproxNN.Instance.Save("Assets/Resources/");
+        // string jsonString = LoadJsonFile("Assets/Resources/metadata.json");
+        // parseMetadataJson(jsonString);
+        ApproxNN.Instance.Load();
+        // ApproxNN.Instance.Initialize(featureVectors, labels);
+        // ApproxNN.Instance.Save("Assets/Resources/");
     }
 
     // Classify input image
