@@ -71,6 +71,7 @@ public class EncounterLobbyUIManager : MonoBehaviour
             partyMembers.Add(GameState.Instance.MyPlayer.Name);
             partyMemberSlots[0].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = GameState.Instance.MyPlayer.Name;
         } else {
+            mediumEncounterMessagePopupLeader.SetActive(false);
             startEncounterButton.SetActive(false);
         }
 

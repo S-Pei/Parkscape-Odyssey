@@ -196,6 +196,10 @@ IEnumerator GPSLoc() {
                 // new LatLon(51.496451, -0.176775),
                 // new LatLon(51.506061, -0.174226)
                 new LatLon(51.493553, -0.192372), // Kenway
+                new LatLon(51.49891971744029, -0.1794724314649951), // Huxley
+                new LatLon(51.502605,-0.17744397), // Royal Albert Memorial
+                new LatLon(51.50578,-0.18158564), // Round Pond
+                new LatLon(51.505234,-0.17158033), // Serpentine Isis
                 
             };
             // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
