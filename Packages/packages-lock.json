@@ -30,6 +30,15 @@
       },
       "hash": "7cc172749e6577d934f1af4719c2de9fb78a205f"
     },
+    "com.siccity.gltfutility": {
+      "version": "https://github.com/siccity/gltfutility.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "2.0.0"
+      },
+      "hash": "96619fcd48ffe5c4ad122837a21601a6f7c20080"
+    },
     "com.unity.2d.animation": {
       "version": "9.0.4",
       "depth": 0,

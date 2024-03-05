@@ -36,6 +36,10 @@ public class ARQuestRewardHandler : MonoBehaviour
 
     [SerializeField]
     private AudioClip successAudio;
+
+    [SerializeField]
+    private GameObject explodedRewardPrefab;
+
     void Start() {
         if (TryGetComponent<ARObjectSpawner>(out var aRObjectSpawner)) {
             this.aRObjectSpawner = aRObjectSpawner;
@@ -129,6 +133,15 @@ public class ARQuestRewardHandler : MonoBehaviour
         spriteButton.onClick.AddListener(() => {
             spriteButton.Disabled = true;
             onClick(obj);
+
+            // Explode the reward.
+            aRObjectSpawner.DestroyedObject(obj);
+            Destroy(obj);
+            GameObject explodedReward = Instantiate(explodedRewardPrefab, obj.transform.position, obj.transform.rotation, transform);
+            aRObjectSpawner.AddTrackedObject(explodedReward, 10);
+            foreach (Transform child in explodedReward.transform) {
+                child.GetComponent<Rigidbody>().AddExplosionForce(8, child.transform.position, 6, 5);
+            }
         });
 
         spriteButton.cam = arCamera;

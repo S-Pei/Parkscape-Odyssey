@@ -73,6 +73,14 @@ public class ARObjectSpawner : MonoBehaviour {
         return obj;
     }
 
+    public void DestroyedObject(GameObject obj) {
+        trackObjects.Remove(obj);
+    }
+
+    public void AddTrackedObject(GameObject obj, float time = LIFE_TIME) {
+        trackObjects.Add(obj, time);
+    }
+
     private Vector3 GetPosition(float distance) {
         var pos = arCamera.transform.position;
         var forw = arCamera.transform.forward.normalized;

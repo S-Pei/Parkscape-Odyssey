@@ -29,15 +29,15 @@ public class GameState {
 
     public static GameState Instance { get {
         GameState gameState = LazyGameState.Value;
-        if (DEBUGMODE && !gameState.Initialized) {
-            gameState.Initialize("1", "123", new Dictionary<string, string> {
-                {"1", "Player 1"},
-                {"2", "Player 2"},
-                {"3", "Player 3"},
-                {"4", "Player 4"},
-            });
-            gameState.isLeader = true;
-        }
+        // if (DEBUGMODE && !gameState.Initialized) {
+        //     gameState.Initialize("1", "123", new Dictionary<string, string> {
+        //         {"1", "Player 1"},
+        //         {"2", "Player 2"},
+        //         {"3", "Player 3"},
+        //         {"4", "Player 4"},
+        //     });
+        //     gameState.isLeader = true;
+        // }
         return gameState; } }
 
     public int maxPlayerCount = 6;

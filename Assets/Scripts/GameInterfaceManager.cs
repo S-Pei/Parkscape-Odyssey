@@ -131,10 +131,10 @@ public class GameInterfaceManager : MonoBehaviour
 
     public void SetARCameraToggle(bool ARMode) {
         if (ARMode) {
-            arCameraToggle.GetComponent<Image>().sprite = arCameraIcon;
+            arCameraToggle.GetComponent<Image>().sprite = mapIcon;
             scanImageButton.SetActive(true);
         } else {
-            arCameraToggle.GetComponent<Image>().sprite = mapIcon;
+            arCameraToggle.GetComponent<Image>().sprite = arCameraIcon;
             scanImageButton.SetActive(false);
         }
     }

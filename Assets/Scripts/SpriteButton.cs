@@ -10,6 +10,9 @@ public class SpriteButton : MonoBehaviour {
 
     public Camera cam;
 
+    private Vector2 startedTouchPosition = Vector2.zero;
+    private const float touchTolerance = 100;
+
     protected void Start() {
         if (onClick == null) {
             throw new System.Exception("SpriteButton requires an onClick event to be set.");
@@ -32,7 +35,23 @@ public class SpriteButton : MonoBehaviour {
     // Update is called once per frame
     protected void Update() {
         if (Disabled) return;
+
+        #if UNITY_EDITOR
+        if (Input.GetMouseButtonDown(0)) {
+            startedTouchPosition = Input.mousePosition;
+        }
+        #else
+        if (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began) {
+            startedTouchPosition = Input.GetTouch(0).position;
+        }
+        #endif
+
+        #if UNITY_EDITOR
         if (Input.GetMouseButtonUp(0)) {
+        #else
+        if (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Ended && 
+            Vector2.Distance(startedTouchPosition, Input.GetTouch(0).position) < touchTolerance) {
+        #endif
             GameObject target = GetClickedObject(out RaycastHit hit);
             if (target == gameObject) {
                 onClick.Invoke();
