@@ -118,7 +118,10 @@ public class GameInterfaceManager : MonoBehaviour
         closeButton.onClick.AddListener(CloseQuests);
 
         // Set up Quests
-        questsOverlay.GetComponent<QuestsUIManager>().SetUp(GameState.Instance.basicQuests, GameState.Instance.locationQuests);
+        questsOverlay.GetComponent<QuestsUIManager>().SetUp(
+            GameState.Instance.basicQuests,
+            new List<LocationQuest>(GameState.Instance.locationQuests.Values)
+        );
 
         questsOverlay.SetActive(true);
     }
@@ -131,10 +134,10 @@ public class GameInterfaceManager : MonoBehaviour
 
     public void SetARCameraToggle(bool ARMode) {
         if (ARMode) {
-            arCameraToggle.GetComponent<Image>().sprite = arCameraIcon;
+            arCameraToggle.GetComponent<Image>().sprite = mapIcon;
             scanImageButton.SetActive(true);
         } else {
-            arCameraToggle.GetComponent<Image>().sprite = mapIcon;
+            arCameraToggle.GetComponent<Image>().sprite = arCameraIcon;
             scanImageButton.SetActive(false);
         }
     }

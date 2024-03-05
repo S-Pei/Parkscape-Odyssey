@@ -24,6 +24,18 @@ public class ARManager : MonoBehaviour
 
     [SerializeField] private GameObject arEncounterSpawnManager;
 
+    [SerializeField]
+    private GameObject scannerLinePrefab;
+    [SerializeField]
+    private GameObject canvas;
+
+    [SerializeField]
+    private GameObject ARQuestRewardHandlerObj;
+    private ARQuestRewardHandler ARQuestRewardHandler;
+
+    [SerializeField]
+    private GameObject questResultPopUp;
+
     [SerializeField] private List<(LatLon latlon, ARLocation location)> arSpawnLocations = new();
 
     private Dictionary<string, LatLon> latlons = new() {
@@ -62,6 +74,7 @@ public class ARManager : MonoBehaviour
 
         gameManager = gameManagerObj.GetComponent<GameManager>();
         objectDetectionManager = GetComponent<ObjectDetectionManager>();
+        ARQuestRewardHandler = ARQuestRewardHandlerObj.GetComponent<ARQuestRewardHandler>();
 
         ARLocation[] arLocations = arLocationManager.ARLocations;
         foreach (ARLocation arLocation in arLocations) {
@@ -159,29 +172,60 @@ public class ARManager : MonoBehaviour
 
     // Onclick button for taking images
     public void TakeQuestImage() {
+        // Trigger Scanning animation
+        ScannerController scannerController = TriggerScannerEffect();
         Texture2D screenCapture = TakeScreenCapture();
         gameManager.LogTxt("Screen capture taken.");
-        // Attempt Basic Quests
-        List<string> labels = objectDetectionManager.GetLabels();
-        gameManager.LogTxt("Labels: " + string.Join(", ", labels));
-        BasicQuest basicQuest = QuestManager.Instance.CheckBasicQuests(labels);
-        if (basicQuest != null) {
-            gameManager.LogTxt("Basic quest :" + basicQuest.Label + " progress: " + basicQuest.Progress);
-            if (basicQuest.IsCompleted()) {
-                gameManager.LogTxt("Basic quest completed.");
+        Quest successQuest = null;
+        LocationQuest locationQuest = QuestManager.Instance.CheckLocationQuests(screenCapture);
+        if (locationQuest != null) {
+            successQuest = locationQuest;
+            gameManager.LogTxt("Location quest :" + locationQuest.Label + " progress: " + locationQuest.Progress);
+        } else {
+            gameManager.LogTxt("No location quest progress.");
+            // Attempt basic Quests if location quest not fulfilled
+            List<string> labels = objectDetectionManager.GetLabels();
+            gameManager.LogTxt("Labels: " + string.Join(", ", labels));
+            BasicQuest basicQuest = QuestManager.Instance.CheckBasicQuests(labels);
+            if (basicQuest != null) {
+                gameManager.LogTxt("Basic quest :" + basicQuest.Label + " progress: " + basicQuest.Progress);
+                if (basicQuest.IsCompleted()) {
+                    successQuest = basicQuest;
+                    gameManager.LogTxt("Basic quest completed.");
+                }
+            } else {
+                gameManager.LogTxt("No basic quest progress.");
             }
             
-        } else {
-            gameManager.LogTxt("No basic quest progress.");
-            // Attempt Location Quests if basic quests not fulfilled
-            LocationQuest locationQuest = QuestManager.Instance.CheckLocationQuests(screenCapture);
-            if (locationQuest != null) {
-                gameManager.LogTxt("Location quest :" + locationQuest.Label + " progress: " + locationQuest.Progress);
+        }
+        scannerController.SetSuccessQuest(successQuest);
+        scannerController.SetReady();
+        successQuest = null;
+        // FUTURE: Save images.
+    }
+
+    private ScannerController TriggerScannerEffect() {
+        Debug.Log("Triggering scanner effect.");
+        GameObject scannerLine = Instantiate(scannerLinePrefab, canvas.transform);
+        ScannerController scannerController = scannerLine.GetComponent<ScannerController>(); 
+        Debug.Log("Instantiated scanner line.");
+        return scannerController;
+    }
+
+    public void ShowQuestResultPopUp(Quest quest) {
+        Debug.Log("Showing quest result pop up.");
+        QuestsProgressPopUpManager questResultPopUpManager = questResultPopUp.GetComponent<QuestsProgressPopUpManager>();
+        questResultPopUpManager.ShowQuestResultPopUp(quest);
+    }
+
+    public void TriggerReward(Quest quest) {
+        if (quest != null) {
+            if (quest is LocationQuest) {
+                ARQuestRewardHandler.TriggerReward((LocationQuest) quest);
             } else {
-                gameManager.LogTxt("No location quest progress.");
+                ARQuestRewardHandler.TriggerReward((BasicQuest) quest);
             }
         }
-        // FUTURE: Save images.
     }
 
     // NOT USED FOR NOW

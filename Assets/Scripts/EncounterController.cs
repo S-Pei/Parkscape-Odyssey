@@ -288,8 +288,8 @@ public class EncounterController : MonoBehaviour
         // Add self as a member of the party in the encounter lobby
         partyMembers.Add(GameState.Instance.myID, GameState.Instance.PlayersDetails[GameState.Instance.myID].Name);
 
-        // // Disable map interactions
-        // MapManager.Instance.DisableMapInteraction();
+        // Disable map interactions
+        MapManager.Instance.DisableMapInteraction();
     }
 
     public void CloseRandomEncounterPopup() {
@@ -298,8 +298,8 @@ public class EncounterController : MonoBehaviour
         this.encounterId = "";
         partyMembers.Clear();
 
-        // // Enable map interactions
-        // MapManager.Instance.EnableMapInteraction();
+        // Enable map interactions
+        MapManager.Instance.EnableMapInteraction();
     }
 
     public void LeaderStartEncounter() {

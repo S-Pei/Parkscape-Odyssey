@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
@@ -96,22 +98,81 @@ public class LobbyManager : MonoBehaviour {
 
         // Game state already initialised if in debug mode
         Debug.Log("Initializing gamestate");
-        if (!GameState.DEBUGMODE) { 
+        if (!GameState.DEBUGMODE) {
             gameState.Initialize(myID, roomCode, players);
         }
         Debug.Log("Initializing gamestate");
 
         GameState.Instance.MyPlayer.IsLeader = true;
 
-        Debug.Log("Getting medium encounters");
-        // Get and broadcast medium encounter positions
+        StartCoroutine(FetchDataAndInitialiseGame());
+    }
+
+    // Try to get new medium encounters from the database and start the game.
+    //
+    // This is a coroutine instead of an async function because the latter
+    // makes no guarantees of continuing on the main thread (so loading scenes
+    // may not work properly). Internally, it awaits the completion of async
+    // functions before starting the game on the main thread.
+    private IEnumerator FetchDataAndInitialiseGame() {
+        // Display the loading scene while waiting for async DB operations
+        // to complete. The scene is loaded additively so that this GameObject
+        // doesn't get destroyed
+        SceneManager.LoadScene("Initialisation", LoadSceneMode.Additive);
+
+        int fileTimeoutSeconds = 20;
+
+        // Get medium encounter positions asynchronously
+        Debug.LogWarning("1. Getting medium encounters");
         gpsManager.GetMediumEncounters();
-        // Debugging
-        foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations)
-        {
-            Debug.Log("Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
+
+
+        Task questInitialisation = GameState.Instance.InitialiseQuests();
+
+        // Wait for the task to complete
+        while (!questInitialisation.IsCompleted) {
+            yield return null;
         }
 
+        // Get location quest data asynchronously
+        Task<byte[]> locationQuestVectors = DatabaseUtils.GetFileWithTimeout(
+            "locationQuestVectors.bytes", fileTimeoutSeconds);
+        Task<byte[]> locationQuestGraph = DatabaseUtils.GetFileWithTimeout(
+            "locationQuestGraph.bytes", fileTimeoutSeconds);
+        Task<byte[]> locationQuestLabels = DatabaseUtils.GetFileWithTimeout(
+            "locationQuestLabels.bytes", fileTimeoutSeconds);
+        
+        // Internally, these functions have will timeout if they take too long
+        // so they will always complete eventually
+        while (
+            !locationQuestVectors.IsCompleted ||
+            !locationQuestGraph.IsCompleted ||
+            !locationQuestLabels.IsCompleted) {
+            yield return null;
+        }
+
+        // Save the files to disk
+        Debug.LogWarning("10. Saving location quest files to disk");
+        yield return FileUtils.ProcessNewQuestFiles(
+            locationQuestVectors.Result,
+            locationQuestGraph.Result,
+            locationQuestLabels.Result
+        );
+
+        // Unload the loading scene
+        SceneManager.UnloadSceneAsync("Initialisation");
+
+        Debug.LogWarning("11. Sending encounter info to players in lobby");
+
+        Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
+        network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
+
+        Debug.LogWarning("12. Got medium encounters: " + GameState.Instance.mediumEncounterLocations.Count + " locations.");
+        // Debugging
+        foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations) {
+            Debug.LogWarning("13. Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
+        }
+        
         if (players.Count > 1) {
             // send map info
             // members
@@ -120,8 +181,18 @@ public class LobbyManager : MonoBehaviour {
             // start game
             LeaderSendStartGameMessage();
         }
-        StartGame();
 
+        // Get count of loaded Scenes and last index
+        // (corresponding to the loading scene)
+        var lastSceneIndex = SceneManager.sceneCount - 1;
+
+        // Get last Scene by index in all loaded Scenes
+        var lastLoadedScene = SceneManager.GetSceneAt(lastSceneIndex);
+
+        // Unload Scene
+        SceneManager.UnloadSceneAsync(lastLoadedScene);
+        
+        StartGame();
     }
 
     private void LeaderSendStartGameMessage() {
@@ -175,6 +246,7 @@ public class LobbyManager : MonoBehaviour {
 
     // Common method to start the game for both leader and non-leader.
     private void StartGame() {
+        Debug.LogWarning("13. Starting game");
         AcceptMessages = false;
         GameState.Instance.isLeader = isLeader;
         // Load the game scene.

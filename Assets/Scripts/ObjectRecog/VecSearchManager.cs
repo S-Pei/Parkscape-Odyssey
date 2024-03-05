@@ -13,16 +13,14 @@ using UnityEngine;
 public class VecSearchManager : MonoBehaviour
 {
     [SerializeField]
-    private TextMeshProUGUI resultText;
+    private GameObject gameManagerObj;
+    private GameManager gameManager;
 
     [SerializeField]
     private NNModel modelAsset;
     private Model m_RuntimeModel;
-    private List<float[]> vectors = new List<float[]>();
-    private int dimension = 128;
-    private int vectorsCount = 100000;
+    private int imageDimension = 224;
     private int k = 5;
-    private static readonly System.Random _rand = new System.Random();
     private float[][] featureVectors;
     private string[] labels;
 
@@ -30,25 +28,21 @@ public class VecSearchManager : MonoBehaviour
 
     public static VecSearchManager Instance { 
         get {
-            if (instance == null) {
-                // To make sure that script is persistent across scenes
-                GameObject go = new GameObject("VecSearchManager");
-                instance = go.AddComponent<VecSearchManager>();
-                DontDestroyOnLoad(go);
-            }
             return instance;
         }
     }
 
-    // Start is called before the first frame updatesimi
+    // Start is called before the first frame updates
     void Start()
     {
+        instance = this;
+        gameManager = gameManagerObj.GetComponent<GameManager>();
         // Initialize mobilenet encoder
         m_RuntimeModel = ModelLoader.Load(modelAsset);
         Initialize();
-        Texture2D imageFromFile = LoadImage("Assets/Resources/peter_pan_test_img.jpeg");
-        string[] outputs = ClassifyImage(imageFromFile);
-        Debug.Log(string.Join(", ", outputs));
+        
+        // Texture2D imageFromFile = LoadImage("Assets/Resources/hyde_park.jpg");
+        // string[] outputs = ClassifyImage(imageFromFile);
     }
 
     // Initialize Approximate NN with training data
@@ -64,22 +58,22 @@ public class VecSearchManager : MonoBehaviour
     // Classify input image
     public string[] ClassifyImage(Texture2D image)
     {
-        image = ResizeImage(image, 224, 224);
+        image = ResizeImage(image, this.imageDimension, this.imageDimension);
         var input = new Tensor(image, channels: 3);
-        var worker = WorkerFactory.CreateWorker(WorkerFactory.Type.ComputePrecompiled, m_RuntimeModel);
+        var worker = WorkerFactory.CreateWorker(WorkerFactory.Type.CSharpBurst, m_RuntimeModel);
         worker.Execute(input);
         Tensor output = worker.PeekOutput();
 
         // transform tensor into float32 vector
-        Debug.Log(output.dataType);
-        output.PrintDataPart(size:10);
         float[] queryFeatureVector = output.data.Download(output.shape);
-        Debug.Log("Feature vector: " + string.Join(", ", queryFeatureVector));
+        input.Dispose();
+        worker.Dispose();
 
         // perform similarity search
-        string[] results = ApproxNN.Instance.Search(queryFeatureVector, 5); 
-        Debug.Log("Search result: " + string.Join(", ", results));
-        worker.Dispose();
+        string[] results = ApproxNN.Instance.Search(queryFeatureVector, this.k); 
+        // Debug.Log("Search result: " + string.Join(", ", results));
+        gameManager.LogTxt("Search result: " + string.Join(", ", results));
+        
         return results;
     }
 
@@ -97,7 +91,7 @@ public class VecSearchManager : MonoBehaviour
         return texture;
     }
 
-    Texture2D ResizeImage(Texture2D originalTexture, int targetWidth, int targetHeight)
+    public static Texture2D ResizeImage(Texture2D originalTexture, int targetWidth, int targetHeight)
     {
         RenderTexture rt = new RenderTexture(targetWidth, targetHeight, 24);
         RenderTexture.active = rt;
@@ -116,7 +110,7 @@ public class VecSearchManager : MonoBehaviour
     private string LoadJsonFile(string jsonFilePath) {
         // Load the JSON file as a text asset
         TextAsset jsonTextAsset = Resources.Load<TextAsset>(Path.GetFileNameWithoutExtension(jsonFilePath));
-
+        
         if (jsonTextAsset != null)
         {
             // Access the JSON content as a string

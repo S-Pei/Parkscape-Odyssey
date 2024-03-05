@@ -21,6 +21,27 @@ public class CardRenderer : MonoBehaviour
 
     public int cardIndex;
 
+
+    public void RenderCardAsSprite(Sprite cardImg, string cardStat, int manaCost) {
+        // Render card image
+        GameObject cardImgObj = transform.GetChild(1).gameObject;
+        SpriteRenderer cardImgRenderer = cardImgObj.GetComponentInChildren<SpriteRenderer>();
+        cardImgRenderer.sprite = cardImg;
+        cardImage = cardImg;
+
+        // Render card stats
+        GameObject cardStatsObj = transform.GetChild(2).gameObject;
+        TextMeshProUGUI textComp = cardStatsObj.GetComponentInChildren<TextMeshProUGUI>();
+        textComp.text = cardStat;
+        cardStats = cardStat;
+
+        // Render card mana cost
+        GameObject cardManaCostObj = transform.GetChild(3).gameObject;
+        TextMeshProUGUI manaCostTextComp = cardManaCostObj.GetComponentInChildren<TextMeshProUGUI>();
+        manaCostTextComp.text = manaCost.ToString();
+
+        transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+    }
     public void RenderCard(Sprite cardImg, string cardStat, int manaCost) {
         // Render card image
         GameObject cardImgObj = transform.GetChild(1).gameObject;
@@ -44,6 +65,11 @@ public class CardRenderer : MonoBehaviour
     public void RenderCard(Card card) {
         this.card = card;
         RenderCard(card.img, card.stats, card.cost);
+    }
+
+    public void RenderCardAsSprite(Card card) {
+        this.card = card;
+        RenderCardAsSprite(card.img, card.stats, card.cost);
     }
 
     public void ScaleCardSize(float scale) {

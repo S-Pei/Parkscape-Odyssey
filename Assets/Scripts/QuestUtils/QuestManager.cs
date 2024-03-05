@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class QuestManager : MonoBehaviour
 {
     private static QuestManager instance;
-    private GPSManager gpsManager;
 
     public static QuestManager Instance { 
         get {
@@ -21,12 +20,6 @@ public class QuestManager : MonoBehaviour
 
     private void Start()
     {
-        gpsManager = GPSManager.Instance;
-        List<Texture2D> referenceImages = new();
-        referenceImages.Add(Resources.Load<Texture2D>("Assets/Resources/peter_pan_test_img.jpeg"));
-        referenceImages.Add(Resources.Load<Texture2D>("Assets/Resources/albert_memorial_test.jpeg"));
-        referenceImages.Add(Resources.Load<Texture2D>("Assets/Resources/speke-monument.jpg"));
-        GameState.Instance.InitialiseQuests(referenceImages);
     }
 
     private void Update()
@@ -35,12 +28,12 @@ public class QuestManager : MonoBehaviour
     }
 
     public void GetNextLocationQuest() {
-        LatLon currentLocation = gpsManager.GetLocation();
+        LatLon currentLocation = GPSManager.Instance.GetLocation();
         double minDistance = double.MaxValue;
         LocationQuest nearestLocationQuest = null;
         // Get nearest unattempted location quest
-        for (int i = 0; i < GameState.Instance.locationQuests.Count; i++) {
-            LocationQuest locationQuest = GameState.Instance.locationQuests[i];
+        Debug.LogWarning("in getnextlocationquest: " + GameState.Instance.locationQuests.Values.Count);
+        foreach (LocationQuest locationQuest in GameState.Instance.locationQuests.Values) {
             if (locationQuest.HasNotStarted()) {
                 double distance = 
                     MapManager.DistanceBetweenCoordinates(
@@ -76,7 +69,7 @@ public class QuestManager : MonoBehaviour
 
     // Checks if any location quests have been completed, returns a quest if progressed or completed.
     public LocationQuest CheckLocationQuests(Texture2D image) {
-        foreach (LocationQuest quest in GameState.Instance.locationQuests) {
+        foreach (LocationQuest quest in GameState.Instance.locationQuests.Values) {
             // Only one ongoing location quest at a time
             if (quest.IsOnGoing() && quest.AttemptQuest(image)) {
                 if (quest.IsCompleted()) {

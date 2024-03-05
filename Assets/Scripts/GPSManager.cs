@@ -1,6 +1,9 @@
 using UnityEngine;
+using Firebase.Extensions;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
 using System;
@@ -201,16 +204,17 @@ IEnumerator GPSLoc() {
             // Debug.Log("Sending encounter info to players in lobby");
             // Send medium encounters to players
             SetMediumEncounterID(encounterLocations);
-            Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
-            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
         }
     }
 
-    public void SetMediumEncounterID(List<LatLon> locations) {
+    public static void SetMediumEncounterID(List<LatLon> locations) {
+        Debug.LogWarning("Setting medium encounter IDs");
         foreach (LatLon location in locations) {
             string encounterId = Guid.NewGuid().ToString();
+            Debug.LogWarning("Setting encounter ID: " + encounterId + " at location: " + location);
             GameState.Instance.mediumEncounterLocations.Add(encounterId, location);
         }
+        Debug.LogWarning("Medium encounters: " + GameState.Instance.mediumEncounterLocations.Count);
     }
 
     // Geolocation sharing

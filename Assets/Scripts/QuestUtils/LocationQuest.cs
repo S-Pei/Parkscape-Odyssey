@@ -1,13 +1,21 @@
 using Microsoft.Geospatial;
 using UnityEngine;
+using System;
 using System.Linq;
 
+[Serializable]
 public class LocationQuest : Quest {
-    public LatLon Location { get; private set; }
+    public QuestLocation Location {
+        get => _location;
+        private set => _location = value;
+    }
+    
+    [SerializeField]
+    private QuestLocation _location;
 
     public LocationQuest(QuestType questType, string label, Texture2D referenceImage, LatLon location) 
-        : base(questType, label, 1, referenceImage) {
-        Location = location;
+        : base(questType, label, referenceImage, 1) {
+        Location = new QuestLocation(location);
     }
 
     public override string ToString() {
@@ -28,6 +36,7 @@ public class LocationQuest : Quest {
     // Check if the image taken is the correct object
     public bool ImageIsCorrect(Texture2D image) {
         string[] searchResults = VecSearchManager.Instance.ClassifyImage(image);
+        Debug.Log("Searching for " + Label + " in " + string.Join(", ", searchResults));
         return searchResults.Contains(Label);
     }
 }

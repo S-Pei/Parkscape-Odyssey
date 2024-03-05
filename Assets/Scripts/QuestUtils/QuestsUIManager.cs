@@ -52,12 +52,21 @@ public class QuestsUIManager : MonoBehaviour {
     }
 
     public void SetUp(List<BasicQuest> basicQuests, List<LocationQuest> locationQuests) {
+        Debug.LogWarning("Setup quests UI: " + basicQuests.Count + ", " + locationQuests.Count);
         foreach (BasicQuest quest in basicQuests) {
-            CreateBasicQuestDisplay(quest);
+            if (!quest.HasNotStarted()) {
+                CreateBasicQuestDisplay(quest);
+            }
         }
-
+        Debug.LogWarning(locationQuests.Count);
         foreach (LocationQuest quest in locationQuests) {
-            CreateLocationQuestDisplay(quest);
+            // Debug.Log("Hello?????");
+            if (!quest.HasNotStarted()) {
+                Debug.LogWarning("showing location quest: " + quest.Label);
+                CreateLocationQuestDisplay(quest);
+            } else {
+                Debug.LogWarning("not showing location quest: " + quest.Label);
+            }
         }
 
         ToggleBasicQuestsDisplay();

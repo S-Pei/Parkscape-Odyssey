@@ -8,10 +8,10 @@ public class Player
     public string Id { get; }
     public string Role { get; }
     public int Speed { get; private set;}
-    public int MaxHealth { get; }
+    public int MaxHealth { get; private set;}
     public int CurrentHealth { get; private set; }
     public int Mana { get; private set; }
-    public int MaxMana { get; }
+    public int MaxMana { get; private set;}
     public int Strength { get; private set;}
     public int Defence  { get; private set; }
     public string Description { get; }
@@ -83,5 +83,15 @@ public class Player
 
     public void AddSpeed(int amount) {
         Speed += amount;
+    }
+
+    public void AddHealthPotion() {
+        MaxHealth += 2;
+        CurrentHealth += 2;
+    }
+
+    public void AddManaPotion() {
+        MaxMana += 1;
+        Mana += 1;
     }
 }
