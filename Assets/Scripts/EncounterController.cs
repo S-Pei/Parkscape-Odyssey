@@ -345,6 +345,9 @@ public class EncounterController : MonoBehaviour
             // Instead of destroying the encounter, we can just disable it.
             encounter.GetComponent<EncounterIconChanger>().KillSprite();
         }
+
+        // Remove ar encounter spawn from spawn queue
+        EncounterObjectManager.Instance.RemoveEncounterToSpawnFromQueue(encounterId);
     }
 
     public void ExitEncounterLobby() {

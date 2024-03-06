@@ -1,13 +1,8 @@
 using UnityEngine;
-using Firebase.Extensions;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
 using System;
-using Newtonsoft.Json;
 
 public class GPSManager : MonoBehaviour
 {

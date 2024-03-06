@@ -36,23 +36,7 @@ public class ARManager : MonoBehaviour
     [SerializeField]
     private GameObject questResultPopUp;
 
-    [SerializeField] private List<(LatLon latlon, ARLocation location)> arSpawnLocations = new();
-
-    private Dictionary<string, LatLon> latlons = new() {
-        {"AR Location (Kenway)", new LatLon(51.493553, -0.192372)},
-        {"AR Location (Huxley)", new LatLon(51.498760, -0.179450)},
-        {"AR Location (Feeding Fawn)", new LatLon(51.501621, -0.180658)},
-        {"AR Location (Benny Hill)", new LatLon(51.500771, -0.180400)},
-    };
-
-    private ARLocationManager arLocationManager;
-
-    private ARLocation activeLocation;
-
     private ObjectDetectionManager objectDetectionManager;
-
-    private int checkLocationFreq = 100;
-    private int currCheckLoctionFreq = 0;
 
     public static ARManager Instance {
         get {
@@ -68,63 +52,12 @@ public class ARManager : MonoBehaviour
     }
 
     public void Start() {
-        arLocationManager = xrOrigin.GetComponent<ARLocationManager>();
-        arLocationManager.enabled = true;
-        // arLocationManager.locationTrackingStateChanged += LocationTrackedUpdated;
-
         gameManager = gameManagerObj.GetComponent<GameManager>();
         objectDetectionManager = GetComponent<ObjectDetectionManager>();
         ARQuestRewardHandler = ARQuestRewardHandlerObj.GetComponent<ARQuestRewardHandler>();
 
-        ARLocation[] arLocations = arLocationManager.ARLocations;
-        foreach (ARLocation arLocation in arLocations) {
-            bool getRes = latlons.TryGetValue(arLocation.name, out LatLon latlon);
-            if (getRes) {
-                arSpawnLocations.Add((latlon, arLocation));
-            } else {
-                gameManager.LogTxt($"LatLon not found for {arLocation.name}");
-            }
-        }
-
-
         // Enable AR interactions
         xrOrigin.GetComponent<Depth_ScreenToWorldPosition>().EnableARInteraction();
-    }
-
-    // private void LocationTrackedUpdated(ARLocationTrackedEventArgs args) {
-    //     var result = args.ARLocation;
-    //     gameManager.LogTxt($"Location: {result.name}");
-    // }
-
-    public void Update() {
-        if (currCheckLoctionFreq == 0) {
-            LatLon latlon = GPSManager.Instance.GetLocation();
-
-            double minDistance = 100000;
-            ARLocation closestLocation = null;
-            foreach ((LatLon locationLatLon, ARLocation location) in arSpawnLocations) {
-                double distance = distanceToSpawnLocation(latlon, locationLatLon);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestLocation = location;
-                }
-            }
-            // gameManager.LogTxt("Closest location: " + closestLocation.name);
-            if (activeLocation == null || activeLocation.name != closestLocation.name) {
-                ARLocationManager locationManager = xrOrigin.GetComponent<ARLocationManager>();
-
-                locationManager.StopTracking();
-                locationManager.SetARLocations(closestLocation);
-                locationManager.StartTracking();
-                activeLocation = closestLocation;
-
-                gameManager.LogTxt($"New active location: {activeLocation.name}");
-            }
-
-            currCheckLoctionFreq = checkLocationFreq;
-        } else {
-            currCheckLoctionFreq--;
-        }
     }
 
     // public void ActivateTestLocation() {
@@ -157,16 +90,6 @@ public class ARManager : MonoBehaviour
         semanticsRawImage.SetActive(false);
         semanticsLabel.SetActive(false);
         arEncounterSpawnManager.GetComponent<EncounterObjectManager>().SetARMode(false);
-    }
-
-    private ARLocation[] GetAllSpawnLocations() {
-        return arLocationManager.ARLocations;
-    }
-
-    private double distanceToSpawnLocation(LatLon latlon, LatLon locationLatLon) {
-        double distance = Math.Sqrt(Math.Pow(latlon.LatitudeInDegrees - locationLatLon.LatitudeInDegrees, 2) + Math.Pow(latlon.LongitudeInDegrees - locationLatLon.LongitudeInDegrees, 2));
-        // Debug.Log("Distance to spawn location: " + distance);
-        return distance;
     }
 
     public Texture2D TakeScreenCapture() {
