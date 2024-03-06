@@ -11,7 +11,6 @@ ${UNITY_EXECUTABLE:-xvfb-run --auto-servernum --server-args='-screen 0 640x480x2
   -projectPath $UNITY_DIR \
   -runTests \
   -testPlatform $TEST_PLATFORM \
-  # -testResults $UNITY_DIR/$TEST_PLATFORM-results.xml \
   -testResults /dev/stdout \
   -logFile /dev/stdout \
   -batchmode \

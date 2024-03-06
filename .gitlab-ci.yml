@@ -81,13 +81,12 @@ get-activation-file:
     expire_in: 2 weeks
   tags:
     - test
-  coverage: /<Linecoverage>(.*?)</Linecoverage>/
 
 # Tests without junit reporting results in GitLab
 test-playmode:
   <<: *test
   image:
-    name: $IMAGE:$UNITY_VERSION-ios-$IMAGE_VERSION
+    name: $IMAGE:$UNITY_VERSION-base-$IMAGE_VERSION
     pull_policy: if-not-present
   variables:
     TEST_PLATFORM: playmode
@@ -96,7 +95,7 @@ test-playmode:
 test-editmode:
   <<: *test
   image:
-    name: $IMAGE:$UNITY_VERSION-ios-$IMAGE_VERSION
+    name: $IMAGE:$UNITY_VERSION-base-$IMAGE_VERSION
     pull_policy: if-not-present
   variables:
     TEST_PLATFORM: editmode
