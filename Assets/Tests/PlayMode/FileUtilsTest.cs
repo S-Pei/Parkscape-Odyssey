@@ -6,6 +6,7 @@ using System;
 
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
 public class FileUtilsTest {
@@ -27,6 +28,10 @@ public class FileUtilsTest {
 
     [UnityTest]
     public IEnumerator ShouldUseDefaultQuestFiles_ReturnsTrue_WhenLastQuestFileUpdateKeyNotPresent() {
+        // Load initialisation scene so that we have access to Database.Instance.dataPath
+        SceneManager.LoadScene("Initialisation");
+        Assert.IsTrue(DatabaseManager.Instance != null);
+
         PlayerPrefs.DeleteKey("LastQuestFileUpdate");
 
         bool shouldUseDefaultQuestFiles = FileUtils.ShouldUseDefaultQuestFiles();

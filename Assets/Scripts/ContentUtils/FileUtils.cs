@@ -20,7 +20,6 @@ public static class FileUtils {
 
     // Return the full filepath in the Application's persistant data folder
     public static string GetFilePath(string fileName, string folder="", string root=null) {
-        // return Path.Combine(DataPath, folder, fileName);
         return Path.Combine(root != null ? root : DatabaseManager.Instance.dataPath, folder, fileName);
     }
 
