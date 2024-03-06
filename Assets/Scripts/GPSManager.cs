@@ -101,7 +101,7 @@ public class GPSManager : MonoBehaviour
 IEnumerator GPSLoc() {
     while (true) {
         // Start service before querying location
-        UnityEngine.Input.location.Start(500f, 500f);
+        UnityEngine.Input.location.Start();
         Debug.Log("Location Service Status: " + UnityEngine.Input.location.status);
                 
         // Wait until service initializes
