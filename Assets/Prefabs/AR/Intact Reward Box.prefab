@@ -50,6 +50,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5969285606542001921, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
         type: 3}
+      propertyPath: m_DynamicOccludee
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -5969285606542001921, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 27f3a6710bf8091418116da576229584, type: 2}
@@ -71,7 +76,7 @@ PrefabInstance:
     - target: {fileID: -4848462243313141505, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4000
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -4848462243313141505, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
         type: 3}
@@ -81,7 +86,7 @@ PrefabInstance:
     - target: {fileID: -4848462243313141505, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4000
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -4848462243313141505, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
         type: 3}
@@ -145,6 +150,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3580245342180639829, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
         type: 3}
+      propertyPath: m_DynamicOccludee
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3580245342180639829, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
+        type: 3}
+      propertyPath: m_StaticShadowCaster
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3580245342180639829, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 751ed7ceb8ffc9b4b9c4c3643a28d430, type: 2}
@@ -190,6 +205,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8855545971146793942, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
         type: 3}
+      propertyPath: m_DynamicOccludee
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8855545971146793942, guid: ada1812083f8e6c45b76bd7bc0e5c5c7,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 751ed7ceb8ffc9b4b9c4c3643a28d430, type: 2}
@@ -232,8 +252,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 49.04297, y: 72.47659, z: 49.732666}
-  m_Center: {x: -25.387207, y: 35.738297, z: -25.85852}
+  m_Size: {x: 55, y: 80, z: 55}
+  m_Center: {x: -25.387207, y: 36, z: -25.85852}
 --- !u!54 &4139765942093063315
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -243,9 +263,9 @@ Rigidbody:
   m_GameObject: {fileID: 1798823731454149693}
   serializedVersion: 4
   m_Mass: 1
-  m_Drag: 0
+  m_Drag: 0.4
   m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_CenterOfMass: {x: -25, y: 15, z: -25}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
   m_IncludeLayers:
@@ -254,10 +274,10 @@ Rigidbody:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_ImplicitCom: 1
+  m_ImplicitCom: 0
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 64
   m_CollisionDetection: 0
