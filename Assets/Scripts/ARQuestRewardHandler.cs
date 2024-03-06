@@ -140,7 +140,7 @@ public class ARQuestRewardHandler : MonoBehaviour
             GameObject explodedReward = Instantiate(explodedRewardPrefab, obj.transform.position, obj.transform.rotation, transform);
             aRObjectSpawner.AddTrackedObject(explodedReward, 10);
             foreach (Transform child in explodedReward.transform) {
-                child.GetComponent<Rigidbody>().AddExplosionForce(8, child.transform.position, 6, 5);
+                child.GetComponent<Rigidbody>().AddForce(UnityEngine.Random.insideUnitSphere * 10, ForceMode.Impulse);
             }
         });
 
