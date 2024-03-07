@@ -49,13 +49,13 @@ public class NetworkManager : MonoBehaviour {
             instance = this;
             DontDestroyOnLoad(this.gameObject);
         }
-        networkUtils = DebugNetwork.Instance;
 
-        #if UNITY_ANDROID
+        #if UNITY_EDITOR
+        networkUtils = DebugNetwork.Instance;
+        #elif UNITY_ANDROID
         Debug.Log("ANDROID");
         networkUtils = AndroidNetwork.Instance;
-        #endif
-        #if UNITY_IOS
+        #elif UNITY_IOS
         Debug.Log("IOS");
         networkUtils = IOSNetwork.Instance;
         #endif
