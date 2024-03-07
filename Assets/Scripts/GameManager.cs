@@ -233,11 +233,17 @@ public class GameManager : MonoBehaviour
 
     // ------------------------------ BUILD DEBUG ------------------------------
     public void LogTxt(string text) {
+        if (!debugLogger.activeInHierarchy) {
+            return;
+        }
         debugLogger.GetComponent<TextMeshProUGUI>().text += "\n";
         debugLogger.GetComponent<TextMeshProUGUI>().text += text;
     }
 
     public void RelogTxt(string text) {
+        if (!debugLogger.activeInHierarchy) {
+            return;
+        }
         debugLogger.GetComponent<TextMeshProUGUI>().text = text;
     }
 }

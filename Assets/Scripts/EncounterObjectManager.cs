@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class EncounterObjectManager : MonoBehaviour
 {
+    private static EncounterObjectManager selfReference;
     private int COL_DETECT_POINTS_NUM = 4;
     private float MAX_HEIGHT_FOR_COL = 1/2;
     private int ROW_DETECT_POINTS_NUM = 3;
@@ -27,6 +29,19 @@ public class EncounterObjectManager : MonoBehaviour
     public float SPAWN_Y_OFFSET = 3f;
     private int CHECK_GROUND_INTERVAL = 100;
     private int _checkGroundCounter = 0;
+
+    public static EncounterObjectManager Instance {
+        get {
+            if (selfReference == null) {
+                selfReference = new EncounterObjectManager();
+            }
+            return selfReference;
+        }
+    }
+
+    void Awake() {
+        selfReference = this;
+    }
 
     void Start() {
         _semanticQuerying = _segmentationManager.GetComponent<SemanticQuerying>();
@@ -117,6 +132,12 @@ public class EncounterObjectManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void RemoveEncounterToSpawnFromQueue(string encounterId) {
+        List<(string, bool)> newLs = _encountersToSpawn.ToList();
+        newLs.RemoveAll(x => x.Item1 == encounterId);
+        _encountersToSpawn = new Queue<(string, bool)>(newLs);
     }
 
 
