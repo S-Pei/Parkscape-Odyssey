@@ -17,12 +17,17 @@ public class LocationQuestUISetter : MonoBehaviour {
     [SerializeField]
     private GameObject completedOverlay;
 
+    [SerializeField]
+    private TMP_Text distanceText;
+
     public void Set(LocationQuest quest) {
         questText.text = quest.ToString();
         // referenceImage.GetComponent<Image>().sprite = CreateRefSprite(quest.ReferenceImage);
         referenceImage.GetComponent<Image>().sprite = CreateRefSprite(quest);
         progressValueText.GetComponent<TMP_Text>().text = quest.Progress.ToString();
         progressTargetText.GetComponent<TMP_Text>().text = quest.Target.ToString();
+        distanceText.GetComponent<TMP_Text>().text = 
+            ((int) MapManager.Instance.GetDistanceToPlayer(quest.Location.LatitudeInDegrees, quest.Location.LongitudeInDegrees)).ToString() + "m away";
         completedOverlay.SetActive(quest.IsCompleted());
     }
 
@@ -36,9 +41,8 @@ public class LocationQuestUISetter : MonoBehaviour {
         // Create a Texture2D from the byte[]
         Texture2D refImageTexture = new Texture2D(2, 2);
         refImageTexture.LoadImage(refImage); 
-        Texture2D newRef = VecSearchManager.ResizeImage(refImageTexture, 150, 150);
-
         Vector3 size = referenceImage.GetComponent<RectTransform>().sizeDelta;
+        Texture2D newRef = VecSearchManager.ResizeImage(refImageTexture, (int)size.x, (int)size.y);
         return Sprite.Create(newRef, new Rect(0, 0, size.x, size.y), new Vector2(0.5f, 0.5f));
     }
 }
