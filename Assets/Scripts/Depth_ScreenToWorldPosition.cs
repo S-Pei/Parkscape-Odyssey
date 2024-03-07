@@ -66,9 +66,11 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     void Update()
     {
 
-        if (!_occMan.subsystem.running)
-        {
-            return;
+        if (_occMan.subsystem != null) {
+            if (!_occMan.subsystem.running)
+            {
+                return;
+            }
         }
 
         Matrix4x4 displayMat = Matrix4x4.identity;

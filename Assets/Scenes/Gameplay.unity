@@ -6151,6 +6151,7 @@ MonoBehaviour:
   mainCamera: {fileID: 2047468664}
   arSession: {fileID: 800065300}
   xrOrigin: {fileID: 778045201}
+  debugLoggerBox: {fileID: 681916568}
   debugLogger: {fileID: 1525034246}
 --- !u!114 &1068634071
 MonoBehaviour:

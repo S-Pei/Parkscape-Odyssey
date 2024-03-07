@@ -10,6 +10,7 @@ using TMPro;
 
 using Firebase;
 using Firebase.Firestore;
+using UnityEngine.UI;
 
 
 public class GameManager : MonoBehaviour
@@ -26,6 +27,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject xrOrigin;
     private Depth_ScreenToWorldPosition depth_ScreenToWorldPosition;
 
+    [SerializeField] private GameObject debugLoggerBox;
     [SerializeField] private GameObject debugLogger;
 
     private Boolean inARMode = false;
@@ -238,6 +240,7 @@ public class GameManager : MonoBehaviour
         }
         debugLogger.GetComponent<TextMeshProUGUI>().text += "\n";
         debugLogger.GetComponent<TextMeshProUGUI>().text += text;
+        debugLoggerBox.GetComponent<ScrollRect>().verticalNormalizedPosition = 0 ;
     }
 
     public void RelogTxt(string text) {

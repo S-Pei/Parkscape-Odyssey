@@ -242,7 +242,6 @@ public class LobbyManager : MonoBehaviour {
 
             if (!joinedLobby) {
                 // If I am not in the lobby, send a message to the leader that I am in.
-                Debug.Log("Broadcast to leader I AM IN message");
                 LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, mediumEncounterLocations: null, sendTo : leaderID, sendFrom: myID);
                 network.broadcast(amIInMessage.toJson());
             }
@@ -306,7 +305,6 @@ public class LobbyManager : MonoBehaviour {
         int count = 0;
         while (count < roomFindingTimeout) {
             List<string> connections = network.getConnectedDevices();
-            Debug.Log("Connections: " + connections.Count);
             if (connections.Count != 0)
                 return true;
             System.Threading.Thread.Sleep(50);
@@ -316,13 +314,10 @@ public class LobbyManager : MonoBehaviour {
     }
 
     public CallbackStatus HandleMessage(Message message) {
-        // Debug.Log("In lobby handling");
         LobbyMessage lobbyMessage = (LobbyMessage) message.messageInfo;
 
         if (lobbyMessage.SendTo != "" && lobbyMessage.SendTo != myID)
             return CallbackStatus.DORMANT;
-
-        Debug.Log("Accepting status: " + AcceptMessages);
         
         // Ignore if no longer accepting messages.
         if (!AcceptMessages)
@@ -337,8 +332,6 @@ public class LobbyManager : MonoBehaviour {
                 // Ignore if max player count reached.
                 if (players.Count >= maxPlayerCount)
                     break;
-
-                Debug.Log("Player joined: " + message.sentFrom + "  "+lobbyMessage.Message);
 
                 // Add player to the list of players.
                 AddPlayer(lobbyMessage.SendFrom, lobbyMessage.Message);
@@ -373,7 +366,6 @@ public class LobbyManager : MonoBehaviour {
 
                 if (!joinedLobby) {
                     // If I am not in the lobby, send a message to the leader that I am in.
-                    Debug.Log("Broadcast to leader I AM IN message");
                     LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, mediumEncounterLocations: null, sendTo : leaderID, sendFrom: myID);
                     network.broadcast(amIInMessage.toJson());
                 }
@@ -382,12 +374,9 @@ public class LobbyManager : MonoBehaviour {
                 if (isLeader)
                     break;
                 
-                Debug.Log("Leader start message received");
-                
                 // Member may have received this message before.
                 GameState gameState = GameState.Instance;
                 if (!gameState.Initialized) {
-                    Debug.Log("Game state not initialised, initialising from message.");
                     gameState.InitializeFromMessage(GameStateMessage.fromJson(lobbyMessage.Message), roomCode, myID);
                 }
                 // Receive map info about medium encounters

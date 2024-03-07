@@ -144,12 +144,12 @@ IEnumerator GPSLoc() {
         if (Input.location.status == LocationServiceStatus.Running) {
             // Access granted and location value could be retrieved
             location = Input.location.lastData;
-            Debug.Log("Location: (" + location.latitude + ", " + location.longitude + ")");
+            // Debug.Log("Location: (" + location.latitude + ", " + location.longitude + ")");
         } else {
             // GPS service stopped
         }
         locationServiceStatus = Input.location.status;
-        Debug.Log("Location Service Status: " + locationServiceStatus); 
+        // Debug.Log("Location Service Status: " + locationServiceStatus); 
 
     }
 
