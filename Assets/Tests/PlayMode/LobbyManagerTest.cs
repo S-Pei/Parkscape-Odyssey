@@ -114,6 +114,8 @@ public class LobbyManagerTest
         LobbyManager lobbyManager = lobbyPopup.GetComponent<LobbyManager>();
         Assert.IsNotNull(lobbyManager);
 
+        DebugNetwork.Instance.RemoveAllDevices();
+
         // Joining the lobby fails and throws exception
         Assert.Throws<Exception>(() => lobbyManager.SetUpLobby("123", false));
 

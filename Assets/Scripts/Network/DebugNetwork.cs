@@ -134,6 +134,8 @@ public class DebugNetwork : NetworkUtils
     }
 
     public void AddDevice(string id, string roomCode) {
+        if (_connectedDevices.Contains(id))
+            return;
         _connectedDevices.Add(id);
         _devicesToRoomCode.Add(id, roomCode);
     }
@@ -148,5 +150,10 @@ public class DebugNetwork : NetworkUtils
             if (device != id && _devicesToRoomCode[device] == _devicesToRoomCode[id])
                 _messageQueues[device].Enqueue(message);
         }
+    }
+
+    public void RemoveAllDevices() {
+        _connectedDevices = new();
+        _devicesToRoomCode = new();
     }
 }
