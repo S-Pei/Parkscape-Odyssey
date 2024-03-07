@@ -42,6 +42,6 @@ fi
 pretty=$(xml_pp -s cvs $UNITY_DIR/$TEST_PLATFORM-results.xml)
 echo $pretty > /dev/stdout
 
-./format_results.sh $UNITY_DIR/$TEST_PLATFORM-results.xml
+./format_results.sh $UNITY_DIR/$TEST_PLATFORM-results.xml > /dev/stdout
 
 exit $UNITY_EXIT_CODE
