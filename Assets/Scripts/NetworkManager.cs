@@ -130,7 +130,6 @@ public class NetworkManager : MonoBehaviour {
 
     // Handle incoming messages for all managers.
     private CallbackStatus HandleMessage(Message message) {
-        Debug.Log("Got message");
         switch(message.messageInfo.messageType) {
             case MessageType.PINGMESSAGE:
                 // Received a ping message from someone else.
