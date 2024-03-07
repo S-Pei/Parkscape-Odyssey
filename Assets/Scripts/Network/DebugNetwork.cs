@@ -1,7 +1,7 @@
-using UnityEngine;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System;
+using UnityEngine;
 
 public class DebugNetwork : NetworkUtils
 {
@@ -17,7 +17,7 @@ public class DebugNetwork : NetworkUtils
     }
     public Dictionary<string, Queue<string>> _messageQueues = new();
 
-    public string _myID = "MYID";
+    public string _myID = SystemInfo.deviceUniqueIdentifier;
 
     public List<string> _connectedDevices = new();
 
@@ -33,7 +33,7 @@ public class DebugNetwork : NetworkUtils
         if (!DEBUGLOG)
             return;
         foreach (var device in _messageQueues.Keys) {
-            if (_devicesToRoomCode[device] == _devicesToRoomCode[_myID])
+            if (device != _myID && _devicesToRoomCode[device] == _devicesToRoomCode[_myID])
                 _messageQueues[device].Enqueue(message);
         }
     }
@@ -133,7 +133,20 @@ public class DebugNetwork : NetworkUtils
         _connectedDevices.Remove(id);
     }
 
+    public void AddDevice(string id, string roomCode) {
+        _connectedDevices.Add(id);
+        _devicesToRoomCode.Add(id, roomCode);
+    }
+
+
     public void SetMyID(string id) {
         _myID = id;
+    }
+
+    public void BroadcastFromPlayer(string id, string message) {
+        foreach (var device in _messageQueues.Keys) {
+            if (device != id && _devicesToRoomCode[device] == _devicesToRoomCode[id])
+                _messageQueues[device].Enqueue(message);
+        }
     }
 }
