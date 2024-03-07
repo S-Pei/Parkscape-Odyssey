@@ -36,7 +36,7 @@ for classname in $classnames; do
     # Go through each test case of each test suite. For each:
     #   - Print any logged output, and
     #   - If the test failed, print the failure message and stack trace
-    printf "$BBLUE%-80s%s\n" "$fullname~" "~[$passed~passed~/~${failed}~failed]" | tr ' ~' '- '
+    printf "$BBLUE%-66s%s\n" "$fullname~" "~[$passed~passed~/~${failed}~failed]" | tr ' ~' '- '
     testcases=$(xmlstarlet sel -t -m "//test-suite[@classname='$classname']/test-case" -v "@name" -n "$xml_file")
     for testcase in $testcases; do
         current_testcase="$current_suite/test-case[@name='$testcase']"
@@ -46,11 +46,11 @@ for classname in $classnames; do
         failure_message=$(xmlstarlet sel -t -m "$current_testcase/failure/message" -v "." -n "$xml_file")
         stack_trace=$(xmlstarlet sel -t -m "$current_testcase/failure/stack-trace" -v "." -n "$xml_file")
         if [ "$status" = "Failed" ]; then
-            printf "$RED%-80s%s\n" "$testcase~" "~$status" | tr ' ~' '- '
+            printf "$RED%-66s%s\n" "$testcase~" "~$status" | tr ' ~' '- '
             printf "$GREY%s\n$NC" "$failure_message" | sed 's/^/    /'
             printf "$GREY%s\n$NC" "$stack_trace" | sed 's/^/    /'
         else
-            printf "$GREEN%-80s%s\n$NC" "$testcase~" "~$status" | tr ' ~' '- '
+            printf "$GREEN%-66s%s\n$NC" "$testcase~" "~$status" | tr ' ~' '- '
         fi
         printf "$GREY%s$NC\n" "$output" | sed 's/^/    /'
     done
