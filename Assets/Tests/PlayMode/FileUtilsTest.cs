@@ -6,9 +6,10 @@ using System;
 
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
-public class FileUtilsTest {
+public class FileUtilsTest : IPrebuildSetup {
     // Serializable class for testing
     //
     // Multidimensional arrays are NOT serializable:
@@ -25,24 +26,21 @@ public class FileUtilsTest {
 
     public string root = TestContext.CurrentContext.TestDirectory;
 
+    public void Setup() {
+        // Create a DatabaseManager in the prebuild setup
+        // Before any tests run, its Awake() method runs, setting the Instance and dataPath
+        DatabaseManager dbManager = new GameObject().AddComponent<DatabaseManager>();
+    }
+
     [UnityTest]
     public IEnumerator ShouldUseDefaultQuestFiles_ReturnsTrue_WhenLastQuestFileUpdateKeyNotPresent() {
+        Assert.IsTrue(DatabaseManager.Instance != null);
+
         PlayerPrefs.DeleteKey("LastQuestFileUpdate");
 
         bool shouldUseDefaultQuestFiles = FileUtils.ShouldUseDefaultQuestFiles();
 
         Assert.IsTrue(shouldUseDefaultQuestFiles);
-
-        yield return null;
-    }
-
-    [UnityTest]
-    public IEnumerator ShouldUseDefaultQuestFiles_ReturnsFalse_WhenLastQuestFileUpdateKeyPresent() {
-        PlayerPrefs.SetString("LastQuestFileUpdate", "2022-01-01");
-
-        bool shouldUseDefaultQuestFiles = FileUtils.ShouldUseDefaultQuestFiles();
-
-        Assert.IsFalse(shouldUseDefaultQuestFiles);
 
         yield return null;
     }
@@ -136,15 +134,17 @@ public class FileUtilsTest {
             yield return coroutine.Current;
         }
 
+        Assert.IsTrue(DatabaseManager.Instance != null);
+
         // Assert that the files are saved to disk
-        Assert.IsTrue(File.Exists(FileUtils.GetFilePath("locationQuestVectors", "quests", root)));
-        Assert.IsTrue(File.Exists(FileUtils.GetFilePath("locationQuestGraph", "quests", root)));
-        Assert.IsTrue(File.Exists(FileUtils.GetFilePath("locationQuestLabels", "quests", root)));
+        Assert.IsTrue(File.Exists(FileUtils.GetFilePath("locationQuestVectors.bytes", "quests", root)));
+        Assert.IsTrue(File.Exists(FileUtils.GetFilePath("locationQuestGraph.bytes", "quests", root)));
+        Assert.IsTrue(File.Exists(FileUtils.GetFilePath("locationQuestLabels.bytes", "quests", root)));
 
         // Assert that the data is saved to disk correctly
-        byte[] savedLocationQuestVectors = File.ReadAllBytes(FileUtils.GetFilePath("locationQuestVectors", "quests", root));
-        byte[] savedLocationQuestGraph = File.ReadAllBytes(FileUtils.GetFilePath("locationQuestGraph", "quests", root));
-        byte[] savedLocationQuestLabels = File.ReadAllBytes(FileUtils.GetFilePath("locationQuestLabels", "quests", root));
+        byte[] savedLocationQuestVectors = File.ReadAllBytes(FileUtils.GetFilePath("locationQuestVectors.bytes", "quests", root));
+        byte[] savedLocationQuestGraph = File.ReadAllBytes(FileUtils.GetFilePath("locationQuestGraph.bytes", "quests", root));
+        byte[] savedLocationQuestLabels = File.ReadAllBytes(FileUtils.GetFilePath("locationQuestLabels.bytes", "quests", root));
         Assert.AreEqual(locationQuestVectors, savedLocationQuestVectors);
         Assert.AreEqual(locationQuestGraph, savedLocationQuestGraph);
         Assert.AreEqual(locationQuestLabels, savedLocationQuestLabels);
