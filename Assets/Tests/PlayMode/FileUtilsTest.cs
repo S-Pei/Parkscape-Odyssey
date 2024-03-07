@@ -50,6 +50,7 @@ public class FileUtilsTest : IPrebuildSetup {
         Assert.IsTrue(DatabaseManager.Instance != null);
 
         PlayerPrefs.SetString("LastQuestFileUpdate", "2022-01-01");
+        Debug.Log("Key is set: " + PlayerPrefs.HasKey("LastQuestFileUpdate"));
 
         bool shouldUseDefaultQuestFiles = FileUtils.ShouldUseDefaultQuestFiles();
 
