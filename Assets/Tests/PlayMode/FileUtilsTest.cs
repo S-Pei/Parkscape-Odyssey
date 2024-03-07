@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
-public class FileUtilsTest {
+public class FileUtilsTest : IPrebuildSetup {
     // Serializable class for testing
     //
     // Multidimensional arrays are NOT serializable:
@@ -26,10 +26,14 @@ public class FileUtilsTest {
 
     public string root = TestContext.CurrentContext.TestDirectory;
 
+    public void Setup() {
+        // Create a DatabaseManager in the prebuild setup
+        // Before any tests run, its Awake() method runs, setting the Instance and dataPath
+        DatabaseManager dbManager = new GameObject().AddComponent<DatabaseManager>();
+    }
+
     [UnityTest]
     public IEnumerator ShouldUseDefaultQuestFiles_ReturnsTrue_WhenLastQuestFileUpdateKeyNotPresent() {
-        // Load initialisation scene so that we have access to Database.Instance.dataPath
-        SceneManager.LoadScene("Initialisation");
         Assert.IsTrue(DatabaseManager.Instance != null);
 
         PlayerPrefs.DeleteKey("LastQuestFileUpdate");
@@ -43,6 +47,8 @@ public class FileUtilsTest {
 
     [UnityTest]
     public IEnumerator ShouldUseDefaultQuestFiles_ReturnsFalse_WhenLastQuestFileUpdateKeyPresent() {
+        Assert.IsTrue(DatabaseManager.Instance != null);
+
         PlayerPrefs.SetString("LastQuestFileUpdate", "2022-01-01");
 
         bool shouldUseDefaultQuestFiles = FileUtils.ShouldUseDefaultQuestFiles();
@@ -140,6 +146,8 @@ public class FileUtilsTest {
         while (coroutine.MoveNext()) {
             yield return coroutine.Current;
         }
+
+        Assert.IsTrue(DatabaseManager.Instance != null);
 
         // Assert that the files are saved to disk
         Assert.IsTrue(File.Exists(FileUtils.GetFilePath("locationQuestVectors", "quests", root)));
