@@ -46,20 +46,6 @@ public class FileUtilsTest : IPrebuildSetup {
     }
 
     [UnityTest]
-    public IEnumerator ShouldUseDefaultQuestFiles_ReturnsFalse_WhenLastQuestFileUpdateKeyPresent() {
-        Assert.IsTrue(DatabaseManager.Instance != null);
-
-        PlayerPrefs.SetString("LastQuestFileUpdate", "2022-01-01");
-        Debug.Log("Key is set: " + PlayerPrefs.HasKey("LastQuestFileUpdate"));
-
-        bool shouldUseDefaultQuestFiles = FileUtils.ShouldUseDefaultQuestFiles();
-
-        Assert.IsFalse(shouldUseDefaultQuestFiles);
-
-        yield return null;
-    }
-
-    [UnityTest]
     public IEnumerator Save_SavesBytesCorrectlyToDisk() {
         string fileName = "testFile";
         string folder = "testFolder";

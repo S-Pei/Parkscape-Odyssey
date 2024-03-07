@@ -39,6 +39,9 @@ else
   fi
 fi
 
-# cat $UNITY_DIR/$TEST_PLATFORM-results.xml | grep test-run | grep Passed
-cat $UNITY_DIR/$TEST_PLATFORM-results.xml | xml_pp -s csv | tee $UNITY_DIR/$TEST_PLATFORM-results-pretty.xml
+pretty=$(xml_pp -s cvs $UNITY_DIR/$TEST_PLATFORM-results.xml)
+echo $pretty > /dev/stdout
+
+./format_results.sh $UNITY_DIR/$TEST_PLATFORM-results.xml
+
 exit $UNITY_EXIT_CODE
