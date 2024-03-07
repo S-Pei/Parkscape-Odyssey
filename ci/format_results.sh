@@ -57,4 +57,4 @@ for classname in $classnames; do
 done
 
 # Task 3: Print the total number of tests passed and failed overall (summed)
-printf "${BOLD}Total: $total_passed tests passed, $total_failed tests failed$NC\n"
+printf "${BBLUE}Total: $total_passed tests passed, $total_failed tests failed$NC\n"
