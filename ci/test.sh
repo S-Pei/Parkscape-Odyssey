@@ -40,5 +40,6 @@ else
 fi
 
 # cat $UNITY_DIR/$TEST_PLATFORM-results.xml | grep test-run | grep Passed
-cat $UNITY_DIR/$TEST_PLATFORM-results.xml | xml_pp -s csv | tee $UNITY_DIR/$TEST_PLATFORM-results-pretty.xml
+# cat $UNITY_DIR/$TEST_PLATFORM-results.xml | xml_pp -s csv | tee $UNITY_DIR/$TEST_PLATFORM-results-pretty.xml
+cat $UNITY_DIR/$TEST_PLATFORM-results.xml > /dev/stdout
 exit $UNITY_EXIT_CODE
