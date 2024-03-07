@@ -136,7 +136,7 @@ IEnumerator GPSLoc() {
             UpdateGPSData();
             // Input.location.Stop();
         }
-        yield return new WaitForSecondsRealtime(1);
+        yield return new WaitForSecondsRealtime(0.3f);
     }
 }
 
