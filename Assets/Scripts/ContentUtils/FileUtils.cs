@@ -57,9 +57,9 @@ public static class FileUtils {
         // Write the quest files to disk in a separate thread to avoid
         // blocking the main thread with slow disk I/O
         SaveFilesThreaded(new Dictionary<string, byte[]> {
-            {"locationQuestVectors", locationQuestVectors},
-            {"locationQuestGraph", locationQuestGraph},
-            {"locationQuestLabels", locationQuestLabels}
+            {"locationQuestVectors.bytes", locationQuestVectors},
+            {"locationQuestGraph.bytes", locationQuestGraph},
+            {"locationQuestLabels.bytes", locationQuestLabels}
         }, folder, root);
 
         while (!filesSaved_Threaded) {

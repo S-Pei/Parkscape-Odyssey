@@ -55,6 +55,7 @@ public class GameInterfaceManager : MonoBehaviour
         scanImageButton.SetActive(false);
     }
 
+
     // Open with actual inventory stored in GameManager
     public void OpenInventory() {
         inventoryObject.GetComponent<InventoryUIManager>().OpenInventory();
@@ -94,6 +95,7 @@ public class GameInterfaceManager : MonoBehaviour
 
     private void ClosePlayerView() {
         MapManager.Instance.EnableMapInteraction();
+        GameManager.Instance.ClosePlayerView();
         Destroy(playerView);
     }
 
@@ -126,16 +128,19 @@ public class GameInterfaceManager : MonoBehaviour
 
     private void CloseQuests() {
         MapManager.Instance.EnableMapInteraction();
+        GameManager.Instance.CloseQuests();
         Destroy(questsOverlay);
     }
 
     public void SetARCameraToggle(bool ARMode) {
         if (ARMode) {
-            arCameraToggle.GetComponent<Image>().sprite = arCameraIcon;
-            scanImageButton.SetActive(true);
-        } else {
             arCameraToggle.GetComponent<Image>().sprite = mapIcon;
+            scanImageButton.SetActive(true);
+            MapManager.Instance.DisableMapInteraction();
+        } else {
+            arCameraToggle.GetComponent<Image>().sprite = arCameraIcon;
             scanImageButton.SetActive(false);
+            MapManager.Instance.EnableMapInteraction();
         }
     }
 }

@@ -119,6 +119,11 @@ public class EncounterController : MonoBehaviour
                 GameState.Instance.AddFoundMediumEncounter(encounterId);
             };
         }
+
+        // Set encounter information to the pin
+        monsterSpawn.GetComponent<SpriteButtonLocationBounded>().encounterId = encounterId;
+        monsterSpawn.GetComponent<SpriteButtonLocationBounded>().encounterType = type;
+
         monsterSpawn.GetComponent<EncounterIconChanger>().SetEncounterType(type);
         EncounterSpawnManager encounterSpawnManager = monsterSpawn.GetComponent<EncounterSpawnManager>();
         encounterSpawnManager.EncounterSpawnInit(encounterId, monsters, type);
@@ -199,12 +204,12 @@ public class EncounterController : MonoBehaviour
         if (IsMediumEncounter(encounterId)) {
             // show pop up
             encounterType = EncounterType.MEDIUM_BOSS;
-            mediumEncounterMsgPopUp.ShowMediumEncounterMessagePopup();
             bool isLeader = GameState.Instance.isLeader;
             if (GameState.MAPDEBUGMODE) {
                 isLeader = debugIsLeader;
             }
             if (!isLeader) {
+                mediumEncounterMsgPopUp.ShowMediumEncounterMessagePopup();
                 return;
             }
         }
@@ -283,8 +288,8 @@ public class EncounterController : MonoBehaviour
         // Add self as a member of the party in the encounter lobby
         partyMembers.Add(GameState.Instance.myID, GameState.Instance.PlayersDetails[GameState.Instance.myID].Name);
 
-        // // Disable map interactions
-        // MapManager.Instance.DisableMapInteraction();
+        // Disable map interactions
+        MapManager.Instance.DisableMapInteraction();
     }
 
     public void CloseRandomEncounterPopup() {
@@ -293,8 +298,20 @@ public class EncounterController : MonoBehaviour
         this.encounterId = "";
         partyMembers.Clear();
 
-        // // Enable map interactions
-        // MapManager.Instance.EnableMapInteraction();
+        // Enable map interactions
+        MapManager.Instance.EnableMapInteraction();
+
+        // Enable AR interaction.
+        GameObject[] gameObjects;
+        gameObjects = GameObject.FindGameObjectsWithTag("xrOrigin");
+        if (gameObjects.Length == 0) {
+            Debug.Log("No xrOrigin found");
+        } else {
+            GameObject xrOrigin = gameObjects[0];
+            if (xrOrigin.activeInHierarchy) {
+                xrOrigin.GetComponent<Depth_ScreenToWorldPosition>().EnableARInteraction();
+            }
+        }
     }
 
     public void LeaderStartEncounter() {
@@ -328,6 +345,9 @@ public class EncounterController : MonoBehaviour
             // Instead of destroying the encounter, we can just disable it.
             encounter.GetComponent<EncounterIconChanger>().KillSprite();
         }
+
+        // Remove ar encounter spawn from spawn queue
+        EncounterObjectManager.Instance.RemoveEncounterToSpawnFromQueue(encounterId);
     }
 
     public void ExitEncounterLobby() {

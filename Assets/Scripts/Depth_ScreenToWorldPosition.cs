@@ -18,6 +18,7 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private GameObject gameManagerObj;
     private GameManager gameManager;
 
+    private bool arInteractionEnabled = true;
 
     // FISHING
     [SerializeField]
@@ -27,6 +28,10 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     private GameObject fishingRod;
     private LineRenderer fishingRodLine;
     private Vector3? fishingAnchorPosition = null;
+
+    [SerializeField]
+    private GameObject arEncounterSpawnManager;
+    private EncounterObjectManager encounterObjectManager;
 
     [SerializeField]
     private GameObject questRewardHandlerObj;
@@ -51,6 +56,7 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
         semanticQuerying = segmentationManager.GetComponent<SemanticQuerying>();
         gameManager = gameManagerObj.GetComponent<GameManager>();
         questRewardHandler = questRewardHandlerObj.GetComponent<ARQuestRewardHandler>();
+        encounterObjectManager = arEncounterSpawnManager.GetComponent<EncounterObjectManager>();
 
         fishingRodLine = overlayCamera.GetComponent<LineRenderer>();
         fishingRodLine.positionCount = 2;
@@ -95,7 +101,10 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
             ShowHasFishingReward();
         }
 
-        
+        if (!arInteractionEnabled) 
+        {
+            return;
+        }
 
 #if UNITY_EDITOR
         if (Input.GetMouseButtonDown(0))
@@ -145,7 +154,6 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
         waterRippleEffect.transform.position = worldPosition;
         fishingStartTime = DateTime.Now;
         float randomTime = UnityEngine.Random.Range(FISHING_REWARD_MIN_TIME, FISHING_REWARD_MAX_TIME);
-        gameManager.LogTxt("Fishing for " + randomTime + " seconds");
         fishingRewardTime = fishingStartTime.AddSeconds(randomTime);
         isFishing = true;
     }
@@ -212,5 +220,34 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
     // Close fishing water ripple effect
     private void CloseFishingWaterRipple() {
         waterRippleEffect.SetActive(false);
+    }
+
+    public void DisableARInteraction() {
+        arInteractionEnabled = false;
+        // uiFullBlocker.SetActive(true);
+        encounterObjectManager.DisableSpawnInteraction();
+    }
+
+    public void EnableARInteraction() {
+        arInteractionEnabled = true;
+        // uiFullBlocker.SetActive(false);
+        encounterObjectManager.EnableSpawnInteraction();
+    }
+
+    public float GetDepthOfPoint(int x, int y) {
+        // Sample eye depth
+        var uv = new Vector2(x / Screen.width, y / Screen.height);
+        return depthimage.Value.Sample<float>(uv, Matrix4x4.identity);
+    }
+
+    public Vector3 TranslateScreenToWorldPoint(int x, int y) {
+        // Sample eye depth
+        var uv = new Vector2(x / Screen.width, y / Screen.height);
+        var eyeDepth = depthimage.Value.Sample<float>(uv, Matrix4x4.identity);
+
+        GameManager.Instance.LogTxt($"Depth: {eyeDepth}");
+
+        // Get world position
+        return _camera.ScreenToWorldPoint(new Vector3(x, y, eyeDepth));
     }
 }

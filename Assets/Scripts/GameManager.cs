@@ -14,23 +14,38 @@ using Firebase.Firestore;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager selfReference;
+
     private GameInterfaceManager gameInterfaceManager;
     private DatabaseManager databaseManager;
 
-    [SerializeField]
-    private GameObject mainCamera;
+    [SerializeField] private GameObject mainCamera;
 
-    [SerializeField]
-    private GameObject arSession;
+    [SerializeField] private GameObject arSession;
 
-    [SerializeField]
-    private GameObject debugLogger;
+    [SerializeField] private GameObject xrOrigin;
+    private Depth_ScreenToWorldPosition depth_ScreenToWorldPosition;
+
+    [SerializeField] private GameObject debugLogger;
 
     private Boolean inARMode = false;
 
     private volatile Boolean IsProcessingNewLocationQuests = false;
 
     private ListenerRegistration locationQuestListener;
+
+    public static GameManager Instance {
+        get {
+            if (selfReference == null) {
+                selfReference = new();
+            }
+            return selfReference;
+        }
+    }
+
+    public void Awake() {
+        selfReference = this;
+    }
 
     // Start is called before the first frame update
     void Start() {
@@ -43,6 +58,9 @@ public class GameManager : MonoBehaviour
 
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
+        databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
+        depth_ScreenToWorldPosition = xrOrigin.GetComponent<Depth_ScreenToWorldPosition>();
+        
         AddLocationQuestListener();
     }
 
@@ -118,10 +136,16 @@ public class GameManager : MonoBehaviour
 
     public void OpenInventory() {
         gameInterfaceManager.OpenInventory();
+        if (inARMode) {
+            depth_ScreenToWorldPosition.DisableARInteraction();
+        }
     }
 
     public void CloseInventory() {
         gameInterfaceManager.CloseInventory();
+        if (inARMode) {
+            depth_ScreenToWorldPosition.EnableARInteraction();
+        }
     }
 
     public void EndEncounter(int pointsToAdd=0) {
@@ -149,10 +173,28 @@ public class GameManager : MonoBehaviour
 
     public void OpenPlayerView() {
         gameInterfaceManager.OpenPlayerView();
+        if (inARMode) {
+            depth_ScreenToWorldPosition.DisableARInteraction();
+        }
+    }
+
+    public void ClosePlayerView() {
+        if (inARMode) {
+            depth_ScreenToWorldPosition.EnableARInteraction();
+        }
     }
 
     public void OpenQuests() {
         gameInterfaceManager.OpenQuests();
+        if (inARMode) {
+            depth_ScreenToWorldPosition.DisableARInteraction();
+        }
+    }
+
+    public void CloseQuests() {
+        if (inARMode) {
+            depth_ScreenToWorldPosition.EnableARInteraction();
+        }
     }
 
     //------------------------------- AR CAMERA -------------------------------
@@ -168,20 +210,22 @@ public class GameManager : MonoBehaviour
 
     private void OpenARSession() {
         mainCamera.SetActive(false);
+        arSession.SetActive(true);
         ARManager.Instance.StartAR();
 
         // Disable map interactions
-        MapManager.Instance.DisableMapInteraction();
+        MapManager.Instance.DisableMapInteraction(true);
 
         inARMode = true;
     }
 
     private void CloseARSession() {
         ARManager.Instance.StopAR();
+        arSession.SetActive(false);
         mainCamera.SetActive(true);
 
         // Enable map interactions
-        MapManager.Instance.EnableMapInteraction();
+        MapManager.Instance.EnableMapInteraction(true);
 
         inARMode = false;
     }
@@ -189,11 +233,17 @@ public class GameManager : MonoBehaviour
 
     // ------------------------------ BUILD DEBUG ------------------------------
     public void LogTxt(string text) {
+        if (!debugLogger.activeInHierarchy) {
+            return;
+        }
         debugLogger.GetComponent<TextMeshProUGUI>().text += "\n";
         debugLogger.GetComponent<TextMeshProUGUI>().text += text;
     }
 
     public void RelogTxt(string text) {
+        if (!debugLogger.activeInHierarchy) {
+            return;
+        }
         debugLogger.GetComponent<TextMeshProUGUI>().text = text;
     }
 }

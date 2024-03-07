@@ -71,6 +71,7 @@ public class EncounterLobbyUIManager : MonoBehaviour
             partyMembers.Add(GameState.Instance.MyPlayer.Name);
             partyMemberSlots[0].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = GameState.Instance.MyPlayer.Name;
         } else {
+            mediumEncounterMessagePopupLeader.SetActive(false);
             startEncounterButton.SetActive(false);
         }
 
@@ -103,6 +104,18 @@ public class EncounterLobbyUIManager : MonoBehaviour
 
     public void ExitEncounterLobby() {
         encounterController.ExitEncounterLobby();
+
+        GameObject[] gameObjects;
+        gameObjects = GameObject.FindGameObjectsWithTag("xrOrigin");
+        if (gameObjects.Length == 0) {
+            Debug.Log("No xrOrigin found");
+        } else {
+            GameObject xrOrigin = gameObjects[0];
+            if (xrOrigin.activeInHierarchy) {
+                xrOrigin.GetComponent<Depth_ScreenToWorldPosition>().EnableARInteraction();
+            }
+        }
+
         Destroy(gameObject);
     }
 }

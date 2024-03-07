@@ -1,13 +1,8 @@
 using UnityEngine;
-using Firebase.Extensions;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Maps.Unity;
 using Microsoft.Geospatial;
 using System;
-using Newtonsoft.Json;
 
 public class GPSManager : MonoBehaviour
 {
@@ -101,7 +96,7 @@ public class GPSManager : MonoBehaviour
 IEnumerator GPSLoc() {
     while (true) {
         // Start service before querying location
-        UnityEngine.Input.location.Start(500f, 500f);
+        UnityEngine.Input.location.Start();
         Debug.Log("Location Service Status: " + UnityEngine.Input.location.status);
                 
         // Wait until service initializes
@@ -189,10 +184,24 @@ IEnumerator GPSLoc() {
     // Leader gets medium encounter locations from web authoring tool
     public void GetMediumEncounters() {
         if (GameState.Instance.MyPlayer.IsLeader) {
-            List<LatLon> encounterLocations = new List<LatLon>();
-            encounterLocations.Add(new LatLon(51.496451, -0.176775));
-            encounterLocations.Add(new LatLon(51.506061, -0.174226));
+            // TODO: get list from web authoring tool
+            // Hardcoded for now
+            List<LatLon> encounterLocations = new List<LatLon>
+            {
+                // new LatLon(51.496451, -0.176775),
+                // new LatLon(51.506061, -0.174226)
+                new LatLon(51.493553, -0.192372), // Kenway
+                new LatLon(51.49891971744029, -0.1794724314649951), // Huxley
+                new LatLon(51.502605,-0.17744397), // Royal Albert Memorial
+                new LatLon(51.50578,-0.18158564), // Round Pond
+                new LatLon(51.505234,-0.17158033), // Serpentine Isis
+                
+            };
+            // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.502305, -0.177689));
+            // GameState.Instance.mediumEncounterGeoLocations.Add(new LatLon(51.39355, -0.1924046));
 
+            // Debug.Log("Sending encounter info to players in lobby");
+            // Send medium encounters to players
             SetMediumEncounterID(encounterLocations);
         }
     }

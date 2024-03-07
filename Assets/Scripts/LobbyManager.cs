@@ -114,7 +114,7 @@ public class LobbyManager : MonoBehaviour {
     // makes no guarantees of continuing on the main thread (so loading scenes
     // may not work properly). Internally, it awaits the completion of async
     // functions before starting the game on the main thread.
-    private IEnumerator FetchDataAndInitialiseGame() {
+    private IEnumerator FetchDataAndInitialiseGame(bool follower=false) {
         // Display the loading scene while waiting for async DB operations
         // to complete. The scene is loaded additively so that this GameObject
         // doesn't get destroyed
@@ -124,8 +124,10 @@ public class LobbyManager : MonoBehaviour {
 
         // Get medium encounter positions asynchronously
         Debug.LogWarning("1. Getting medium encounters");
-        gpsManager.GetMediumEncounters();
 
+        if (!follower) {
+            gpsManager.GetMediumEncounters();
+        }
 
         Task questInitialisation = GameState.Instance.InitialiseQuests();
 
@@ -164,22 +166,25 @@ public class LobbyManager : MonoBehaviour {
 
         Debug.LogWarning("11. Sending encounter info to players in lobby");
 
-        Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
-        network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
 
-        Debug.LogWarning("12. Got medium encounters: " + GameState.Instance.mediumEncounterLocations.Count + " locations.");
-        // Debugging
-        foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations) {
-            Debug.LogWarning("13. Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
-        }
-        
-        if (players.Count > 1) {
-            // send map info
-            // members
-            // receive map info
-            // receive start game
-            // start game
-            LeaderSendStartGameMessage();
+        if (!follower) {
+            Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
+            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
+
+            Debug.LogWarning("12. Got medium encounters: " + GameState.Instance.mediumEncounterLocations.Count + " locations.");
+            // Debugging
+            foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations) {
+                Debug.LogWarning("13. Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
+            }
+            
+            if (players.Count > 1) {
+                // send map info
+                // members
+                // receive map info
+                // receive start game
+                // start game
+                LeaderSendStartGameMessage();
+            }
         }
 
         // Get count of loaded Scenes and last index
@@ -387,7 +392,10 @@ public class LobbyManager : MonoBehaviour {
                 }
                 // Receive map info about medium encounters
                 gameState.mediumEncounterLocations = MapMessage.DictToLatLon(lobbyMessage.MediumEncounterLocations);
-                StartGame();
+                
+                // Fetch and set location quests
+                StartCoroutine(FetchDataAndInitialiseGame(follower: true));
+
                 break;
             case LobbyMessageType.MEMBER_START:
                 if (!isLeader)

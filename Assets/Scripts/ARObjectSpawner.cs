@@ -12,9 +12,10 @@ public class ARObjectSpawner : MonoBehaviour {
     [SerializeField]
     private bool gravity = true;
 
-    private List<GameObject> trackObjects = new();
+    private Dictionary<GameObject, float> trackObjects = new();
 
-    private const float threshold = -200;
+    private const float threshold = -100;
+    private const float LIFE_TIME = 45;
 
     void Start() {
         if (arObjectPrefab == null) {
@@ -41,8 +42,21 @@ public class ARObjectSpawner : MonoBehaviour {
             return;
 
         foreach (var obj in trackObjects) {
-            if (obj.transform.position.y < threshold) {
-                obj.transform.position = GetPosition(2.0f);
+            if (obj.Key.transform.position.y < threshold) {
+                obj.Key.transform.position = GetPosition(2.0f);
+
+                // Reset the velocity and angular velocity
+                if (obj.Key.TryGetComponent<Rigidbody>(out var rb)) {
+                    rb.velocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                }
+            }
+            // Delete the obj after some time.
+            if (obj.Value > 0) {
+                trackObjects[obj.Key] -= Time.deltaTime;
+            } else {
+                trackObjects.Remove(obj.Key);
+                Destroy(obj.Key);
             }
         }
     }
@@ -55,8 +69,16 @@ public class ARObjectSpawner : MonoBehaviour {
         if (!gravity)
             return obj;
         
-        trackObjects.Add(obj);
+        trackObjects.Add(obj, LIFE_TIME);
         return obj;
+    }
+
+    public void DestroyedObject(GameObject obj) {
+        trackObjects.Remove(obj);
+    }
+
+    public void AddTrackedObject(GameObject obj, float time = LIFE_TIME) {
+        trackObjects.Add(obj, time);
     }
 
     private Vector3 GetPosition(float distance) {

@@ -15,6 +15,9 @@ TagManager:
   - Database
   - EncounterLobby
   - MonsterManager
+  - AREncounterSpawn
+  - AREncounterSpawnManager
+  - xrOrigin
   layers:
   - Default
   - TransparentFX

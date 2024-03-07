@@ -47,6 +47,7 @@ public class ScannerController : MonoBehaviour
                     yield return null;
                 }
                 ARManager.Instance.ShowQuestResultPopUp(successQuest);
+                ARManager.Instance.TriggerReward(successQuest);
                 Destroy(gameObject);
                 
             }
