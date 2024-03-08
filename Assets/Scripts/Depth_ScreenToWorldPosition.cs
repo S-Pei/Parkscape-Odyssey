@@ -242,14 +242,14 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
         return depthimage.Value.Sample<float>(uv, Matrix4x4.identity);
     }
 
-    public Vector3 TranslateScreenToWorldPoint(int x, int y) {
+    public (Vector3, float) TranslateScreenToWorldPoint(int x, int y, float maxDepth) {
         // Sample eye depth
         var uv = new Vector2(x / Screen.width, y / Screen.height);
-        var eyeDepth = depthimage.Value.Sample<float>(uv, Matrix4x4.identity);
+        var eyeDepth = Math.Min(depthimage.Value.Sample<float>(uv, Matrix4x4.identity), maxDepth);
 
         GameManager.Instance.LogTxt($"Depth: {eyeDepth}");
 
         // Get world position
-        return _camera.ScreenToWorldPoint(new Vector3(x, y, eyeDepth));
+        return (_camera.ScreenToWorldPoint(new Vector3(x, y, eyeDepth)), eyeDepth);
     }
 }

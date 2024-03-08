@@ -49,7 +49,7 @@ public class QuestsProgressPopUpManager : MonoBehaviour
                 questTile = Instantiate(basicQuestPrefab, gameObject.transform);
                 questTile.GetComponent<BasicQuestUISetter>().Set((BasicQuest) quest);
             }
-            questTile.transform.localPosition = new Vector3(15, -346, 0);
+            questTile.transform.localPosition = new Vector3(15, -296, 0);
         }
     }
     

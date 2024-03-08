@@ -993,7 +993,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 16, y: 101}
-  m_SizeDelta: {x: 682.0223, y: 1001.7456}
+  m_SizeDelta: {x: 730.0866, y: 1001.7456}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &172521960
 MonoBehaviour:
@@ -6102,7 +6102,6 @@ MonoBehaviour:
   _bossEncounterPrefab: {fileID: 4108514402268157196, guid: c50c9737d2f9544c08c96ea3001f4450,
     type: 3}
   _segmentationManager: {fileID: 1785995203}
-  SPAWN_Y_OFFSET: 3
 --- !u!4 &1054522866
 Transform:
   m_ObjectHideFlags: 0
