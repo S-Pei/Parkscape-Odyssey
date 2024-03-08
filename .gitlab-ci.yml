@@ -151,6 +151,7 @@ test-editmode:
   <<: *unity_defaults
   script:
     - chmod +x ./ci/build.sh && ./ci/build.sh
+    - tail -n 200 $UNITY_DIR/output/log
   artifacts:
     paths:
       - $UNITY_DIR/Builds/
