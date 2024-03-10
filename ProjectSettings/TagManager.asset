@@ -18,6 +18,7 @@ TagManager:
   - AREncounterSpawn
   - AREncounterSpawnManager
   - xrOrigin
+  - BackgroundAudioSource
   layers:
   - Default
   - TransparentFX

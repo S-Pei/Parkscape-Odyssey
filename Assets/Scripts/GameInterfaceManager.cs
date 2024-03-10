@@ -35,6 +35,9 @@ public class GameInterfaceManager : MonoBehaviour
     [SerializeField]
     private GameObject scanImageButton;
 
+    [SerializeField]
+    private GameObject questNotification;
+
     private Dictionary<string, int> roleToIcon = new Dictionary<string, int>()
         {
             { "Rogue", 0 },
@@ -130,6 +133,14 @@ public class GameInterfaceManager : MonoBehaviour
         MapManager.Instance.EnableMapInteraction();
         GameManager.Instance.CloseQuests();
         Destroy(questsOverlay);
+    }
+
+    public void DisplayNewQuestNotification() {
+        questNotification.SetActive(true);
+    }
+
+    public void CloseNewQuestNotification() {
+        questNotification.SetActive(false);
     }
 
     public void SetARCameraToggle(bool ARMode) {
