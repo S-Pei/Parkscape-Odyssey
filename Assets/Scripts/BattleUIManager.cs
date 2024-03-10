@@ -40,6 +40,9 @@ public class BattleUIManager : MonoBehaviour {
     [SerializeField]
     private GameObject speedPanel;
 
+    [SerializeField]
+    private GameObject deadPanel;
+
     private GameObject cardsManager;
     private CardsUIManager cardsUIManager;
     private Dictionary<string, GameObject> playerStats = new Dictionary<string, GameObject>();
@@ -141,7 +144,6 @@ public class BattleUIManager : MonoBehaviour {
         // The positions of the cards must be instantiated *after* displayCards is fully populated
         // This is because the card's index is used to calculate its position
         RepositionCards();
-        
     }
 
     public void AddToHand(CardName card) {
@@ -240,5 +242,20 @@ public class BattleUIManager : MonoBehaviour {
 
     public void CloseCardDescriptionPopUp() {
         popUpManager.closePopUp();
+    }
+
+    public void UpdateMonsterStats(List<Monster> mosnters) {
+        Monster monsterToUpdate = mosnters[0];
+        GameObject enemyToUpdate = enemyPanel.transform.GetChild(0).gameObject;
+        MonsterRenderer monsterRenderer = enemyToUpdate.GetComponentInChildren<MonsterRenderer>();
+        monsterRenderer.UpdateMonsterHealth(monsterToUpdate);
+    }
+
+    public void PlayerDeadUI() {
+        deadPanel.SetActive(true);
+    }
+
+    public void ResetUI() {
+        deadPanel.SetActive(false);
     }
 }

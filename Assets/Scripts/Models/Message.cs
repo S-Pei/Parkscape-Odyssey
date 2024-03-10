@@ -8,10 +8,4 @@ public class Message {
     public string toJson() {
         return JsonConvert.SerializeObject(this);
     }
-
-    // to change back to void (string for testing)
-    public string processMessage() {
-        return messageInfo.processMessageInfo();
-        
-    }
 }

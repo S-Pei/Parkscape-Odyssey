@@ -1,8 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
+using Microsoft.Geospatial;
 
 public class LobbyManager : MonoBehaviour {
     // Singleton
@@ -30,10 +33,12 @@ public class LobbyManager : MonoBehaviour {
     private int msgFreqCounter = 0;
     private int roomFindingTimeout = 200;
     private bool joinedLobby = false;
-    private bool iAmIn = false;
     private int disconnectCount = 0;
     private List<string> playerIDs;
-    
+
+    // Map
+    private GPSManager gpsManager;
+
     // Initialisation
 	void Awake () {
 		if(!selfReference) {
@@ -42,8 +47,9 @@ public class LobbyManager : MonoBehaviour {
             myID = SystemInfo.deviceUniqueIdentifier;
             msgFreq = maxPlayerCount;
             network = NetworkManager.Instance.NetworkUtils;
+            gpsManager = GPSManager.Instance;
 			DontDestroyOnLoad(gameObject);
-		}else 
+		} else 
             Destroy(gameObject);
 	}
 
@@ -55,18 +61,19 @@ public class LobbyManager : MonoBehaviour {
         // Tell the leader to remove you from the list of players.
         if (isLeader) {
             // If you are the leader, tell everyone to exit the lobby.
-            LobbyMessage leaveLobbyMessage = new(LobbyMessageType.LEADER_LEAVE, true, "");
+            LobbyMessage leaveLobbyMessage = new(LobbyMessageType.LEADER_LEAVE, true, "", mediumEncounterLocations: null);
             network.broadcast(leaveLobbyMessage.toJson());
         }
         network.stopAdvertising();
         network.stopDiscovering();
+
+        joinedLobby = false;
 
         // Reset the lobby.
         players = new Dictionary<string, string>();
         myID = SystemInfo.deviceUniqueIdentifier;
         leaderID = "";
         connectedDevices = new List<string>();
-        iAmIn = false;
         joinedLobby = false;
         playerIDs = new();
         lobbyUIManager.ExitLobby();
@@ -81,63 +88,149 @@ public class LobbyManager : MonoBehaviour {
             return;
 
         // Create a list of all the players id
+        Debug.Log("Creating list of player IDs");
         playerIDs = new(players.Keys);
         playerIDs.Remove(myID);
 
-        // Add myself as player
-        // players.Add(myID, myName);
-
         // Initialise the game state.
+        Debug.Log("Set game state, should be null gamestate");
         GameState gameState = GameState.Instance;
-        gameState.Initialize(myID, roomCode, players);
 
-        // Single player start
-        if (players.Count == 1) {
-            StartGame();
+        // Game state already initialised if in debug mode
+        Debug.Log("Initializing gamestate");
+        if (!GameState.DEBUGMODE) {
+            gameState.Initialize(myID, roomCode, players);
         }
+        Debug.Log("Initializing gamestate");
+
+        GameState.Instance.MyPlayer.IsLeader = true;
+
+        StartCoroutine(FetchDataAndInitialiseGame());
     }
 
+    // Try to get new medium encounters from the database and start the game.
+    //
+    // This is a coroutine instead of an async function because the latter
+    // makes no guarantees of continuing on the main thread (so loading scenes
+    // may not work properly). Internally, it awaits the completion of async
+    // functions before starting the game on the main thread.
+    private IEnumerator FetchDataAndInitialiseGame(bool follower=false) {
+        // Display the loading scene while waiting for async DB operations
+        // to complete. The scene is loaded additively so that this GameObject
+        // doesn't get destroyed
+        SceneManager.LoadScene("Initialisation", LoadSceneMode.Additive);
+
+        int fileTimeoutSeconds = 20;
+
+        // Get medium encounter positions asynchronously
+        Debug.LogWarning("1. Getting medium encounters");
+
+        if (!follower) {
+            gpsManager.GetMediumEncounters();
+        }
+
+        Task questInitialisation = GameState.Instance.InitialiseQuests();
+
+        // Wait for the task to complete
+        while (!questInitialisation.IsCompleted) {
+            yield return null;
+        }
+
+        // Get location quest data asynchronously
+        Task<byte[]> locationQuestVectors = DatabaseUtils.GetFileWithTimeout(
+            "locationQuestVectors.bytes", fileTimeoutSeconds);
+        Task<byte[]> locationQuestGraph = DatabaseUtils.GetFileWithTimeout(
+            "locationQuestGraph.bytes", fileTimeoutSeconds);
+        Task<byte[]> locationQuestLabels = DatabaseUtils.GetFileWithTimeout(
+            "locationQuestLabels.bytes", fileTimeoutSeconds);
+        
+        // Internally, these functions have will timeout if they take too long
+        // so they will always complete eventually
+        while (
+            !locationQuestVectors.IsCompleted ||
+            !locationQuestGraph.IsCompleted ||
+            !locationQuestLabels.IsCompleted) {
+            yield return null;
+        }
+
+        // Save the files to disk
+        Debug.LogWarning("10. Saving location quest files to disk");
+        yield return FileUtils.ProcessNewQuestFiles(
+            locationQuestVectors.Result,
+            locationQuestGraph.Result,
+            locationQuestLabels.Result
+        );
+
+        // Unload the loading scene
+        SceneManager.UnloadSceneAsync("Initialisation");
+
+        Debug.LogWarning("11. Sending encounter info to players in lobby");
+
+
+        if (!follower) {
+            Dictionary<string, Dictionary<string, double>> mediumEncounterLocations = MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations);
+            network.broadcast(new MapMessage(MapMessageType.MAP_INFO, new List<string>(), mediumEncounterLocations).toJson());
+
+            Debug.LogWarning("12. Got medium encounters: " + GameState.Instance.mediumEncounterLocations.Count + " locations.");
+            // Debugging
+            foreach (KeyValuePair<string, LatLon> item in GameState.Instance.mediumEncounterLocations) {
+                Debug.LogWarning("13. Key: " + item.Key + ", Location: (" + item.Value.LatitudeInDegrees + ", " + item.Value.LongitudeInDegrees + ")");
+            }
+            
+            if (players.Count > 1) {
+                // send map info
+                // members
+                // receive map info
+                // receive start game
+                // start game
+                LeaderSendStartGameMessage();
+            }
+        }
+
+        // Get count of loaded Scenes and last index
+        // (corresponding to the loading scene)
+        var lastSceneIndex = SceneManager.sceneCount - 1;
+
+        // Get last Scene by index in all loaded Scenes
+        var lastLoadedScene = SceneManager.GetSceneAt(lastSceneIndex);
+
+        // Unload Scene
+        SceneManager.UnloadSceneAsync(lastLoadedScene);
+        
+        StartGame();
+    }
+
+    private void LeaderSendStartGameMessage() {
+        // Send a message to everyone to start the game.
+        LobbyMessage leaderStartMessage = 
+            new(LobbyMessageType.LEADER_START, true, GameState.Instance.ToMessage().toJson(), 
+            mediumEncounterLocations: MapMessage.LatLonToDict(GameState.Instance.mediumEncounterLocations));
+        network.broadcast(leaderStartMessage.toJson());
+    }
+
+
     // Send round of messages.
-    public void SendMessages(int numConnectedPlayers, Dictionary<string, string> connectedPlayers) {
+    public void SendMessages(Dictionary<string, string> connectedPlayers, List<string> disconnectedPlayerIDs) {
         if (!AcceptMessages) {
-            Debug.Log("Not accepting messages.");
             return;
         }
 
         if (network.getConnectedDevices().Count <=  0) {
-            Debug.Log("No connected DEVICES. not attempting to send messages...");
-            if (numConnectedPlayers <= 0) {
-                Debug.Log("No connected PLAYERS yet, pinging to get player (but still sending)...");
-                return;
-            }
             return;
         }
+
+        // There are connected players, so we can send messages.
 
         // IDs of connected players.
         List<string> connectedIDs = new List<string>(connectedPlayers.Keys);
 
-
         if (isLeader) {
             // Leader check if any devices have disconnected.
-            foreach (string id in players.Keys) {
-                if (!connectedIDs.Contains(id) && !id.Equals(myID)) {
-                    RemovePlayer(id);
-                }
-            }
-            
-            // Check if game has started and broadcast the game state to everyone.
-            if (GameState.Instance.Initialized) {
-                // If the game has started, broadcast the game state to everyone.
-                LobbyMessage gameStateMessage = new(LobbyMessageType.LEADER_START, true, GameState.Instance.ToMessage().toJson(), sendFrom: myID);
-                network.broadcast(gameStateMessage.toJson());
-            } else {
-                // Otherwise, broadcast the list of players to everyone in the lobby (if any).
-                LobbyMessage lobbyMessage = new(isLeader, players, myID);
-                network.broadcast(lobbyMessage.toJson());
+            foreach (string id in disconnectedPlayerIDs) {
+                RemovePlayer(id);
             }
         } else {
             // If I lost connection to the leader then I should exit the lobby after 10 seconds
-            // connectedDevices = network.getConnectedDevices();
             if (!leaderID.Equals("") && !connectedIDs.Contains(leaderID)) {
                 if (disconnectCount < 100) {
                     disconnectCount++;
@@ -147,10 +240,9 @@ public class LobbyManager : MonoBehaviour {
                 }
             }
 
-            // If I am in the lobby, send a message to the leader that I am in, don't stop until I am in the list.
-            if (joinedLobby && !iAmIn) {
-                Debug.Log("Broadcasting I AM IN message");
-                LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, sendTo : leaderID, sendFrom: myID);
+            if (!joinedLobby) {
+                // If I am not in the lobby, send a message to the leader that I am in.
+                LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, mediumEncounterLocations: null, sendTo : leaderID, sendFrom: myID);
                 network.broadcast(amIInMessage.toJson());
             }
         }
@@ -158,7 +250,9 @@ public class LobbyManager : MonoBehaviour {
 
     // Common method to start the game for both leader and non-leader.
     private void StartGame() {
+        Debug.LogWarning("13. Starting game");
         AcceptMessages = false;
+        GameState.Instance.isLeader = isLeader;
         // Load the game scene.
         SceneManager.LoadScene("Gameplay");
     }
@@ -167,6 +261,7 @@ public class LobbyManager : MonoBehaviour {
         if (players.ContainsKey(id))
             return;
         players.Add(id, name);
+        Debug.Log("Added player: " + id + "  " + name);
         lobbyUIManager.AddPlayer(name);
     }
 
@@ -188,15 +283,18 @@ public class LobbyManager : MonoBehaviour {
         network.setRoomCode(roomCode);
         network.startDiscovering();
 
+
         this.isLeader = isLeader;
         if (!isLeader) {
             // Wait for room to be found.
             if (!FindRoom())
                 throw new Exception("Room not found.");
+        } else {
+            network.startAdvertising();
         }
 
-        network.startAdvertising();
-
+        // network.startAdvertising();
+        network.stopDiscovering();
         AcceptMessages = true;
 
         lobbyUIManager.SetUpLobby(roomCode, isLeader);
@@ -207,7 +305,6 @@ public class LobbyManager : MonoBehaviour {
         int count = 0;
         while (count < roomFindingTimeout) {
             List<string> connections = network.getConnectedDevices();
-            Debug.Log("Connections: " + connections.Count);
             if (connections.Count != 0)
                 return true;
             System.Threading.Thread.Sleep(50);
@@ -217,19 +314,14 @@ public class LobbyManager : MonoBehaviour {
     }
 
     public CallbackStatus HandleMessage(Message message) {
-        Debug.Log("In lobby handling");
         LobbyMessage lobbyMessage = (LobbyMessage) message.messageInfo;
 
         if (lobbyMessage.SendTo != "" && lobbyMessage.SendTo != myID)
             return CallbackStatus.DORMANT;
-
-        Debug.Log("Accepting status: " + AcceptMessages);
         
         // Ignore if no longer accepting messages.
         if (!AcceptMessages)
             return CallbackStatus.DORMANT;
-        
-        Debug.Log("Lobby message is not dormanted, processing...");
 
         switch (lobbyMessage.Type) {
             case LobbyMessageType.MEMBER_I_AM_IN:
@@ -237,32 +329,20 @@ public class LobbyManager : MonoBehaviour {
                 if (!isLeader)
                     break;
 
-                // Ignore if player already in list.
-                if (players.ContainsKey(lobbyMessage.SendFrom))
-                    break;
-
                 // Ignore if max player count reached.
                 if (players.Count >= maxPlayerCount)
                     break;
 
-                Debug.Log("Player joined: " + message.sentFrom + "  "+lobbyMessage.Message);
-
                 // Add player to the list of players.
                 AddPlayer(lobbyMessage.SendFrom, lobbyMessage.Message);
-
+                
+                // Send the new list of players to everyone in the lobby.
+                LobbyMessage newLobbyMessage = new(isLeader, players, myID, mediumEncounterLocations: null);
+                network.broadcast(newLobbyMessage.toJson());
                 break;
             case LobbyMessageType.LEADER_PLAYERS:
                 if (isLeader)
                     break;
-                
-                Debug.Log("Not leader, proceed");
-
-                // Learn my id and leader's id from this message
-                // myID = lobbyMessage.SendTo;
-                // leaderID = message.sentFrom;
-
-                // Add leader to the list of players.
-                // AddPlayer(message.sentFrom, lobbyMessage.Message);
 
                 leaderID = lobbyMessage.SendFrom;
 
@@ -270,40 +350,41 @@ public class LobbyManager : MonoBehaviour {
                 foreach (KeyValuePair<string, string> player in lobbyMessage.Players) {
                     // Check if the player is me.
                     if (player.Key.Equals(myID)) {
-                        iAmIn = true;
+                        joinedLobby = true;
                         continue;
                     }
-                    Debug.Log("Adding player: " + player.Key + "  "+player.Value);
                     AddPlayer(player.Key, player.Value);
                 }
 
                 // Remove all players that are not in the list of players.
-                foreach (KeyValuePair<string, string> player in players) {
+                Dictionary<string, string> playersCopy = new(players);
+                foreach (KeyValuePair<string, string> player in playersCopy) {
                     if (!lobbyMessage.Players.ContainsKey(player.Key) 
                         && !player.Key.Equals(myID) && !player.Key.Equals(leaderID))
                         RemovePlayer(player.Key);
                 }
 
-                joinedLobby = true;
+                if (!joinedLobby) {
+                    // If I am not in the lobby, send a message to the leader that I am in.
+                    LobbyMessage amIInMessage = new(LobbyMessageType.MEMBER_I_AM_IN, false, myName, mediumEncounterLocations: null, sendTo : leaderID, sendFrom: myID);
+                    network.broadcast(amIInMessage.toJson());
+                }
                 break;
             case LobbyMessageType.LEADER_START:
                 if (isLeader)
                     break;
                 
-                Debug.Log("Leader start message received");
-                
                 // Member may have received this message before.
                 GameState gameState = GameState.Instance;
                 if (!gameState.Initialized) {
-                    Debug.Log("Game state not initialised, initialising from message.");
                     gameState.InitializeFromMessage(GameStateMessage.fromJson(lobbyMessage.Message), roomCode, myID);
                 }
+                // Receive map info about medium encounters
+                gameState.mediumEncounterLocations = MapMessage.DictToLatLon(lobbyMessage.MediumEncounterLocations);
+                
+                // Fetch and set location quests
+                StartCoroutine(FetchDataAndInitialiseGame(follower: true));
 
-                Debug.Log("Sending reply.");
-                // Send a message to the leader that I am ready to start the game.
-                LobbyMessage memberStartMessage = new(LobbyMessageType.MEMBER_START, false, myName, sendTo : leaderID, sendFrom : myID);
-                network.broadcast(memberStartMessage.toJson());
-                Debug.Log("Sent reply.");
                 break;
             case LobbyMessageType.MEMBER_START:
                 if (!isLeader)
@@ -312,7 +393,7 @@ public class LobbyManager : MonoBehaviour {
                 // Send a message to say that their start message was received and it's okay to start the game.
                 if (playerIDs.Contains(lobbyMessage.SendFrom))
                     playerIDs.Remove(lobbyMessage.SendFrom);
-                LobbyMessage leaderStartMessage = new(LobbyMessageType.LEADER_START_OK, true, myName, sendTo : lobbyMessage.SendFrom, sendFrom : myID);
+                LobbyMessage leaderStartMessage = new(LobbyMessageType.LEADER_START_OK, true, myName, mediumEncounterLocations: null, sendTo : lobbyMessage.SendFrom, sendFrom : myID);
                 network.broadcast(leaderStartMessage.toJson());
 
                 // Once everyone has sent the start message, start the game.
@@ -356,17 +437,21 @@ public class LobbyMessage : MessageInfo {
     public bool IsLeader {get;}
     public string SendTo {get;}
     public string SendFrom {get;}
+    public Dictionary<string, Dictionary<string, double>> MediumEncounterLocations {get;}
 
-    public LobbyMessage(LobbyMessageType type, bool isLeader, string message, string sendTo = "", string sendFrom = "") {
+    public LobbyMessage(LobbyMessageType type, bool isLeader, string message, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations, 
+        string sendTo = "", string sendFrom = "") {
         messageType = MessageType.LOBBYMESSAGE;
         Type = type;
         IsLeader = isLeader;
         Message = message;
         SendTo = sendTo;
         SendFrom = sendFrom;
+        MediumEncounterLocations = mediumEncounterLocations == null ? new() : mediumEncounterLocations;
     }
 
-    public LobbyMessage(bool isLeader, Dictionary<string, string> players, string leaderID, string sendTo = "") {
+    public LobbyMessage(bool isLeader, Dictionary<string, string> players, string leaderID, Dictionary<string, Dictionary<string, double>> mediumEncounterLocations, 
+        string sendTo = "") {
         if (!isLeader)
             throw new Exception("Only leader can send this message.");
         messageType = MessageType.LOBBYMESSAGE;
@@ -376,10 +461,12 @@ public class LobbyMessage : MessageInfo {
         Message = "";
         SendTo = sendTo;
         SendFrom = leaderID;
+        MediumEncounterLocations = mediumEncounterLocations == null ? new() : mediumEncounterLocations;
     }
 
     [JsonConstructor]
-    public LobbyMessage(LobbyMessageType type, string message, Dictionary<string, string> players, bool isLeader, string sendTo, string sendFrom) {
+    public LobbyMessage(LobbyMessageType type, string message, Dictionary<string, string> players, bool isLeader, string sendTo, string sendFrom, 
+        Dictionary<string, Dictionary<string, double>> mediumEncounterLocations) {
         messageType = MessageType.LOBBYMESSAGE;
         Type = type;
         IsLeader = isLeader;
@@ -387,13 +474,10 @@ public class LobbyMessage : MessageInfo {
         Players = players;
         SendTo = sendTo;
         SendFrom = sendFrom;
+        MediumEncounterLocations = mediumEncounterLocations;
     }
 
     public string toJson() {
         return JsonConvert.SerializeObject(this);
-    }
-
-    public string processMessageInfo() {
-        return "";
     }
 }

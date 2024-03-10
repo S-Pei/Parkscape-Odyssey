@@ -47,6 +47,14 @@ public class NetworkJsonConverter : JsonConverter
         {
             return jsonObject.ToObject<BattleMessage>(serializer);
         }
+        else if (type.Equals(MessageType.TRADE.ToString())) 
+        {
+            return jsonObject.ToObject<TradeMessage>(serializer);
+        }
+        else if (type.Equals(MessageType.MAP.ToString())) 
+        {
+            return jsonObject.ToObject<MapMessage>(serializer);
+        }
 
         Debug.Log("Parsed messageinfo" + jsonObject.ToString());
 

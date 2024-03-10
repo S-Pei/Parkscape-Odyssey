@@ -12,12 +12,9 @@ ${UNITY_EXECUTABLE:-xvfb-run --auto-servernum --server-args='-screen 0 640x480x2
   -runTests \
   -testPlatform $TEST_PLATFORM \
   -testResults $UNITY_DIR/$TEST_PLATFORM-results.xml \
-  -logFile /dev/stdout \
+  -logFile $UNITY_DIR/$TEST_PLATFORM-log.log \
   -batchmode \
   -nographics \
-  -enableCodeCoverage \
-  -coverageResultsPath $UNITY_DIR/$TEST_PLATFORM-coverage \
-  -coverageOptions "generateAdditionalMetrics;generateHtmlReport;generateHtmlReportHistory;generateBadgeReport;" \
   -debugCodeOptimization
 
 UNITY_EXIT_CODE=$?
@@ -42,15 +39,9 @@ else
   fi
 fi
 
-if grep $CODE_COVERAGE_PACKAGE $PACKAGE_MANIFEST_PATH; then
-  cat $UNITY_DIR/$TEST_PLATFORM-coverage/Report/Summary.xml | grep Linecoverage
-  mv $UNITY_DIR/$TEST_PLATFORM-coverage/$CI_PROJECT_NAME-opencov/*Mode/TestCoverageResults_*.xml $UNITY_DIR/$TEST_PLATFORM-coverage/coverage.xml
-  rm -r $UNITY_DIR/$TEST_PLATFORM-coverage/$CI_PROJECT_NAME-opencov/
-else
-  {
-    echo -e "\033[33mCode Coverage package not found in $PACKAGE_MANIFEST_PATH. Please install the package \"Code Coverage\" through Unity's Package Manager to enable coverage reports.\033[0m"
-  } 2> /dev/null
-fi
+pretty=$(xml_pp -s cvs $UNITY_DIR/$TEST_PLATFORM-results.xml)
+echo $pretty > /dev/stdout
 
-cat $UNITY_DIR/$TEST_PLATFORM-results.xml | grep test-run | grep Passed
+./ci/format_results.sh $UNITY_DIR/$TEST_PLATFORM-results.xml > /dev/stdout
+
 exit $UNITY_EXIT_CODE
