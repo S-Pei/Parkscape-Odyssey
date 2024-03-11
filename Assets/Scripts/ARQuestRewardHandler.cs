@@ -32,6 +32,9 @@ public class ARQuestRewardHandler : MonoBehaviour
     private List<GameObject> trashPrefabs;
 
     [SerializeField]
+    private GameObject fishPrefab;
+
+    [SerializeField]
     private AudioClip failAudio;
 
     [SerializeField]
@@ -97,6 +100,13 @@ public class ARQuestRewardHandler : MonoBehaviour
         GameObject trash = Instantiate(trashPrefabs[index], gameObject.transform);
         StartCoroutine(AnimateObject(trash, position));
         PlayFailAudio();
+    }
+
+    public void TriggerFish(Vector3 position) {
+        GameObject fish = Instantiate(fishPrefab, gameObject.transform);
+        GameState.Instance.MyPlayer.Heal(2);
+        StartCoroutine(AnimateObject(fish, position));
+        PlaySuccessAudio();
     }
 
     // Reward with random card.

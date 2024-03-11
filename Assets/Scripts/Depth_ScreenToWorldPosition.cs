@@ -182,8 +182,12 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
                 gameManager.LogTxt("Fishing reward clicked, getting reward...");
                 if (UnityEngine.Random.value <= REWARD_CHANCE)
                     questRewardHandler.TriggerReward(waterRippleEffect.transform.position, true);
-                else 
-                    questRewardHandler.TriggerTrash(waterRippleEffect.transform.position);
+                else {
+                    if (UnityEngine.Random.value <= 0.5)
+                        questRewardHandler.TriggerTrash(waterRippleEffect.transform.position);
+                    else
+                        questRewardHandler.TriggerFish(waterRippleEffect.transform.position);
+                }
                 StartFishingCooldown();
                 StopFishing();
             }
