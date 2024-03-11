@@ -28,12 +28,14 @@ public class QuestFactory : MonoBehaviour {
             ));
         }
 
-        // Add the encounters to the game state
-        GPSManager.SetMediumEncounterID(encounterLocations);
-
         Dictionary<string, LocationQuest> locationQuestsDict = new();
         foreach (LocationQuest locationQuest in locationQuests) {
             locationQuestsDict.Add(locationQuest.Label, locationQuest);
+        }
+
+        if (GameState.Instance.isLeader) {
+            // Add the encounters to the game state
+            GPSManager.SetMediumEncounterID(encounterLocations);
         }
 
         // Return a dictionary mapping each quest's label to the object

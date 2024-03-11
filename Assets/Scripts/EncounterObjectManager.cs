@@ -6,7 +6,7 @@ public class EncounterObjectManager : MonoBehaviour
 {
     private static EncounterObjectManager selfReference;
     private int COL_DETECT_POINTS_NUM = 4;
-    private float MAX_HEIGHT_FOR_COL = 1/2;
+    private float MAX_HEIGHT_FOR_COL = 0;
     private int ROW_DETECT_POINTS_NUM = 3;
 
     [SerializeField] private GameObject _xrOrigin;
@@ -26,7 +26,8 @@ public class EncounterObjectManager : MonoBehaviour
     private SemanticQuerying _semanticQuerying;
     private List<(int, int)> _detectGroundPoints;
     private float MIN_DEPTH_FOR_SPAWN = 2.5f;
-    public float SPAWN_Y_OFFSET = 3f;
+    private float MAX_DEPTH_FOR_SPAWN = 4f;
+    private float SPAWN_Y_OFFSET = 3.5f;
     private int CHECK_GROUND_INTERVAL = 100;
     private int _checkGroundCounter = 0;
 
@@ -120,14 +121,14 @@ public class EncounterObjectManager : MonoBehaviour
 
         if (detectedGroundPoints.Count > 0) {
             (int x, int y) = SelectRandomPoint(detectedGroundPoints);
-            Vector3 worldPosition = _depth_ScreenToWorldPosition.TranslateScreenToWorldPoint(x, y);
-            worldPosition.y += SPAWN_Y_OFFSET;
+            (Vector3 worldPosition, var depth) = _depth_ScreenToWorldPosition.TranslateScreenToWorldPoint(x, y, MAX_DEPTH_FOR_SPAWN);
+            worldPosition.y += SPAWN_Y_OFFSET * (depth / MAX_DEPTH_FOR_SPAWN);
             GameObject newSpawn = Instantiate(
                 _toSpawnEncounterPin.GetComponent<SpriteButtonLocationBounded>().encounterType == EncounterType.RANDOM_ENCOUNTER ? _randomEncounterPrefab : _bossEncounterPrefab, 
                 worldPosition, Quaternion.identity);
             newSpawn.GetComponentInChildren<AREncounterSpawn>().encounterId = _toSpawnEncounterPin.GetComponent<SpriteButtonLocationBounded>().encounterId;
-            _encountersToSpawn.Dequeue();
             _encountersSpawnedStatus[_toSpawnEncounterPin.GetComponent<SpriteButtonLocationBounded>().encounterId] = (_toSpawnEncounterPin, newSpawn);
+            _encountersToSpawn.Dequeue();
             return true;
         }
 
