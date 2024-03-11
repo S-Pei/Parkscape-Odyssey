@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using System;
 using TMPro;
@@ -29,12 +30,15 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private GameObject debugLoggerBox;
     [SerializeField] private GameObject debugLogger;
+    [SerializeField] private AudioSource backgroundAudioSource;
 
     private Boolean inARMode = false;
 
     private volatile Boolean IsProcessingNewLocationQuests = false;
 
     private ListenerRegistration locationQuestListener;
+
+    private ListenerRegistration musicListener;
 
     public static GameManager Instance {
         get {
@@ -58,20 +62,40 @@ public class GameManager : MonoBehaviour
             databaseManager = databseOjb.GetComponent<DatabaseManager>();
         }
 
+        StartCoroutine(LoadMusicFromDisk());
+
         gameInterfaceManager = GetComponent<GameInterfaceManager>();
         gameInterfaceManager.SetUpInterface();
         databaseManager = GameObject.FindWithTag("Database").GetComponent<DatabaseManager>();
         depth_ScreenToWorldPosition = xrOrigin.GetComponent<Depth_ScreenToWorldPosition>();
         
         AddLocationQuestListener();
+        AddMusicListener();
     }
 
-    // Update is called once per frame
-    void Update() {
-        // if (!isInEncounter) {
-        //     isInEncounter = true;
-        //     StartCoroutine(EncounterMonsterRandomly());
-        // }
+    public IEnumerator LoadMusicFromDisk() {
+        // Wait for DatabaseManager.Instance to be set
+        while (DatabaseManager.Instance == null) {
+            yield return null;
+        }
+
+        // Load any music saved on disk
+        Debug.LogWarning("11. Loading music from disk");
+        AudioSource backgroundAudioSource = GameObject.FindWithTag("BackgroundAudioSource").GetComponent<AudioSource>();
+        Task<AudioClip> clipTask = FileUtils.LoadBackgroundMusicAsAudioClip();
+
+        // Wait for the task to complete
+        while (!clipTask.IsCompleted) {
+            yield return null;
+        }
+
+        AudioClip clip = clipTask.Result;
+
+        if (clip != null) {
+            backgroundAudioSource.Stop();
+            backgroundAudioSource.clip = clip;
+            backgroundAudioSource.Play();
+        }
     }
 
     // Add listener for location quest updates
@@ -93,21 +117,48 @@ public class GameManager : MonoBehaviour
         });
     }
 
-    public void DetachLocationQuestListener() {
-        Debug.LogWarning("Detaching location quest listener.");
-        locationQuestListener.Stop();
+    public void AddMusicListener() {
+        DocumentReference query = DatabaseManager.Instance.Database.Collection("music").Document("music");
+        musicListener = query.Listen(snapshot => {
+            Debug.LogWarning("Music collection updated.");
+            StartCoroutine(ProcessMusicUpdate(snapshot));
+        });
+    }
+
+    public IEnumerator ProcessMusicUpdate(DocumentSnapshot snapshot) {
+        if (snapshot == null) {
+            yield break;
+        }
+
+        // Fetch the new music from Firebase and save it to disk
+        Task<AudioClip> task = DatabaseUtils.ProcessMusicUpdateAsync(snapshot);
+
+        // Wait for the task to complete
+        while (!task.IsCompleted) {
+            yield return null;
+        }
+
+        AudioClip clip = task.Result;
+
+        if (clip == null) {
+            Debug.LogError("New music was not able to be loaded (might be stale).");
+            yield break;
+        } else {
+            Debug.LogWarning("Successfully downloaded new clip");
+
+            if (backgroundAudioSource.isPlaying) {
+                backgroundAudioSource.Stop();
+                backgroundAudioSource.clip = clip;
+                backgroundAudioSource.Play();
+            } else {
+                backgroundAudioSource.clip = clip;
+            }
+        }
     }
 
     public IEnumerator ProcessLocationQuestsUpdate(IEnumerable<DocumentChange> changes) {
-        // Detach the listener until this update is done - this seems to not work, and neither does setting a flag...
-        // TODO: Discuss this/how to handle multiple listener triggers at once
-        // DetachLocationQuestListener();
-        
         Debug.LogWarning("Done waiting - processing new location quests.");
 
-        // // Set flag to indicate that we are currently processing new location quests
-        // IsProcessingNewLocationQuests = true;
-        
         string previousUpdate = PlayerPrefs.GetString("LastQuestFileUpdate");
         Task task = DatabaseUtils.ProcessLocationQuestsUpdateAsync(changes, this);
 
@@ -118,22 +169,7 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
 
-        // // Save the location quest files to disk; we will know this operation is complete when
-        // // LastQuestFileUpdate in PlayerPrefs updates
-        // StartCoroutine(FileUtils.ProcessNewQuestFiles(
-        //     GameState.Instance.locationQuestVectors,
-        //     GameState.Instance.locationQuestGraph,
-        //     GameState.Instance.locationQuestLabels,
-        //     updateGameState: false));
-
-        // // Write the updated locationQuests to disk
-        // FileUtils.Save(new LocationQuestStore(new List<LocationQuest>(GameState.Instance.locationQuests.Values)), "locationQuests", "quests");
-
-
-        // // Reset the flag
-        // IsProcessingNewLocationQuests = false;
-        // Add the listener back
-        // AddLocationQuestListener();
+        gameInterfaceManager.DisplayNewQuestNotification();
     }
 
     public void OpenInventory() {
@@ -157,6 +193,9 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Ending the encounter ({GameState.Instance.Score} -> {GameState.Instance.Score + pointsToAdd}).");
         GameState.Instance.Score += pointsToAdd;
         GameState.Instance.IsInEncounter = false;
+
+        // Resume the background music
+        backgroundAudioSource.Play();
     }
 
     // public void StartEncounter() {

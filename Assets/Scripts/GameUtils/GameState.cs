@@ -133,6 +133,7 @@ public class GameState {
     public void UpdateLocationQuest(LocationQuest quest) {
         CheckInitialised();
         if (!locationQuests.ContainsKey(quest.Label)) {
+            quest.SetOngoing();
             locationQuests.Add(quest.Label, quest);
         }
     }
