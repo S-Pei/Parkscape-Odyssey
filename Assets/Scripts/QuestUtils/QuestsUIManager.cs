@@ -71,4 +71,15 @@ public class QuestsUIManager : MonoBehaviour {
 
         ToggleBasicQuestsDisplay();
     }
+
+    public void UpdateLocationQuests() {
+        foreach (Transform child in locationQuestsContent.transform) {
+            Destroy(child.gameObject);
+        }
+        foreach (LocationQuest quest in GameState.Instance.locationQuests.Values) {
+            if (!quest.HasNotStarted()) {
+                CreateLocationQuestDisplay(quest);
+            }
+        }
+    }
 }

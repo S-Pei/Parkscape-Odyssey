@@ -143,6 +143,12 @@ public class GameInterfaceManager : MonoBehaviour
         questNotification.SetActive(false);
     }
 
+    public void UpdateQuests() {
+        if (questsOverlay != null) {
+            questsOverlay.GetComponent<QuestsUIManager>().UpdateLocationQuests();
+        }
+    }
+
     public void SetARCameraToggle(bool ARMode) {
         if (ARMode) {
             arCameraToggle.GetComponent<Image>().sprite = mapIcon;

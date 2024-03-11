@@ -170,6 +170,7 @@ public class GameManager : MonoBehaviour
         }
 
         gameInterfaceManager.DisplayNewQuestNotification();
+        gameInterfaceManager.UpdateQuests();
     }
 
     public void OpenInventory() {
