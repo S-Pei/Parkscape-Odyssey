@@ -62,7 +62,11 @@ public class Player
     }
 
     public void Heal(int amount) {
-        CurrentHealth += amount;
+        if (CurrentHealth + amount > MaxHealth) {
+            CurrentHealth = MaxHealth;
+        } else {
+            CurrentHealth += amount;
+        }
     }
 
     public void Revive() {
