@@ -5708,6 +5708,8 @@ MonoBehaviour:
   trashPrefabs:
   - {fileID: 8221848437588596034, guid: 116ea127822940a49bd0bde1566cae8e, type: 3}
   - {fileID: 8050640339800514617, guid: e393f28ec60f58e43951336b528fa13d, type: 3}
+  fishPrefab: {fileID: 2409001004216533904, guid: b3880969e2e374bd185085a3e1e43eaa,
+    type: 3}
   failAudio: {fileID: 8300000, guid: 3659a5b610c3de84bac84029eab70dbb, type: 3}
   successAudio: {fileID: 8300000, guid: 060c6f45976894cb88d80afd88cbce50, type: 3}
   explodedRewardPrefab: {fileID: 2282460170991886420, guid: cecdb82afbd2b53408d4b3297223fb24,
