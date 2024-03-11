@@ -74,18 +74,24 @@ public class BattleManager : MonoBehaviour {
     private Dictionary<string, string> partyMembers;
     private Dictionary<string, Player> partyMembersInfo = new();
     private BattleStatus battleStatus = BattleStatus.TURN_IN_PROGRESS;
+    private AudioSource backgroundAudioSource;
 
     void Awake() {
         if (!selfReference) {
             selfReference = this;
             gameManager = FindObjectOfType<GameManager>();
             gameInterfaceManager = (GameInterfaceManager) FindObjectOfType(typeof(GameInterfaceManager));
+            backgroundAudioSource = (AudioSource) GameObject.FindWithTag("BackgroundAudioSource").GetComponent(typeof(AudioSource));
             battleUIManager = (BattleUIManager) GetComponent(typeof(BattleUIManager));
             monsterController = (MonsterController) GetComponent(typeof(MonsterController));
             network = NetworkManager.Instance.NetworkUtils;
         } else {
             Destroy(gameObject);
         }
+
+        // Stop playing background music
+        backgroundAudioSource.Stop();
+
 
         // Setup p2p network
         isLeader = GameState.Instance.isLeader;
@@ -568,6 +574,7 @@ public class BattleManager : MonoBehaviour {
         // Remove this delegated function ref, or it will accumulate and run
         // multiple times the next time this scene unloads
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
+
 
         // Inform the game manager the encounter has ended
         gameManager.EndEncounter(5);

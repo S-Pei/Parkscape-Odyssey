@@ -9,6 +9,7 @@ using System;
 using Microsoft.Geospatial;
 
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 
 using Firebase;
@@ -163,6 +164,43 @@ public static class DatabaseUtils {
         FileUtils.Save(new LocationQuestStore(
             new List<LocationQuest>(GameState.Instance.locationQuests.Values)
         ), "locationQuests", "quests");
+    }
+
+    // Process a database music update
+    // The listener is simply a trigger for us to fetch from Firebase Cloud Storage
+    public static async Task<AudioClip> ProcessMusicUpdateAsync(
+        DocumentSnapshot snapshot) {
+        // The snapshot contains an "added" field, denoting when the music was added
+        // Don't perform any changes if the music is not new (i.e. stale)
+        DateTime added = snapshot.GetValue<Firebase.Firestore.Timestamp>("added").ToDateTime();
+
+        if (PlayerPrefs.HasKey("LastMusicUpdate")) {
+           // Parse the string into a Timestamp
+            string lastUpdateString = PlayerPrefs.GetString("LastMusicUpdate");
+            DateTime lastUpdate = DateTime.Parse(lastUpdateString);
+
+            if (added <= lastUpdate) {
+                Debug.LogWarning("Music is stale.");
+                return null;
+            }
+        }
+        
+        Debug.LogWarning("Music is new.");
+        PlayerPrefs.SetString("LastMusicUpdate", added.ToString());
+
+        // Download the music file in its orignial form and save it on disk
+        byte[] musicFile = await GetFileAsync(GetMusicFilePath());
+        FileUtils.Save(musicFile, "background_music.mp3", "music");
+        AudioClip clip = await FileUtils.LoadBackgroundMusicAsAudioClip(); 
+
+        return clip;
+    }
+
+    public static string GetMusicFilePath() {
+        return (Path.Combine(
+            "music",
+            "background_music.mp3"
+        ).Replace('\\','/'));
     }
 
     /*

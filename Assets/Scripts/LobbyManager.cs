@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
 using Microsoft.Geospatial;
@@ -96,12 +97,8 @@ public class LobbyManager : MonoBehaviour {
         Debug.Log("Set game state, should be null gamestate");
         GameState gameState = GameState.Instance;
 
-        // Game state already initialised if in debug mode
         Debug.Log("Initializing gamestate");
-        if (!GameState.DEBUGMODE) {
-            gameState.Initialize(myID, roomCode, players);
-        }
-        Debug.Log("Initializing gamestate");
+        gameState.Initialize(myID, roomCode, players);
 
         GameState.Instance.MyPlayer.IsLeader = true;
 

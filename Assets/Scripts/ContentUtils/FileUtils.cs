@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System;
 
 using UnityEngine;
+using UnityEngine.Networking;
 
 using Microsoft.Geospatial;
 
@@ -81,7 +82,7 @@ public static class FileUtils {
      */
 
     // Save the given data as a serialised JSON string to the persistent data folder
-    // TODO: Explanation about serializability: https://docs.unity3d.com/ScriptReference/JsonUtility.ToJson.html
+    // See Unity docs on serializability: https://docs.unity3d.com/ScriptReference/JsonUtility.ToJson.html
     public static void Save<TData>(TData data, string fileName, string folder="", string root=null) {
         string filePath = GetFilePath(fileName, folder, root); 
 
@@ -191,5 +192,32 @@ public static class FileUtils {
         }
         Debug.LogWarning("Loaded file from Resources: " + fullPath);
         return textAsset.bytes;
+    }
+
+    public static async Task<AudioClip> LoadBackgroundMusicAsAudioClip() {
+        AudioClip clip = null;
+
+        string path = FileUtils.GetFilePath("background_music.mp3", "music");
+
+        // Check if file exists
+        if (!File.Exists(path)) {
+            Debug.LogWarning("File does not exist: " + path);
+            return null;
+        }
+
+        // Fetch the file locally and return it as an AudioClip
+        using (UnityWebRequest uwr = UnityWebRequestMultimedia.GetAudioClip(
+            "file://" + path, AudioType.MPEG)) {
+            uwr.SendWebRequest();
+
+            while (!uwr.isDone) await Task.Delay(1);
+
+            if (uwr.isNetworkError || uwr.isHttpError) {
+                Debug.LogWarning($"{uwr.error}");
+            } else {
+                clip = DownloadHandlerAudioClip.GetContent(uwr);
+            }
+        }
+        return clip;
     }
 }
