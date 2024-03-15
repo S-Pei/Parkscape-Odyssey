@@ -152,7 +152,7 @@ public class LobbyManager : MonoBehaviour {
 
         // Save the files to disk
         Debug.LogWarning("10. Saving location quest files to disk");
-        yield return FileUtils.ProcessNewQuestFiles(
+        FileUtils.ProcessNewQuestFiles(
             locationQuestVectors.Result,
             locationQuestGraph.Result,
             locationQuestLabels.Result

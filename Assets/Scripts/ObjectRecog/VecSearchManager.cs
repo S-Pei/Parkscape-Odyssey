@@ -51,6 +51,7 @@ public class VecSearchManager : MonoBehaviour
         // Initialize Approximate NN with training data
         // string jsonString = LoadJsonFile("Assets/Resources/metadata.json");
         // parseMetadataJson(jsonString);
+        GameManager.Instance.LogTxt("Initialising VecSearchManager");
         ApproxNN.Instance.Load();
         // ApproxNN.Instance.Initialize(featureVectors, labels);
         // ApproxNN.Instance.Save("Assets/Resources/");
@@ -69,6 +70,8 @@ public class VecSearchManager : MonoBehaviour
         float[] queryFeatureVector = output.data.Download(output.shape);
         input.Dispose();
         worker.Dispose();
+
+        GameManager.Instance.LogTxt("(VSM) Unique labels:" + string.Join(", ", ApproxNN.Instance.labels.Distinct().ToList()) + "\n");
 
         // perform similarity search
         string[] results = ApproxNN.Instance.Search(queryFeatureVector, this.k); 

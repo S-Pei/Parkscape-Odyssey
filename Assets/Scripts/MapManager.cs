@@ -225,7 +225,7 @@ public class MapManager : MonoBehaviour
                     if (entry.Key != GameState.Instance.MyPlayer.Id) {
                         otherPlayerPins[entry.Key].Location = entry.Value;
                         double pDistance = GetDistanceToPlayer(otherPlayerPins[entry.Key].Location.LatitudeInDegrees, otherPlayerPins[entry.Key].Location.LongitudeInDegrees);
-                        GameManager.Instance.LogTxt("[GEOLOCATION] Distance to " + entry.Key + " is " + pDistance);
+                        // GameManager.Instance.LogTxt("[GEOLOCATION] Distance to " + entry.Key + " is " + pDistance);
                     }
                 }
                 break;
@@ -234,7 +234,7 @@ public class MapManager : MonoBehaviour
                 gpsManager.UpdatePlayerLocations(mapMessage.sentFrom, MapMessage.DictToLatLon(mapMessage.myLocation));
                 otherPlayerPins[mapMessage.sentFrom].Location = GPSManager.Instance.GetPlayerLocation(mapMessage.sentFrom);
                 double distance = GetDistanceToPlayer(otherPlayerPins[mapMessage.sentFrom].Location.LatitudeInDegrees, otherPlayerPins[mapMessage.sentFrom].Location.LongitudeInDegrees);
-                GameManager.Instance.LogTxt("[GEOLOCATION] Distance to " + mapMessage.sentFrom + " is " + distance);
+                // GameManager.Instance.LogTxt("[GEOLOCATION] Distance to " + mapMessage.sentFrom + " is " + distance);
                 break;
         }
         return CallbackStatus.PROCESSED;

@@ -38,6 +38,19 @@ public static class DatabaseUtils {
     public static async Task<List<LocationQuest>> GetLocationQuestsWithTimeout(int timeoutSeconds) {
         var tokenSource = new CancellationTokenSource();
         var timeout = TimeSpan.FromSeconds(timeoutSeconds);
+
+        // Load any location quests stored on disk first
+        LocationQuestStore existingLocationQuests = null;
+
+        if (File.Exists(FileUtils.GetFilePath("locationQuests", "quests"))) {
+            // Load the location quests from the file
+            Debug.LogWarning("2. Found location quests on disk.");
+            existingLocationQuests = FileUtils.Load<LocationQuestStore>("locationQuests", "quests");
+            existingLocationQuests.quests.ForEach(quest => quest.SetNotStarted());
+        } else {
+            Debug.LogWarning("2. No location quests found on disk.");
+        }
+
         try {
             return await CancelAfterAsync(
                 GetLocationQuestsAsync,
@@ -46,7 +59,7 @@ public static class DatabaseUtils {
             );
         } catch (TimeoutException) {
             Debug.LogWarning("GetLocationQuestsAsync timed out.");
-            return new List<LocationQuest>();
+            return existingLocationQuests.quests;
         }
     }
 
@@ -114,9 +127,11 @@ public static class DatabaseUtils {
             // If the location quest was removed, we will remove it from GameState
             // Otherwise, fetch the new/updated location quest
             if (locationQuestChange.ChangeType == DocumentChange.Type.Removed) {
+                GameManager.Instance.LogTxt("Location quest removed: " + locationQuestDocument.Id);
                 Debug.LogWarning("Location quest removed: " + locationQuestDocument.Id);
                 questsToRemove.Add(locationQuestDocument.Id);
             } else {
+                GameManager.Instance.LogTxt("Location quest added: " + locationQuestDocument.Id);
                 Debug.LogWarning("Location quest updated: " + locationQuestDocument.Id);
                 tasks.Add(GetLocationQuestAsync(locationQuestChange.Document));
             }
@@ -129,6 +144,7 @@ public static class DatabaseUtils {
                 // Add the location quest to GameState if it is not already there, or
                 // update it if it is
                 Debug.LogWarning("Update: " + locationQuest.Label);
+                GameManager.Instance.LogTxt("Update: " + locationQuest.Label);
                 GameState.Instance.UpdateLocationQuest(locationQuest);
             } else {
                 Debug.LogWarning("Location quest was null: " + locationQuest.Label);
@@ -146,19 +162,14 @@ public static class DatabaseUtils {
         byte[] locationQuestGraph = await GetFileAsync("locationQuestGraph.bytes");
         byte[] locationQuestLabels = await GetFileAsync("locationQuestLabels.bytes");
 
-        // Save the location quest files to GameState; the files will be saved to disk
-        // in the caller (as we can't pass in a ref to it here)
-        GameState.Instance.locationQuestVectors = locationQuestVectors;
-        GameState.Instance.locationQuestGraph = locationQuestGraph;
-        GameState.Instance.locationQuestLabels = locationQuestLabels;
+        GameManager.Instance.LogTxt("Fetched all 3 files");
 
         // Save the location quest files to disk; we will know this operation is complete when
         // LastQuestFileUpdate in PlayerPrefs updates
-        caller.StartCoroutine(FileUtils.ProcessNewQuestFiles(
+        FileUtils.ProcessNewQuestFiles(
             locationQuestVectors,
             locationQuestGraph,
-            locationQuestLabels,
-            updateGameState: false));
+            locationQuestLabels);
 
         // Write the updated locationQuests to disk
         FileUtils.Save(new LocationQuestStore(
@@ -249,16 +260,16 @@ public static class DatabaseUtils {
     private static async Task<List<LocationQuest>> GetLocationQuestsAsync(
         CancellationToken token=default(CancellationToken)) {
         try {
-            // Load any location quests stored on disk first
-            LocationQuestStore existingLocationQuests = null;
+            // // Load any location quests stored on disk first
+            // LocationQuestStore existingLocationQuests = null;
 
-            if (File.Exists(FileUtils.GetFilePath("locationQuests", "quests"))) {
-                // Load the location quests from the file
-                Debug.LogWarning("2. Found location quests on disk.");
-                existingLocationQuests = FileUtils.Load<LocationQuestStore>("locationQuests", "quests");
-            } else {
-                Debug.LogWarning("2. No location quests found on disk.");
-            }
+            // if (File.Exists(FileUtils.GetFilePath("locationQuests", "quests"))) {
+            //     // Load the location quests from the file
+            //     Debug.LogWarning("2. Found location quests on disk.");
+            //     existingLocationQuests = FileUtils.Load<LocationQuestStore>("locationQuests", "quests");
+            // } else {
+            //     Debug.LogWarning("2. No location quests found on disk.");
+            // }
 
             // Get a reference to the locationQuests collection
             Query locationQuestsQuery = database.Collection("locationQuests");
@@ -294,10 +305,10 @@ public static class DatabaseUtils {
             // If we are here, fetching the location quests was successful
             // Save the fetched location quests to disk if there are any
             // If not, default to using the existing location quests
-            if (locationQuests.Count == 0 && existingLocationQuests != null) {
+            if (locationQuests.Count == 0) {
                 Debug.LogWarning("8. Using existing location quests.");
-                locationQuests = existingLocationQuests.quests;
-            } else if (locationQuests.Count > 0) {
+                throw new TimeoutException();
+            } else {
                 Debug.LogWarning("8. Saving location quests to disk.");
                 LocationQuestStore newLocationQuests = new LocationQuestStore(locationQuests);
                 FileUtils.Save(newLocationQuests, "locationQuests", "quests");

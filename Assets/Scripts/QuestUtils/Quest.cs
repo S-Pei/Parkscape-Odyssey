@@ -69,6 +69,10 @@ public class Quest
             SetCompleted();
     }
 
+    public void SetNotStarted() {
+        QuestStatus = QuestStatus.NOT_STARTED;
+    }
+
     public void SetOngoing() {
         QuestStatus = QuestStatus.IN_PROGRESS;
     }

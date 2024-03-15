@@ -58,6 +58,10 @@ public class GameInterfaceManager : MonoBehaviour
         scanImageButton.SetActive(false);
     }
 
+    void Start() {
+        CloseNewQuestNotification();
+    }
+
 
     // Open with actual inventory stored in GameManager
     public void OpenInventory() {

@@ -14,7 +14,7 @@ public class ApproxNN : MonoBehaviour
     private const float KNNThreshold = 0.5f;
 
     private SmallWorld<float[], float> world;
-    private string[] labels;
+    public string[] labels;
     private float[][] vectors;
     private static ApproxNN instance;
 
@@ -59,8 +59,9 @@ public class ApproxNN : MonoBehaviour
     {
         float[] normalizedQuery = NormalizeVector(query);
         var results = this.world.KNNSearch(normalizedQuery, k);
-        Debug.Log("Labels " + string.Join(", ", results.Select(r => this.labels[r.Id])));
-        Debug.Log("Distances " + string.Join(", ", results.Select(r => r.Distance)));
+        GameManager.Instance.LogTxt("All labels " + string.Join(", ", this.labels.Distinct().ToList()));
+        GameManager.Instance.LogTxt("Labels " + string.Join(", ", results.Select(r => this.labels[r.Id])));
+        GameManager.Instance.LogTxt("Distances " + string.Join(", ", results.Select(r => r.Distance)));
 
         var filteredResults = results.Where(r => r.Distance < KNNThreshold).ToArray();
         if (filteredResults.Length == 0) {
@@ -82,14 +83,15 @@ public class ApproxNN : MonoBehaviour
                 labelWeights[label] = weights[i];
             }
         }
-        Debug.Log("Label weights " + string.Join(", ", labelWeights.Select(kv => $"{kv.Key}: {kv.Value}")));
+        GameManager.Instance.LogTxt("Label weights " + string.Join(", ", labelWeights.Select(kv => $"{kv.Key}: {kv.Value}")));
         var returnLabel = labelWeights.OrderByDescending(kv => kv.Value).First().Key;
+        return new string[] { returnLabel };
         // return if number of occurence of label is greater than k // 2
-        if (results.Count(r => this.labels[r.Id] == returnLabel) > k / 2) {
-            return new string[] { returnLabel };
-        } else {
-            return new string[0];
-        }
+        // if (results.Count(r => this.labels[r.Id] == returnLabel) > k / 2) {
+        //     return new string[] { returnLabel };
+        // } else {
+        //     return new string[0];
+        // }
     }
 
     public void Save(string path) {

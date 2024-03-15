@@ -15,7 +15,7 @@ public class QuestFactory : MonoBehaviour {
     public static async Task<Dictionary<string, LocationQuest>> CreateInitialLocationQuests() {
         // List of hardcoded location quests based on Hyde Park
         // Pause while fetching the list of locationQuests from the database
-        List<LocationQuest> locationQuests = await DatabaseUtils.GetLocationQuestsWithTimeout(30);
+        List<LocationQuest> locationQuests = await DatabaseUtils.GetLocationQuestsWithTimeout(15);
 
         // Add a medium encounter for each location
         List<LatLon> encounterLocations = new();

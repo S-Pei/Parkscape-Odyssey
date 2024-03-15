@@ -251,7 +251,7 @@ public class Depth_ScreenToWorldPosition : MonoBehaviour
         var uv = new Vector2(x / Screen.width, y / Screen.height);
         var eyeDepth = Math.Min(depthimage.Value.Sample<float>(uv, Matrix4x4.identity), maxDepth);
 
-        GameManager.Instance.LogTxt($"Depth: {eyeDepth}");
+        // GameManager.Instance.LogTxt($"Depth: {eyeDepth}");
 
         // Get world position
         return (_camera.ScreenToWorldPoint(new Vector3(x, y, eyeDepth)), eyeDepth);

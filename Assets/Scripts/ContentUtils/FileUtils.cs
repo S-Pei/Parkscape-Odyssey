@@ -43,31 +43,49 @@ public static class FileUtils {
 
     // Save the three given quest files (as byte arrays) to the GameState instance, and write them to disk
     // asynchronously. Also, update the last quest file update time in PlayerPrefs.
-    public static IEnumerator ProcessNewQuestFiles(
+    public static void ProcessNewQuestFiles(
         byte[] locationQuestVectors, byte[] locationQuestGraph,
         byte[] locationQuestLabels, string folder="quests", string root=null, bool updateGameState=true) {
         Debug.LogWarning("Saving quest files to disk on new thread");
 
         if (updateGameState) {
-            // Save the quest files to the GameState instance
+            // Save the quest files to the GameState instance and
+            // re-initialise the VecSearchManager
             GameState.Instance.locationQuestVectors = locationQuestVectors;
             GameState.Instance.locationQuestGraph = locationQuestGraph;
             GameState.Instance.locationQuestLabels = locationQuestLabels;
         }
 
-        // Write the quest files to disk in a separate thread to avoid
-        // blocking the main thread with slow disk I/O
-        SaveFilesThreaded(new Dictionary<string, byte[]> {
-            {"locationQuestVectors.bytes", locationQuestVectors},
-            {"locationQuestGraph.bytes", locationQuestGraph},
-            {"locationQuestLabels.bytes", locationQuestLabels}
-        }, folder, root);
+        Save(locationQuestVectors, "locationQuestVectors.bytes", "quests");
+        Save(locationQuestGraph, "locationQuestGraph.bytes", "quests");
+        Save(locationQuestLabels, "locationQuestLabels.bytes", "quests");
 
-        while (!filesSaved_Threaded) {
-            yield return null;
+
+        if (GameManager.Instance != null) {
+            // Check thatt the file saved on disk  is the same as the one in the game state
+            byte[] vectors = Load<byte[]>("locationQuestVectors.bytes", folder, root);
+            byte[] graph = Load<byte[]>("locationQuestGraph.bytes", folder, root);
+            byte[] labels = Load<byte[]>("locationQuestLabels.bytes", folder, root);
+
+            if (vectors == null || graph == null || labels == null) {
+                GameManager.Instance.LogTxt("Failed to load quest files from disk");
+            } else if (!vectors.SequenceEqual(locationQuestVectors) ||
+                       !graph.SequenceEqual(locationQuestGraph) ||
+                       !labels.SequenceEqual(locationQuestLabels)) {
+                GameManager.Instance.LogTxt("Saved quest files do not match the ones in the GameState");
+            } else {
+                GameManager.Instance.LogTxt("Quest files saved to disk on new thread :)");
+            
+            }
         }
-
+        
+        if (VecSearchManager.Instance != null) {
+                VecSearchManager.Instance.Initialize();
+        }
+            // GameManager.Instance.LogTxt("GameManager was null.");
         Debug.LogWarning("Quest files saved to disk on new thread");
+
+
 
         filesSaved_Threaded = false;
 
@@ -111,6 +129,10 @@ public static class FileUtils {
         try {
             File.WriteAllBytes(filePath, byteData);
             Debug.Log("Save data to: " + filePath);
+
+            if (GameManager.Instance != null) {
+                GameManager.Instance.LogTxt("Save data to: " + filePath);
+            }
         } catch (Exception e) {
             Debug.LogError("Failed to save data to: " + filePath);
             Debug.LogError("Error " + e.Message);
@@ -123,7 +145,6 @@ public static class FileUtils {
             foreach (var file in files) {
                 Save(file.Value, file.Key, folder, root != null ? root : DatabaseManager.Instance.dataPath);
             }
-            Debug.LogWarning("Saved quest files to disk");
 
             // Set the flag to indicate that the files have been saved
             filesSaved_Threaded = true;

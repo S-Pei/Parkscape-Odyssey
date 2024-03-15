@@ -125,14 +125,10 @@ public class FileUtilsTest : IPrebuildSetup {
         byte[] locationQuestGraph = new byte[] { 4, 5, 6 };
         byte[] locationQuestLabels = new byte[] { 7, 8, 9 };
 
-        IEnumerator coroutine = FileUtils.ProcessNewQuestFiles(
+        FileUtils.ProcessNewQuestFiles(
             locationQuestVectors, locationQuestGraph, locationQuestLabels,
             root: root
         );
-        
-        while (coroutine.MoveNext()) {
-            yield return coroutine.Current;
-        }
 
         Assert.IsTrue(DatabaseManager.Instance != null);
 
