@@ -1,5 +1,7 @@
 # Project Summary
 
+_This project was our Year 3 Software Engineering Group Project and won the David Howarth Group Project Prize._
+
 We developed a multiplayer, location-based augmented reality (AR) game designed to blend digital experiences with the physical world. The game encourages outdoor exploration by using mobile devices to interact with AR-enriched environments. Key features include:
 
   •	Object Recognition Challenges: Players engage with hidden surprises and turn everyday sights into game elements. \
@@ -8,7 +10,7 @@ We developed a multiplayer, location-based augmented reality (AR) game designed 
   • Augmented reality (AR) for immersive outdoor exploration \
   • Geolocation Tracking and Adaptive gameplay
 
-This project demonstrates a proof-of-concept for distributed offline networking and machine learning integration in mobile devices, enhancing physical and digital interaction.
+This project demonstrates a proof-of-concept for distributed offline networking and machine learning integration in mobile devices, enhancing physical and digital interaction. 
 
 ### Visualisation of our platform operating in Hyde Park, mapping map locations to core feature functionality.
 ![map3](https://github.com/user-attachments/assets/f5d98234-6c2b-4853-bf17-0b2e86fc4e4b)
