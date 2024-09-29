@@ -17,3 +17,6 @@ This project demonstrates a proof-of-concept for distributed offline networking 
 
 ### Diagram of the communication links and dependencies between the key modules of our platform.
 ![System Arch](https://github.com/user-attachments/assets/02c21273-1ac9-4e1f-9ab4-10c96813e7f6)
+
+### Trailers
+[Trailer 1](https://youtu.be/FltzFi7k_As), [Trailer 2](https://youtu.be/VBvbONBuzpM)
